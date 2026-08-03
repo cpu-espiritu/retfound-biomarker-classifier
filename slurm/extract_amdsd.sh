@@ -20,7 +20,7 @@ CROP=${3:-}
 
 echo "[cfg] splits=$SPLITS size=$SIZE crop='$CROP'"
 
-python $PROJECT/retfound/code/scripts/extract_features.py \
+python $PROJECT/retfound/code/scripts/features/extract_features.py \
   --manifest   $SPLITS/manifest.csv \
   --images     $PROJECT/retfound/data/amdsd/images \
   --out        $PROJECT/retfound/data/amdsd_features \

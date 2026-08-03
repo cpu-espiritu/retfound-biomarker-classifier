@@ -1,0 +1,14 @@
+{
+  "manifest": "/rds/projects/w/wangsu-tennis-ai/retfound/data/amdsd_splits/manifest.csv",
+  "images": "/rds/projects/w/wangsu-tennis-ai/retfound/data/amdsd/images",
+  "out": "/rds/projects/w/wangsu-tennis-ai/retfound/data/amdsd_preds",
+  "fold": 0,
+  "mode": "full",
+  "finetune": "RETFound_mae_natureOCT",
+  "input_size": 224,
+  "epochs": 20,
+  "batch_size": 32,
+  "lr": 2e-05,
+  "warmup": 2,
+  "seed": 0
+}

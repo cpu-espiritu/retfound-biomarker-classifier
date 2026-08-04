@@ -10,6 +10,7 @@ from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from sklearn.metrics import average_precision_score
 from huggingface_hub import hf_hub_download
 
+import timm
 import models_vit as models
 from util.pos_embed import interpolate_pos_embed
 
@@ -36,7 +37,31 @@ class DS(Dataset):
         return x, y, v
 
 
-def build(finetune, size, mode, device):
+TIMM_ARCH = {'mae_in1k': 'vit_large_patch16_224.mae',
+             'sup_in21k': 'vit_large_patch16_224.augreg_in21k_ft_in1k'}
+
+
+def build(finetune, size, mode, device, encoder='retfound'):
+    if encoder != 'retfound':
+        m = timm.create_model(TIMM_ARCH[encoder], pretrained=True, img_size=size,
+                              num_classes=3, global_pool='avg',
+                              drop_path_rate=0.1 if mode == 'full' else 0.0)
+        if mode == 'lp':
+            keep = lambda n: n.startswith('head.')
+        elif mode == 'last4':
+            keep = lambda n: (n.startswith(('head.', 'fc_norm.', 'norm.'))
+                              or any(n.startswith(f'blocks.{i}.') for i in range(20, 24)))
+        else:
+            keep = lambda n: True
+        for n, prm in m.named_parameters():
+            prm.requires_grad = keep(n)
+        print(f"[{encoder}/{mode}] trainable "
+              f"{sum(x.numel() for x in m.parameters() if x.requires_grad)/1e6:.1f}M")
+        return m.to(device)
+    return _build_retfound(finetune, size, mode, device)
+
+
+def _build_retfound(finetune, size, mode, device):
     m = models.RETFound_mae(img_size=size, num_classes=3,
                             drop_path_rate=0.1 if mode == 'full' else 0.0,
                             global_pool=True)
@@ -80,6 +105,8 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--fold', type=int, required=True)
     ap.add_argument('--mode', choices=['lp', 'last4', 'full'], required=True)
+    ap.add_argument('--encoder', default='retfound',
+                    choices=['retfound', 'mae_in1k', 'sup_in21k'])
     ap.add_argument('--finetune', default='RETFound_mae_natureOCT')
     ap.add_argument('--input-size', type=int, default=224)
     ap.add_argument('--epochs', type=int, default=20)
@@ -104,7 +131,7 @@ def main():
                                  num_workers=8, pin_memory=True, drop_last=t)
     dl_tr, dl_va, dl_te = mk(tr, True), mk(va, False), mk(te, False)
 
-    m = build(a.finetune, a.input_size, a.mode, dev)
+    m = build(a.finetune, a.input_size, a.mode, dev, a.encoder)
     opt = torch.optim.AdamW([p for p in m.parameters() if p.requires_grad],
                             lr=lr, weight_decay=0.05)
     scaler = torch.cuda.amp.GradScaler()
@@ -142,7 +169,8 @@ def main():
     Pt, Yt = infer(m, dl_te, dev)
 
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
-    tag = f"{a.mode}_{a.input_size}_f{a.fold}_s{a.seed}"
+    pre = "" if a.encoder == "retfound" else f"{a.encoder}_"
+    tag = f"{pre}{a.mode}_{a.input_size}_f{a.fold}_s{a.seed}"
     np.savez(out / f"preds_{tag}.npz",
              val_p=Pv, val_y=Yv, val_g=va.group.values,
              test_p=Pt, test_y=Yt, test_g=te.group.values,

@@ -15,3 +15,10 @@ data/**/masks/
 
 # rejected branch: cropping was tested and dropped (see DECISIONS.md)
 data/amdsd_features/*_crop.npy
+
+# local experimentation — never committed
+.venv/
+notebooks/
+*.ipynb
+.ipynb_checkpoints/
+figures/*.png

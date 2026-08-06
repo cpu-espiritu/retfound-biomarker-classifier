@@ -14,7 +14,8 @@ Directories follow the order the pipeline runs in.
 | `prep/`     | Raw dataset → splits (`manifest.csv`, or ImageFolder symlink trees).|
 | `features/` | Cache frozen encoder features, then probe them. CPU-cheap arm.      |
 | `finetune/` | Fine-tune the encoder end-to-end, then analyse its predictions.     |
-| `slurm/`    | Cluster wrappers. Thin — every parameter lives in the Python.       |
+| `slurm/`    | Cluster wrappers for AMD-SD. Thin — parameters live in the Python.  |
+| `slurm/diagnosis/` | Wrappers for the secondary CNV/DRUSEN/NORMAL track.          |
 | `docs/`     | Results and the decision log.                                       |
 | `data/`     | Committed prediction artefacts (`amdsd_preds/*.npz`, `*.json`).     |
 
@@ -52,15 +53,34 @@ format so `features/probe_heads.py` reads them unchanged.
 crop-height distribution). Cropping was tested and rejected — see DECISIONS.md — so this is
 only needed if the crop path is revisited.
 
-## NEH / Kermany (secondary)
+## Diagnosis track: UCSD / NEH (secondary)
 
-These predate the AMD-SD work and target 3-class CNV/DRUSEN/NORMAL, not fluid biomarkers.
+3-class CNV/DRUSEN/NORMAL diagnosis, not fluid biomarkers. This track predates the AMD-SD
+work and shares none of its code: every job runs the upstream RETFound repo's
+`main_finetune.py` rather than `finetune/train_amdsd.py`, so `slurm/diagnosis/` scripts are
+the whole interface and the settings live in the `torchrun` flags.
 
-- `prep/prep_neh.py` — leakage-safe patient-grouped fold trees for the RETFound repo's
-  `main_finetune.py`; run per fold via `slurm/run_neh_lp.slurm`.
-- `prep/make_neh_sets.py` — three external-validation sets (scan labels / patient labels /
-  worst-case) that isolate the cost of patient-level labelling.
-- `prep/make_val_split.py` — carves a patient-level val set out of the Kermany `train/`.
+Data prep:
+
+- `prep/make_val_split.py` — carves a patient-level val set out of the Kermany/UCSD `train/`.
+- `prep/prep_neh.py` — leakage-safe patient-grouped NEH fold trees (`fold0…fold4`).
+- `prep/make_neh_sets.py` — three NEH eval sets: `A_scan_labels`, `B_patient_labels`,
+  `C_worstcase`. A vs B isolates the cost of patient-level labelling on identical images.
+
+Jobs, all under `slurm/diagnosis/`:
+
+| Script | Trains / evaluates on | Notes |
+| --- | --- | --- |
+| `train_ucsd.sh` | UCSD (`$OCT`) | baseline linear probe, 100 epochs |
+| `train_ucsd_seed.sh` | UCSD | needs `SEED` exported; task tagged `_s$SEED` |
+| `train_ucsd_weighted.sh` | UCSD | adds `--weighted_loss`; task tagged `_w_s$SEED` |
+| `train_neh_lp.sh` | NEH folds | `--array=0-4`, one fold per task |
+| `eval_diag.sh` | UCSD test | in-domain; needs `SRC` (checkpoint task name) |
+| `eval_neh.sh` | `neh_sets/$NEHSET` | external validation; needs `SRC` and `NEHSET` |
+
+The `_seed` / `_weighted` / `eval` scripts read `SEED`, `SRC`, and `NEHSET` from the
+environment, so submit them as `SEED=1 sbatch slurm/diagnosis/train_ucsd_seed.sh`. Unset
+variables fail at argparse rather than silently defaulting.
 
 ## Dependencies
 

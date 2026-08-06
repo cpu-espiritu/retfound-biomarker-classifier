@@ -2,3 +2,16 @@
 __pycache__/
 *.pyc
 logs/
+
+# model weights — 1.2 GB per full-FT run, never commit
+*.pth
+*.pt
+*.ckpt
+
+# raw imagery is redistributed from the dataset release, not from here
+data/amdsd/
+data/**/images/
+data/**/masks/
+
+# rejected branch: cropping was tested and dropped (see DECISIONS.md)
+data/amdsd_features/*_crop.npy

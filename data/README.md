@@ -1,0 +1,38 @@
+# Committed data artefacts
+
+Everything here is small, derived, and expensive to regenerate (each needs a GPU, a
+cluster allocation, and the cached RETFound weights). Committing it makes every
+downstream analysis — linear probes, thresholds, figures — reproducible on a laptop
+with no GPU. See DECISIONS.md, "Feature caching before any head experiments".
+
+| Path | What | Produced by |
+| --- | --- | --- |
+| `amdsd_splits/manifest.csv` | 3,049 B-scans: labels, lesion areas, patient groups, fold/split assignment | `prep/prep_amdsd.py` |
+| `amdsd_features/features_*_224.npy` | frozen RETFound features, (3049, 1024) float32 | `features/extract_features.py` |
+| `amdsd_features/features_*_384.npy` | same at 384 input | `features/extract_features.py` |
+| `amdsd_preds/preds_*.npz` | per-fold val/test predictions for every fine-tuning arm | `finetune/train_amdsd.py` |
+| `amdsd_preds/cfg_*.json` | the exact args each run was launched with | `finetune/train_amdsd.py` |
+
+## Row order
+
+Feature rows correspond 1:1, in order, with `amdsd_splits/manifest.csv`.
+`extract_features.py` asserts this before saving. So:
+
+```python
+X = np.load('data/amdsd_features/features_RETFound_mae_natureOCT_224.npy')
+df = pd.read_csv('data/amdsd_splits/manifest.csv')
+assert len(X) == len(df)
+```
+
+`extract_features.py` also writes a `manifest_{tag}.csv` next to each feature file. Those
+are byte-identical to `manifest.csv` for the uncropped runs, so only the canonical copy is
+kept here.
+
+## Deliberately not committed
+
+- **Raw B-scans and masks** — AMD-SD is redistributable only from its own release.
+- **Model checkpoints** (`.pth`) — 1.2 GB per full-FT run. `train_amdsd.py` does not
+  currently save weights at all.
+- **Cropped features** (`_224_crop.npy`) — cropping was tested and rejected.
+- **ImageNet control features** (`mae_in1k`, `sup_in21k`) — still cluster-only; these back
+  the encoder-comparison table in DECISIONS.md and are worth adding.

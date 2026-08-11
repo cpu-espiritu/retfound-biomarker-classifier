@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Identify AMD-SD mask class indices by geometry."""
 import argparse, random
 from pathlib import Path
 import numpy as np

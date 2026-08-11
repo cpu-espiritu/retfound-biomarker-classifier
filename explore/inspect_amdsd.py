@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Inventory AMD-SD before writing the prep pipeline."""
 import argparse, os, random
 from collections import Counter
 from pathlib import Path

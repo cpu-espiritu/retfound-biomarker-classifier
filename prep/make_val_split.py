@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Carve a patient-level validation set out of OCT/train/ into OCT/val/."""
 import os, random, shutil
 from collections import defaultdict
 

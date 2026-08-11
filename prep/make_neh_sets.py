@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""Build 3 ImageFolder test sets from NEH for external validation.
-
-A (scan_labels)    : all 16822, labelled by per-scan expert Label   <- clean truth
-B (patient_labels) : all 16822, labelled by patient Class           <- UCSD-style noise
-C (worstcase)      : 12649 where Class==Label, labelled by Label    <- published setting
-
-A vs B isolates the cost of patient-level labelling (same images, same model).
-Folder names CNV/DRUSEN/NORMAL -> ImageFolder sorts to CNV=0, DRUSEN=1, NORMAL=2,
-matching the UCSD-trained model. No index remap needed.
-"""
 import os, csv, sys
 from collections import Counter
 

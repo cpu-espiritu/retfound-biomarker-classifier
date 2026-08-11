@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""
-AMD-SD prep: group-safe splits + crop + multi-label derivation -> manifest.csv
-
-Class indices confirmed against the AMD-SD paper palette:
-  1=SRF  2=IRF  3=PED  4=SHRM  5=ISOS  0=background
-"""
 import argparse, sys
 from pathlib import Path
 import numpy as np
@@ -17,7 +11,6 @@ TARGETS = ['IRF', 'SRF', 'PED']
 
 
 def retina_band(gray, margin, frac=0.30, guard=4):
-    """Longest contiguous bright run = retina. Robust to edge artefacts."""
     H = gray.shape[0]
     prof = np.convolve(gray.astype(float).mean(axis=1), np.ones(9) / 9, mode='same')
     core = prof[guard:H - guard]

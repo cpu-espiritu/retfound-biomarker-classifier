@@ -22,3 +22,7 @@ notebooks/
 *.ipynb
 .ipynb_checkpoints/
 figures/*.png
+
+# generated figures — regenerate with: python figures/make_figures.py
+figures/*.pdf
+figures/*.png

@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""Ensemble folds, Youden thresholds, size-stratified recall, patient bootstrap.
-
-One seed = one model: its folds are ensembled and scored as a unit. Given several
-seeds, each is scored independently and the spread across them is reported. That
-spread is the run-to-run noise floor — a difference between two arms only counts
-if it clears it. Seeds are deliberately NOT pooled into one large ensemble, which
-would improve the point estimate while hiding the variance being measured.
-"""
 import argparse, glob, re
 import numpy as np, pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score, recall_score

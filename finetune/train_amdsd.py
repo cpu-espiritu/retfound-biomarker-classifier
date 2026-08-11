@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Multi-label IRF/SRF/PED fine-tuning of RETFound on AMD-SD."""
 import argparse, json, math, time
 from pathlib import Path
 import numpy as np, pandas as pd, torch, torch.nn as nn

@@ -1,25 +1,4 @@
 #!/usr/bin/env python3
-"""
-Prepare the Noor Eye Hospital (NEH) OCT dataset for the RETFound pipeline.
-
-Leakage-safe, DRIL-protocol split as ImageFolder symlink trees so your existing
-build_dataset()/main_finetune.py run UNCHANGED — you only swap --data_path per fold.
-
-  * Worst-case (Option 2) filter: keep scans where Class == Label.
-  * Group by PATIENT: key = "<Class>_<PatientID>" (Class prefix REQUIRED because
-    PatientID resets within each class). Patient grouping closes the fellow-eye
-    correlation confound.
-  * 15% held-out test by group, touched once. 5-fold StratifiedGroupKFold on 85%.
-
-Output (data_path per fold = OUT/fold{k}):
-    OUT/_shared_test/<CLASS>/<flat>.jpg
-    OUT/fold0/train/<CLASS>/<flat>.jpg
-    OUT/fold0/val/<CLASS>/<flat>.jpg
-    OUT/fold0/test -> ../_shared_test
-    OUT/split_manifest.csv
-
-ImageFolder indexes classes alphabetically: CNV=0, DRUSEN=1, NORMAL=2.
-"""
 
 import argparse
 import os

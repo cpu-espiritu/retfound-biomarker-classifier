@@ -113,6 +113,7 @@ def main():
     ap.add_argument('--lr', type=float, default=None)
     ap.add_argument('--warmup', type=int, default=2)
     ap.add_argument('--seed', type=int, default=0)
+    ap.add_argument('--save-model', action='store_true')
     a = ap.parse_args()
 
     lr = a.lr or {'lp': 1e-3, 'last4': 1e-4, 'full': 2e-5}[a.mode]
@@ -175,6 +176,10 @@ def main():
              test_p=Pt, test_y=Yt, test_g=te.group.values,
              classes=np.array(T), best_epoch=best_ep, val_mAP=best)
     (out / f"cfg_{tag}.json").write_text(json.dumps(vars(a) | {'lr': lr}, indent=2))
+    if a.save_model:
+        torch.save({"model": best_state, "epoch": best_ep, "cfg": vars(a) | {"lr": lr}},
+                   out / f"model_{tag}.pth")
+        print(f"-> {out}/model_{tag}.pth")
     print(f"-> {out}/preds_{tag}.npz")
 
 

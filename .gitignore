@@ -33,3 +33,7 @@ data/**/aroi*
 **/AROI*/
 *aroi*.npy
 *aroi*.png
+
+# generated figures live in subfolders
+figures/**/*.pdf
+figures/**/*.png

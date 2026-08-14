@@ -1,17 +1,4 @@
 #!/usr/bin/env python3
-"""Per-scan connected-component statistics for AMD-SD masks.
-
-Emits one row per (scan, class) so recall can be regressed on fragmentation
-(component count) while controlling for size (total area). The manifest only carries
-total pixel area, which cannot separate "one big lesion" from "six small ones".
-
-    python explore/components_amdsd.py \
-        --masks $PROJECT/retfound/data/amdsd/masks \
-        --manifest $PROJECT/retfound/data/amdsd_splits/manifest.csv \
-        --out amdsd_components.csv
-
-Writes numbers only. Roughly 3,000 masks, about a minute.
-"""
 import argparse
 from pathlib import Path
 

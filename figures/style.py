@@ -61,10 +61,16 @@ mpl.rcParams.update({
 })
 
 
-def save(fig, name):
-    """Write a PDF at final printed size. Returns the path."""
-    OUT.mkdir(exist_ok=True)
-    p = OUT / f'{name}.pdf'
+SUBDIRS = ('report', 'exploratory', 'archive')
+
+
+def save(fig, name, sub='report'):
+    """Write a PDF at final printed size into figures/<sub>/."""
+    if sub not in SUBDIRS:
+        raise ValueError(f'sub must be one of {SUBDIRS}, got {sub!r}')
+    d = OUT / sub
+    d.mkdir(parents=True, exist_ok=True)
+    p = d / f'{name}.pdf'
     fig.savefig(p)
     print(f'  -> {p.relative_to(ROOT)}')
     return p

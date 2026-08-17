@@ -45,11 +45,13 @@ class AttnPool:
         self.lr, self.epochs, self.wd = lr, epochs, wd
 
     def _fwd(self, Z):
-        Tn = np.tanh(Z @ self.V)                       # (n, t, L)
+        n, t, d = Z.shape
+        Zf = Z.reshape(-1, d)                          # BLAS-friendly 2-D views
+        Tn = np.tanh(Zf @ self.V).reshape(n, t, -1)    # (n, t, L)
         e = Tn @ self.w                                # (n, t)
         e = e - e.max(1, keepdims=True)
         A = np.exp(e); A /= A.sum(1, keepdims=True)
-        P = np.einsum('nt,ntd->nd', A, Z)              # (n, d)
+        P = np.matmul(A[:, None, :], Z)[:, 0, :]       # (n, d)
         Pn = layernorm(P)
         return Tn, A, P, Pn, Pn @ self.c + self.b
 
@@ -74,12 +76,13 @@ class AttnPool:
                 xh = (P - mu) / sd
                 dP = (dPn - dPn.mean(-1, keepdims=True)
                       - xh * (dPn * xh).mean(-1, keepdims=True)) / sd
-                dA = np.einsum('nd,ntd->nt', dP, Zb)
+                dA = np.matmul(Zb, dP[:, :, None])[:, :, 0]
                 dE = A * (dA - (A * dA).sum(1, keepdims=True))
                 dTn = dE[:, :, None] * self.w[None, None, :]
                 dU = dTn * (1 - Tn ** 2)
-                dV = np.einsum('ntd,ntl->dl', Zb, dU)
-                dw = np.einsum('ntl,nt->l', Tn, dE)
+                nb, tb, db = Zb.shape
+                dV = Zb.reshape(-1, db).T @ dU.reshape(-1, dU.shape[-1])
+                dw = Tn.reshape(-1, Tn.shape[-1]).T @ dE.reshape(-1)
                 gr = dict(V=dV + self.wd * self.V, w=dw,
                           c=dc + self.wd * self.c, b=db)
                 t += 1
@@ -95,22 +98,43 @@ class AttnPool:
                                for i in range(0, len(Z), batch)])
 
 
-def gradcheck(seed=0):
+def gradcheck(seed=0, n_probe=6):
+    """Max |analytic - finite difference| over sampled parameters."""
     r = np.random.default_rng(seed)
-    Z = r.normal(size=(3, 5, 8)); y = np.array([1.0, 0.0, 1.0])
+    Z = r.normal(size=(4, 5, 8))
+    y = np.array([1.0, 0.0, 1.0, 1.0])
     m = AttnPool(8, L=4, seed=seed)
-    Tn, A, P, Pn, s = m._fwd(Z)
-    loss = lambda: float(np.mean(np.log1p(np.exp(-np.where(y == 1, 1, -1) * m._fwd(Z)[4]))))
-    m2 = AttnPool(8, L=4, seed=seed); m2.epochs = 0
+
+    def loss():
+        s_ = m._fwd(Z)[4]
+        return float(np.mean(np.logaddexp(0, -np.where(y == 1, 1.0, -1.0) * s_)))
+
+    # analytic gradient for the same mean-BCE objective, one full-batch step
+    Tn, A, P, Pn, s_ = m._fwd(Z)
+    g = (1 / (1 + np.exp(-s_)) - y) / len(Z)
+    dc = Pn.T @ g
+    dPn = g[:, None] * m.c[None, :]
+    mu = P.mean(-1, keepdims=True); sd = P.std(-1, keepdims=True) + 1e-6
+    xh = (P - mu) / sd
+    dP = (dPn - dPn.mean(-1, keepdims=True)
+          - xh * (dPn * xh).mean(-1, keepdims=True)) / sd
+    dA = np.matmul(Z, dP[:, :, None])[:, :, 0]
+    dE = A * (dA - (A * dA).sum(1, keepdims=True))
+    dU = dE[:, :, None] * m.w[None, None, :] * (1 - Tn ** 2)
+    ana = dict(V=Z.reshape(-1, 8).T @ dU.reshape(-1, 4),
+               w=Tn.reshape(-1, 4).T @ dE.reshape(-1),
+               c=dc)
+
     worst = 0.0
     for name in ('V', 'w', 'c'):
-        Pm = getattr(m, name); flat = Pm.reshape(-1)
-        for j in r.choice(flat.size, min(6, flat.size), replace=False):
+        flat = getattr(m, name).reshape(-1)
+        af = ana[name].reshape(-1)
+        for j in r.choice(flat.size, min(n_probe, flat.size), replace=False):
             o = flat[j]; h = 1e-6
             flat[j] = o + h; lp = loss()
             flat[j] = o - h; lm = loss()
             flat[j] = o
-            worst = max(worst, abs((lp - lm) / (2 * h)))
+            worst = max(worst, abs((lp - lm) / (2 * h) - af[j]))
     return worst
 
 

@@ -149,6 +149,7 @@ def main():
                     default=['mean', 'max', 'topk', 'attn'])
     ap.add_argument('--epochs', type=int, default=120)
     ap.add_argument('--L', type=int, default=64)
+    ap.add_argument('--out', default=str(ROOT / 'notebooks/pooling_comparison.csv'))
     a = ap.parse_args()
 
     df = pd.read_csv(a.manifest)
@@ -158,10 +159,18 @@ def main():
 
     pool = (df.split == 'pool').values
     test = (df.split == 'test').values
-    rows = []
+
+    # resume: keep whatever a previous run already finished
+    out = Path(a.out)
+    rows = (pd.read_csv(out).to_dict('records') if out.exists() else [])
+    done = {(r['pool'], r['cls']) for r in rows}
+    if done:
+        print(f'resuming, {len(done)} of {len(a.methods) * len(T)} already done')
 
     for how in a.methods:
         for i, c in enumerate(T):
+            if (how, c) in done:
+                continue
             y = df[f'label_{c}'].values
             oof = np.full(len(df), np.nan)
             for k in range(5):
@@ -186,13 +195,16 @@ def main():
                              oof_auroc=roc_auc_score(y[m_], oof[m_])))
             print(f'  {how:<6}{c:<5} OOF AUPRC {rows[-1]["oof_auprc"]:.3f}  '
                   f'AUROC {rows[-1]["oof_auroc"]:.3f}', flush=True)
+            # flush after every cell so a kill never loses completed work
+            np.save(out.with_name(f'oof_{how}_{c}.npy'), oof)
+            pd.DataFrame(rows).to_csv(out, index=False)
 
     R = pd.DataFrame(rows)
     print('\n' + '=' * 52)
-    print(R.pivot(index='pool', columns='cls', values='oof_auprc')
-          .reindex(a.methods)[T].round(3).to_string())
-    R.to_csv(ROOT / 'notebooks/pooling_comparison.csv', index=False)
-    print('\n-> notebooks/pooling_comparison.csv')
+    piv = R.pivot(index='pool', columns='cls', values='oof_auprc')
+    print(piv.reindex([m for m in a.methods if m in piv.index])[T].round(3).to_string())
+    R.to_csv(out, index=False)
+    print(f'\n-> {out}')
 
 
 if __name__ == '__main__':

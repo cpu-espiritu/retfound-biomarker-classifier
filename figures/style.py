@@ -35,6 +35,29 @@ SIG = {'holm':    dict(marker='o', mfc='#b02a2a', mec='#b02a2a', color='#b02a2a'
 
 # ---------------------------------------------------------------- print geometry
 WIDTH = 6.5                 # inches; the printed text width. Never scale a figure.
+
+# ---- patch geometry. One ViT/16 patch covers (rows/G) x (cols/G) original px,
+# where G = input_size/16. Absolute patch-unit bins are the only basis on which
+# lesion size compares across datasets: quartiles mean something different in each.
+FRAME = {'amdsd': (380, 570), 'aroi': (1024, 512)}      # (rows, cols)
+AROI_UM_PER_PX = (1.96, 11.74)                          # axial, lateral
+
+
+def patch_px(dataset, input_size=224):
+    rows, cols = FRAME[dataset]
+    g = input_size / 16
+    return (rows / g) * (cols / g)
+
+
+def patch_mm2(input_size=224):
+    rows, cols = FRAME['aroi']
+    g = input_size / 16
+    a, l = AROI_UM_PER_PX
+    return (rows / g * a / 1000) * (cols / g * l / 1000)
+
+
+PATCH_EDGES = np.logspace(np.log10(0.03), np.log10(30), 8)   # multiples of one patch
+MIN_SCANS, MIN_PATIENTS = 15, 5      # a bin needs both, or it carries no honest CI
 EQUIV = 0.02                # pre-specified equivalence margin = fold-to-fold SD
 N_BOOT = 5000
 SEED = 0

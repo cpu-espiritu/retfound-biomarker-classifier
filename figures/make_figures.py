@@ -166,47 +166,54 @@ def fig1(d):
 
 # ------------------------------------------------------------------------- fig 2
 def fig2(d):
+    """Finding 3 — recall vs lesion size in absolute patch units."""
     te, Y, reps = d['te'], d['Y'], d['reps']
-    fig, axes = plt.subplots(1, len(T), figsize=(S.WIDTH, 2.9), sharey=True)
-    w = 0.2
+    patch = S.patch_px('amdsd', 224)
+    E = S.PATCH_EDGES
 
-    for ax, (i, c) in zip(axes, enumerate(T)):
+    fig, ax = plt.subplots(figsize=(S.WIDTH, 3.4))
+    dropped = []
+    for i, c in enumerate(T):
         y = Y[:, i]
-        area = te[f'area_{c}'].values
         pos = y == 1
-        edges = np.percentile(area[pos], [0, 25, 50, 75, 100])
-        edges[-1] += 1
-        binid = np.digitize(area, edges[1:-1])
+        u = te[f'area_{c}'].values[pos] / patch
+        hit = (d['P']['last4_224'][pos, i] >= d['thr']['last4_224'][i]).astype(int)
+        g = d['G'][pos]
 
-        for k, a in enumerate(S.ARMS):
-            p, thr = d['P'][a][:, i], d['thr'][a][i]
-            hit = p >= thr
-            est, los, his = [], [], []
-            for b in range(4):
-                sel = pos & (binid == b)
-                est.append(hit[sel].mean() if sel.any() else np.nan)
-                vals = S.boot_stat(
-                    lambda idx, sel=sel: (hit[idx][sel[idx]].mean()
-                                          if sel[idx].any() else np.nan), reps)
-                lo, hi = S.ci(vals)
-                los.append(est[-1] - lo); his.append(hi - est[-1])
-            x = np.arange(4) + (k - 1.5) * w
-            ax.bar(x, est, w, color=S.ARM_COLOR[a], label=S.ARM_LABEL[a],
-                   edgecolor='white', linewidth=0.4)
-            ax.errorbar(x, est, yerr=[np.abs(los), np.abs(his)], fmt='none',
-                        ecolor='#333333', elinewidth=0.8, capsize=1.5)
+        xs, rec, lo_, hi_ = [], [], [], []
+        for b in range(len(E) - 1):
+            m = (u >= E[b]) & (u < E[b + 1])
+            if m.sum() < S.MIN_SCANS or len(np.unique(g[m])) < S.MIN_PATIENTS:
+                dropped.append((c, f'{E[b]:.2f}-{E[b+1]:.2f}', int(m.sum()),
+                                len(np.unique(g[m]))))
+                continue
+            h, gg = hit[m], g[m]
+            vals = S.boot_stat(lambda idx, h=h, gg=gg: h[idx].mean(),
+                               S.replicates(gg, n=len(reps)))
+            l, hh = S.ci(vals)
+            xs.append(np.sqrt(E[b] * E[b + 1])); rec.append(h.mean())
+            lo_.append(l); hi_.append(hh)
+        rec = np.array(rec)
+        ax.errorbar(xs, rec, yerr=[rec - np.array(lo_), np.array(hi_) - rec],
+                    marker='o', ms=4, lw=1.6, capsize=2, color=S.CLASS_COLOR[c],
+                    label=f'{c}  (n={int(pos.sum())})')
 
-        ax.set_xticks(range(4))
-        ax.set_xticklabels([f'Q{b+1}' for b in range(4)])
-        ax.set_title(f'{c}  (n={int(pos.sum())})', color=S.CLASS_COLOR[c])
-        ax.set_ylim(0, 1.0)                     # never truncate
-        ax.set_xlabel('lesion-area quartile')
-        ax.grid(axis='x', visible=False)
-
-    axes[0].set_ylabel('recall')
-    axes[0].legend(frameon=False, fontsize=6.5, loc='upper left')
+    ax.axvline(1.0, color='k', ls='--', lw=1.2)
+    ax.annotate('1 patch', xy=(1.0, 0.03), xytext=(4, 0),
+                textcoords='offset points', fontsize=7.5)
+    ax.set_xscale('log')
+    ax.set_ylim(0, 1.0)
+    ax.set_xlabel('scan lesion area (multiples of one ViT-L/16 patch, log scale)')
+    ax.set_ylabel('recall')
+    ax.legend(frameon=False, loc='lower right')
+    ax.set_title('Recall is set by patch-relative lesion size', loc='left')
     fig.tight_layout()
-    S.save(fig, 'fig2_recall_by_size')
+    S.save(fig, 'fig2_recall_by_size', 'report')
+    if dropped:
+        print(f'    bins dropped (<{S.MIN_SCANS} scans or <{S.MIN_PATIENTS} patients):')
+        for c, b, n, npat in dropped:
+            print(f'      {c} {b}  n={n} patients={npat}')
+    print(f'    1 patch = {patch:.0f} px at 224 input')
 
 
 # ------------------------------------------------------------------------- fig 3

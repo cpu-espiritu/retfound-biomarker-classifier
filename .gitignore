@@ -37,3 +37,8 @@ data/**/aroi*
 # generated figures live in subfolders
 figures/**/*.pdf
 figures/**/*.png
+
+# committed data artefacts withdrawn — regenerate with the pipeline in README.md
+data/amdsd_features/
+data/amdsd_preds/
+data/amdsd_splits/

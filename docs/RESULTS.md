@@ -3,79 +3,351 @@
 ## Task
 
 Multi-label B-scan classification of three wet AMD fluid biomarkers (**IRF, SRF, PED**) as
-Stage 1 of a programme predicting anti-VEGF treatment response. Currently only 3 biomarkers, with the possibility of extending to 4 with SHRM.
+Stage 1 of a programme predicting anti-VEGF treatment response.
 
 - **Encoder:** RETFound-MAE-OCT (`RETFound_mae_natureOCT`), ViT-L/16
 - **Head:** 3 independent sigmoids, BCE loss with per-class validity masking
 - **Data:** AMD-SD: 3,049 B-scans, 156 eyes, 138 patients, all wet AMD
-- **Labels:** derived from pixel masks, any-pixel classifies as yes (finding 5)
-- **Splits:** **patient-level**, stratified. 20 patients held out (~14% testing), 5-fold CV on 118 (23 each-fold, ~68% training, ~17% validation)
+- **External:** AROI: 1,136 annotated B-scans, 24 patients (evaluation only, never trained on)
+- **Labels:** derived from pixel masks, any-pixel classifies as yes
+- **Splits:** **patient-level**, stratified. 20 patients held out (~14% test), 5-fold CV on 118
 - **Metrics:** AUPRC, per-class recall, specificity; **patient-level cluster bootstrap** 95% CIs
+- **Seeds:** 3 for every RETFound arm and every control at linear probe
 
 ---
 
-## Main result: adaptation depth (test set, 5-fold cross validation, Youden thresholds)
+## 1. Main result: adaptation depth
+
+Test set, 5-fold ensembled, Youden thresholds, mean over 3 seeds.
 
 | Arm                    | Trainable | IRF AUPRC               | SRF AUPRC               | PED AUPRC               |
 | ---------------------- | --------- | ----------------------- | ----------------------- | ----------------------- |
-| Linear probe, 224      | 0.003 M   | 0.683 [0.440–0.868]     | 0.972 [0.927–0.992]     | 0.889 [0.763–0.967]     |
-| **Last-4 blocks, 224** | **50 M**  | **0.791 [0.577–0.898]** | **0.985 [0.959–0.996]** | **0.960 [0.906–0.987]** |
-| Full FT, 224           | 303 M     | 0.785 [0.555–0.901]     | 0.984 [0.956–0.996]     | 0.952 [0.888–0.986]     |
+| Linear probe, 224      | 0.003 M   | 0.678 [0.440–0.868]     | 0.972 [0.927–0.992]     | 0.891 [0.763–0.967]     |
+| **Last-4 blocks, 224** | **50 M**  | **0.784 [0.577–0.898]** | **0.984 [0.959–0.996]** | **0.964 [0.906–0.987]** |
+| Full FT, 224           | 303 M     | 0.774 [0.555–0.901]     | 0.985 [0.956–0.996]     | 0.955 [0.888–0.986]     |
 | Full FT, 384           | 303 M     | 0.799 [0.574–0.913]     | 0.979 [0.943–0.995]     | 0.942 [0.865–0.987]     |
+| Last-4, 448            | 50 M      | see §6                  | see §6                  | see §6                  |
 
 Class prevalence in test: IRF 0.268, SRF 0.675, PED 0.682.
 
+**Seed-to-seed SD is negligible: ≤ 0.012 across all 21 measured cells** (max: RETFound
+last-4 IRF, 0.012). Every single-seed number previously reported was reliable.
+
 ---
 
-## Findings
+## 2. Paired differences, not marginal intervals
 
-**1. Last-4 matches full fine-tuning at 1/6 the cost.**
-Last-4 blocks is best or joint-best on all three classes and has the highest specificity
-in every class (IRF 0.901, SRF 0.986, PED 0.900). Full FT does not improve anything at n=138 patients.
+Marginal CIs overlap almost completely and establish nothing. The paired patient bootstrap
+(5,000 resamples, all arms scored on identical resamples) is the correct comparison.
 
-**2. Frozen features under-serve the hardest class**
-LP to last-4 lifts IRF AUPRC by +0.11 and PED by +0.07. The information is present in the
-encoder but is not linearly separable. Relevant to the critique that MAE pixel
-reconstruction may under-represent small structures.
+| Comparison | Class | Δ AUPRC | 95% CI | p | Holm |
+| --- | --- | --- | --- | --- | --- |
+| last-4 − LP | IRF | +0.108 | [−0.032, +0.271] | 0.125 | 0.998 |
+| last-4 − LP | SRF | +0.012 | [+0.000, +0.040] | 0.044 | 0.392 |
+| last-4 − LP | PED | +0.071 | [+0.009, +0.165] | 0.012 | 0.136 |
+| full − last-4 | IRF | −0.005 | [−0.044, +0.030] | 0.913 | 1.000 |
+| full − last-4 | SRF | −0.000 | [−0.008, +0.006] | 0.962 | 1.000 |
+| full − last-4 | PED | −0.008 | [−0.029, +0.007] | 0.348 | 1.000 |
+| 384 − 224 | IRF | +0.014 | [−0.023, +0.034] | 0.326 | 1.000 |
+| 384 − 224 | SRF | −0.006 | [−0.025, +0.004] | 0.246 | 1.000 |
+| 384 − 224 | PED | −0.010 | [−0.036, +0.014] | 0.426 | 1.000 |
 
-**3. Lesion size dominates detectability, fine-tuning only partly fixes it.**
+**Full FT vs last-4 is a demonstrated equivalence, not an absence of evidence.** The
+intervals are narrow (±0.03 or better), so this is a positive claim about the null.
 
-| Recall by lesion area | small | medium    | large |
-| --------------------- | ----- | --------- | ----- |
-| IRF: linear probe     | 0.400 | 0.517     | 1.000 |
-| IRF: last-4           | 0.433 | **0.810** | 1.000 |
-| SRF: linear probe     | 0.392 | 0.858     | 0.973 |
-| SRF: last-4           | 0.446 | 0.932     | 0.987 |
-| PED: linear probe     | 0.400 | 0.827     | 0.893 |
-| PED: last-4           | 0.547 | 0.853     | 0.960 |
+**The headline IRF gain does not clear zero.** last-4 − LP on IRF is +0.108
+[−0.032, +0.271], and does not survive correction. Direction is well-supported
+(P(Δ>0) = 0.938) but 10 IRF-positive test patients cannot establish it at 95%.
 
-Gains concentrate in **medium** lesions. Small-lesion recall stays ≤ 0.55 in every arm and
-every class. Monotonic in all arms.
+---
 
-**4. Input resolution is not the bottleneck, tested at two adaptation depths.**
-384 fails at linear probe (all three classes down) and at full fine-tuning (IRF +0.014,
-inside CI, SRF and PED down). Small-lesion recall shows no consistent benefit.
-Retinal-band cropping also decreased metrics at LP, likely from variable vertical scaling before resize.
+## 3. Encoder comparison: the advantage is depth-dependent
 
-**5. Decision thresholds are a first-order effect, not a detail.**
-Optimal thresholds span **0.16 to 0.85**, none is near 0.5. F1-optimal thresholds degenerate
-at high prevalence, PED specificity 0.271 -> 0.686 switching to Youden's J with the same
-AUROC. Consistent with reports that F1 is the least robust metric in this setting.
-Also: AMD-SD lesion areas are smooth over three orders of magnitude with no gap, so
-no minimum-area threshold is justified, size-stratified recall is reported instead.
+Frozen-feature comparison (linear probe, 3 seeds, paired bootstrap):
+
+| Comparison | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| RETFound − MAE-IN1k | **+0.189** (Holm 0.029) | **+0.054** (Holm 0.006) | **+0.077** (Holm 0.026) |
+| RETFound − Sup-IN21k | +0.017 (p 0.625) | **+0.066** (Holm 0.022) | +0.107 (p 0.024) |
+
+At **last-4** depth, where the controls are given the same adaptation budget:
+
+| Comparison | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| RETFound − Sup-IN21k | +0.034 (p 0.482) | +0.053 (p <0.001) | +0.075 (p 0.031) |
+| RETFound − MAE-IN1k | +0.055 (p 0.203) | +0.036 (p <0.001) | +0.079 (p 0.012) |
+
+**MAE-IN1k's IRF deficit collapses under fine-tuning**: AUPRC 0.406 → 0.736, a +0.330 gain,
+versus RETFound's +0.106. Poor frozen features, perfectly adequate initialisation.
+
+**On IRF there is no significant encoder advantage at last-4** against either control.
+RETFound's value is concentrated in what it provides *without* fine-tuning.
+
+**Sup-IN21k matches RETFound on IRF at both depths** (+0.017 at LP, +0.034 at last-4, both
+null). Supervised ImageNet pretraining is competitive on the hardest class.
+
+---
+
+## 4. Lesion size determines recall, and it replicates externally
+
+Lesion areas are expressed in **patch units** — multiples of one ViT-L/16 patch footprint,
+which is 1105 px in AMD-SD (380×570 → 224) and 2675 px = 0.0616 mm² in AROI (1024×512).
+Quartiles cannot be compared across datasets; patch units can.
+
+| | AMD-SD sub-patch | AROI sub-patch |
+| --- | --- | --- |
+| IRF | 88.0% | 95.4% |
+| SRF | 53.5% | 52.4% |
+| PED | 56.4% | 56.7% |
+
+Recall by patch-unit bin, AMD-SD (out-of-fold, all 3,049 scans):
+
+| patches | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| 0.03–0.08 | 0.318 | 0.188 | 0.302 |
+| 0.08–0.22 | 0.549 | 0.333 | 0.357 |
+| 0.22–0.58 | 0.719 | 0.655 | 0.607 |
+| 0.58–1.55 | 0.878 | 0.878 | 0.762 |
+| 1.55–4.17 | 0.938 | 0.971 | 0.914 |
+| 4.17–11.2 | 1.000 | 0.984 | 0.992 |
+
+**The three classes lie on one curve.** At matched patch-relative size IRF is the *best* of
+the three in four of six bins. Its poor headline recall is a consequence of where its
+lesions sit on this axis, not of the class being intrinsically harder.
+
+**The 50% point is ~0.2 patches, not 1.0** (IRF 0.11, SRF 0.22, PED 0.23; AROI SRF 0.20,
+PED 0.21). Sub-patch lesions are detected at *reduced* rate, not missed. The transition is
+graded; one patch is not a cliff.
+
+**PED replicates across datasets to within 0.3 points** (56.4% vs 56.7% sub-patch). SRF
+appears to replicate (53.5% vs 52.4%) but that comparison is not like-for-like: AROI's SRF
+includes SHRM. Matching the definition, AMD-SD SRF+SHRM is 40.6% sub-patch against AROI's
+52.4% — a 12-point gap. **PED is the honest replication.**
+
+---
+
+## 5. External validation: discrimination transfers, calibration does not
+
+AMD-SD-trained last-4 model, 5 folds ensembled, applied zero-shot to AROI:
+
+| | AUROC | mean p (positive) | mean p (negative) |
+| --- | --- | --- | --- |
+| IRF | **0.951** | 0.422 | 0.029 |
+| SRF | **0.901** | 0.561 | 0.068 |
+| PED | **0.967** | 0.799 | 0.139 |
+
+Applying AMD-SD's Youden thresholds unchanged collapses recall on SRF and PED. Refitting
+thresholds on AROI restores it:
+
+| | AMD-SD sub-patch recall | AROI, AMD-SD thr | AROI, refit thr |
+| --- | --- | --- | --- |
+| IRF | 0.605 | 0.504 | 0.797 |
+| SRF | 0.530 | **0.011** | 0.555 |
+| PED | 0.517 | **0.122** | 0.558 |
+
+(composition-standardised to AMD-SD's bin distribution)
+
+AROI's optimal thresholds are far lower — SRF 0.80 → 0.11, PED 0.83 → 0.35.
+
+**Deployment implication: a new scanner needs threshold recalibration on a small labelled
+sample, not retraining.** That is a substantially cheaper claim than "requires fine-tuning".
+
+---
+
+## 6. Mechanism: what explains the size dependence
+
+Four candidate mechanisms were tested. Three failed.
+
+### 6a. Patch tokenisation — falsified
+
+Retraining at 448 quarters the patch footprint (1105 → 276 px), moving 194 test scans from
+sub-patch to above-patch. Recall on **exactly those scans**:
+
+| class | n | recall 224 → 448 | Δ | 95% CI |
+| --- | --- | --- | --- | --- |
+| IRF | 55 | 0.800 → 0.727 | −0.073 | [−0.205, +0.041] |
+| SRF | 56 | 0.679 → 0.607 | −0.071 | [−0.244, +0.067] |
+| PED | 83 | 0.663 → 0.614 | −0.048 | [−0.185, +0.101] |
+
+All three point the wrong way. Scans sub-patch at *both* resolutions were the only group to
+improve (SRF +0.188 [+0.067, +0.296]), which is a resolution effect, not a patch-crossing
+effect. **The patch grid is not the causal mechanism**; patch units remain a valid
+comparison unit.
+
+### 6b. Fragmentation — null
+
+IRF fragments into 3.21 components per scan versus 1.40 for PED. With total area in the
+model, component count adds 0.011 pseudo-R² and its CI crosses zero
+(+0.506 [−0.210, +1.128]). `log(total_area)` is the best single predictor
+(pseudo-R² 0.226) ahead of `log(max_component)` (0.188) and `log(n_components)` (0.094).
+More components predicts *better* detection, because it proxies for more total fluid.
+
+### 6c. Contrast — independent and real
+
+Per-lesion contrast against an 8 px ring, excluding all other annotated lesion pixels:
+
+| class | Weber contrast | corr(log area, contrast) | size-only R² | size+contrast R² |
+| --- | --- | --- | --- | --- |
+| IRF | −0.456 | 0.068 | 0.230 | **0.378** |
+| SRF | −0.468 | −0.217 | 0.323 | **0.417** |
+| PED | −0.072 | −0.543 | 0.222 | 0.227 |
+
+Size and contrast are **near-orthogonal** for IRF (r = 0.068) and explain different things.
+Contrast adds +0.148 pseudo-R² on IRF, versus fragmentation's +0.011.
+
+**PED is nearly isointense** (Weber −0.072) and contrast adds nothing to it. PED is detected
+by geometry — RPE elevation — not by intensity. That is why it behaves unlike the other two
+throughout.
+
+**IRF is not low-contrast** (−0.456, as dark as SRF). Small and faint are separate problems
+that co-occur in the same class.
+
+### 6d. Global mean pooling — supported
+
+RETFound averages all 196 patch tokens into one vector. Swapping the pooling, frozen
+encoder, head-only training, out-of-fold on 2,609 pool scans:
+
+| pooling | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| mean (RETFound default) | 0.756 | 0.944 | 0.911 |
+| max | 0.672 | 0.943 | 0.917 |
+| top-5% | 0.677 | 0.925 | 0.911 |
+| mean + matched-capacity MLP | 0.704 | 0.939 | 0.911 |
+| **attention** | **0.811** | **0.962** | **0.950** |
+
+Paired patient bootstrap, Holm across nine tests:
+
+| test | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| attn − mean | +0.056 (Holm 0.160) | +0.019 (0.096) | +0.039 (**0.008**) |
+| **attn − mean+MLP** | **+0.108 (Holm 0.008)** | +0.024 (0.130) | **+0.039 (0.002)** |
+| mean+MLP − mean | −0.052 (0.192) | −0.005 (0.760) | +0.000 (0.960) |
+
+**The gain is selectivity, not capacity.** A matched-parameter MLP (66,691 vs attention's
+66,625) on mean-pooled features buys nothing and makes IRF *worse*. Attention beats that
+control by more than it beats plain mean.
+
+**Dilution alone is falsified.** `max` has zero dilution and is 0.084 *worse* than mean on
+IRF; naive selection is high-variance. Attention keeps the averaging but concentrates it.
+
+This is the only mechanism that survives a proper control, and it implies a concrete fix:
+`global_pool=True` discards localisation the encoder already has, recoverable with a
+~66k-parameter head.
+
+**The gain is not a small-lesion fix.** Δrecall by patch-unit bin, 3 seeds, Holm across
+18 tests:
+
+| | raw Δ recall | % of remaining gap closed |
+| --- | --- | --- |
+| sub-patch (n=992) | +0.120 | 24% |
+| above-patch (n=2,729) | +0.077 | **55%** |
+
+Raw Δ is larger on small lesions only because more headroom exists there. Normalised by
+available headroom, attention closes more than twice as much of the gap on large lesions
+(`corr(size rank, % gap closed)` = +0.86 SRF, +0.93 PED). In the smallest bin it actively
+hurts (IRF −0.046, PED −0.133): too little signal for the weights to concentrate on.
+
+Bins surviving Holm are all PED and SRF, none IRF:
+
+| class | bin (patches) | Δ recall | p_holm |
+| --- | --- | --- | --- |
+| PED | 0.08–0.22 | +0.240 | 0.038 |
+| PED | 0.22–0.58 | +0.189 | 0.008 |
+| PED | 0.58–1.55 | +0.205 | 0.008 |
+| PED | 1.55–4.17 | +0.087 | 0.014 |
+| SRF | 0.22–0.58 | +0.130 | 0.014 |
+
+Note this reverses the AUPRC ordering, where IRF showed the largest gain. AUPRC measures
+ranking across all scans; this measures recall at a fixed threshold within a size band.
+Both hold; the claim must state which.
+
+**Attention pooling is therefore a better pooling operator, not a fix for the size
+bottleneck.** It cannot be framed as addressing §4.
+
+---
+
+## 7. Decision thresholds are a first-order effect
+
+F1-optimal versus Youden's J at last-4, identical AUROC:
+
+| PED | F1 | Youden |
+| --- | --- | --- |
+| threshold | 0.22 | 0.83 |
+| recall | 0.970 | 0.803 |
+| **specificity** | **0.386** | **0.900** |
+| AUROC | 0.910 | 0.910 |
+
+Optimal thresholds span 0.16–0.85; none is near 0.5. Threshold choice is a modelling
+decision, not a detail — and §5 shows it is also the part that fails to transfer.
+
+---
+
+## 8. Eye-level aggregation
+
+Eye-level prevalence: IRF 50.0% (78/156), SRF 73.1% (114/156), PED 94.9% (148/156).
+**PED is unusable as an eye-level target** — all 22 test eyes are positive.
+
+Eight aggregators over 134 pool eyes, out-of-fold:
+
+| method | IRF | SRF |
+| --- | --- | --- |
+| **decision-max** | **0.829** | **0.957** |
+| noisy-OR | 0.789 | 0.927 |
+| top-3 mean | 0.717 | 0.894 |
+| mean | 0.673 | 0.897 |
+| max | 0.648 | 0.912 |
+| moment | 0.646 | 0.895 |
+| ABMIL attention | 0.628 | 0.888 |
+| concat | 0.626 | 0.896 |
+
+**Decision-level beats every feature-level method by ~0.15 AUPRC on IRF.** IRF appears in a
+minority of an eye's scans (median burden 0.40), so classifying each scan and taking the
+maximum preserves signal that pooling 1024-d vectors destroys.
+
+Note this is the opposite of the within-scan result (§6d), and both make sense: within a
+scan a lesion spans adjacent patches, so weighted averaging helps; across an eye the signal
+is in a few slices, so max over decisions helps.
+
+---
+
+## 9. Error structure
+
+28 IRF false negatives on the test set at last-4. They cluster by eye, not by size:
+
+- **Eye 143 contributes 8**, all 637–1317 px — comfortably mid-sized, with predictions
+  0.03–0.15 against a 0.16 threshold. The largest missed lesion in the whole set (1317 px)
+  drew the model's *most* confident rejection.
+- The remaining 20 span 7 eyes and are 22–512 px, consistent with the size story.
+
+32 false positives, also clustered: **eye 122 scans 14–21 and eye 64 scans 1–9** are
+contiguous runs called positive with 0.50–0.99 confidence against empty masks. Consecutive-
+run errors of that kind are the signature of annotation gaps rather than random failure.
+Clinical review of both is pending.
 
 ---
 
 ## Limitations
 
-- **20 test patients.** CIs are wide (IRF AUPRC spans 0.44–0.90). Fold-to-fold SD (±0.02)
-  understates true uncertainty by an order of magnitude.
-- **No true negatives.** All AMD-SD eyes are wet AMD, so prevalences are within-disease.
-- **Single scanner, single centre.** Cross-vendor generalisation untested; RETOUCH planned.
-- **Index→class mapping** was undocumented in the distributed masks; recovered from the
-  published palette and confirmed by clinical review.
-- Fine-tuning arms are single-seed.
+- **20 test patients.** CIs are wide (IRF AUPRC spans 0.58–0.90 at last-4). Multi-seed
+  confirms stability (SD ≤ 0.012) but cannot narrow sampling uncertainty.
+- **No true negatives.** All AMD-SD eyes are wet AMD; prevalences are within-disease.
+- **Controls at last-4 are single-seed.** RETFound has 3; the comparison is asymmetric.
+- **Attention pooling hyperparameters are untuned.** Epochs (40), L (64), lr and weight
+  decay were chosen, not selected. Changing epochs 40 → 120 moves IRF AUPRC by 0.008. The
+  result needs inner-CV selection and test-set confirmation before publication.
+- **Pooling results are out-of-fold on the pool split**, not the held-out test set, and are
+  not comparable to the AUPRC figures in §1–3.
+- **AROI SRF includes SHRM; AMD-SD SRF does not.** Only PED is a like-for-like
+  cross-dataset comparison.
+- **AROI slice selection is content-driven** — 11 of 24 patients have a fully contiguous
+  annotated block, and annotated fractions range 14.8%–80.5%. Volume estimates by
+  area × spacing would be biased.
+- **Index→class mapping** was undocumented in both datasets and was recovered, then
+  confirmed geometrically (AROI: IRF 0.23 → SRF 0.50 → PED 0.72 depth against the RPE–BM
+  band, across all 1,136 masks).
 
 ## Next
 
-Cross-scanner transfer, eye-level aggregation, ImageNet ViT-L comparison, occlusion-based localisation check against the pixel masks, multi-seed for the LP to fine-tune gap.
+Inner-CV selection of the attention head, then attention pooling at last-4 depth on the
+test set; three seeds for the controls at last-4; clinical review of eyes 143, 122 and 64;
+composing within-scan attention with across-slice decision-max for the eye-level model.

@@ -10,7 +10,8 @@ from sklearn.preprocessing import StandardScaler
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from probe_pooling import AttnPool, layernorm, pool_fixed
+from probe_pooling import (AttnPool, layernorm, pool_fixed,
+                           fit_mean_baseline, CGRID)
 
 ROOT = Path(__file__).resolve().parent.parent
 T = ['IRF', 'SRF', 'PED']
@@ -70,14 +71,13 @@ def main():
                     Zva = layernorm(pool_fixed(np.asarray(X[va], np.float32), 'mean'))
                     sc = StandardScaler().fit(Ztr)
                     if how == 'mean':
-                        from sklearn.linear_model import LogisticRegression
-                        mdl = LogisticRegression(C=0.01, max_iter=3000)
+                        oof[va], _ = fit_mean_baseline(Ztr, y[tr], Zva, None, y, tr)
                     else:
                         mdl = MLPClassifier(hidden_layer_sizes=(h,), alpha=1e-2,
                                             max_iter=800, random_state=0,
                                             early_stopping=True, n_iter_no_change=20)
-                    mdl.fit(sc.transform(Ztr), y[tr])
-                    oof[va] = mdl.predict_proba(sc.transform(Zva))[:, 1]
+                        mdl.fit(sc.transform(Ztr), y[tr])
+                        oof[va] = mdl.predict_proba(sc.transform(Zva))[:, 1]
             OOF[(how, c)] = oof
             rows.append(dict(pool=how, cls=c, oof_auprc=AP(y[pool], oof[pool])))
             print(f'  {how:<9}{c:<5} OOF AUPRC {rows[-1]["oof_auprc"]:.3f}', flush=True)

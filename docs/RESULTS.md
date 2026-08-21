@@ -26,12 +26,30 @@ Test set, 5-fold ensembled, Youden thresholds, mean over 3 seeds.
 | **Last-4 blocks, 224** | **50 M**  | **0.784 [0.577–0.898]** | **0.984 [0.959–0.996]** | **0.964 [0.906–0.987]** |
 | Full FT, 224           | 303 M     | 0.774 [0.555–0.901]     | 0.985 [0.956–0.996]     | 0.955 [0.888–0.986]     |
 | Full FT, 384           | 303 M     | 0.799 [0.574–0.913]     | 0.979 [0.943–0.995]     | 0.942 [0.865–0.987]     |
-| Last-4, 448            | 50 M      | see §6                  | see §6                  | see §6                  |
+| Last-4, 448            | 50 M      | 0.806                   | 0.977                   | 0.914                   |
 
 Class prevalence in test: IRF 0.268, SRF 0.675, PED 0.682.
 
 **Seed-to-seed SD is negligible: ≤ 0.012 across all 21 measured cells** (max: RETFound
 last-4 IRF, 0.012). Every single-seed number previously reported was reliable.
+
+448 raises IRF AUPRC to 0.806 but costs PED (0.964 → 0.914) and recall across the board
+(IRF 0.763 → 0.661). It is not an improvement overall, and §6a shows it does not move the
+lesions the patch argument predicts it should.
+
+Operating-point metrics at the Youden threshold, mean over available seeds:
+
+| Arm | IRF rec / spec | SRF rec / spec | PED rec / spec |
+| --- | --- | --- | --- |
+| Linear probe, 224 | 0.605 / 0.920 | 0.780 / 0.937 | 0.720 / 0.745 |
+| **Last-4 blocks, 224** | 0.763 / **0.871** | 0.816 / **0.984** | 0.810 / **0.898** |
+| Full FT, 224 | 0.734 / 0.841 | 0.870 / 0.984 | 0.786 / 0.869 |
+| Full FT, 384 | 0.771 / 0.863 | 0.879 / 0.965 | 0.803 / 0.793 |
+| Last-4, 448 | 0.661 / 0.950 | 0.848 / 0.958 | 0.773 / 0.736 |
+
+Last-4 is not uniformly the most specific arm — 448 is more specific on IRF (0.950), at the
+cost of 10 points of recall. The earlier claim that last-4 had the highest specificity in
+every class was measured on a single seed and does not hold.
 
 ---
 
@@ -70,12 +88,33 @@ Frozen-feature comparison (linear probe, 3 seeds, paired bootstrap):
 | RETFound − MAE-IN1k | **+0.189** (Holm 0.029) | **+0.054** (Holm 0.006) | **+0.077** (Holm 0.026) |
 | RETFound − Sup-IN21k | +0.017 (p 0.625) | **+0.066** (Holm 0.022) | +0.107 (p 0.024) |
 
-At **last-4** depth, where the controls are given the same adaptation budget:
+At **last-4** depth, where the controls are given the same adaptation budget (3 seeds each):
 
 | Comparison | IRF | SRF | PED |
 | --- | --- | --- | --- |
 | RETFound − Sup-IN21k | +0.034 (p 0.482) | +0.053 (p <0.001) | +0.075 (p 0.031) |
 | RETFound − MAE-IN1k | +0.055 (p 0.203) | +0.036 (p <0.001) | +0.079 (p 0.012) |
+
+**Size-stratified, 3 seeds per arm, Holm across 20 tests.** Six survive:
+
+| depth | control | class | stratum | Δ recall | p_holm |
+| --- | --- | --- | --- | --- | --- |
+| last-4 | Sup-IN21k | SRF | **sub-patch** | **+0.277** | 0.042 |
+| last-4 | Sup-IN21k | SRF | above-patch | +0.140 | 0.008 |
+| last-4 | MAE-IN1k | PED | above-patch | +0.114 | 0.008 |
+| last-4 | Sup-IN21k | PED | above-patch | +0.079 | 0.034 |
+| LP | Sup-IN21k | SRF | above-patch | +0.136 | 0.034 |
+| LP | MAE-IN1k | SRF | above-patch | +0.123 | 0.022 |
+
+Sub-patch IRF at last-4 reaches nominal significance against both controls
+(+0.152 p 0.009, +0.177 p 0.012) but does not survive correction.
+
+**At LP the sub-patch differences run against RETFound** — Sup-IN21k is better on sub-patch
+IRF (−0.177) and PED (−0.148), neither significant. The frozen-feature advantage is an
+above-patch phenomenon; it is only after fine-tuning that RETFound gains on small lesions.
+
+An earlier version of this comparison used 3 seeds for RETFound against 1 for the controls
+and found no surviving sub-patch result. The symmetric comparison changes that conclusion.
 
 **MAE-IN1k's IRF deficit collapses under fine-tuning**: AUPRC 0.406 → 0.736, a +0.330 gain,
 versus RETFound's +0.106. Poor frozen features, perfectly adequate initialisation.
@@ -110,6 +149,17 @@ Recall by patch-unit bin, AMD-SD (out-of-fold, all 3,049 scans):
 | 0.58–1.55 | 0.878 | 0.878 | 0.762 |
 | 1.55–4.17 | 0.938 | 0.971 | 0.914 |
 | 4.17–11.2 | 1.000 | 0.984 | 0.992 |
+
+AROI is the only dataset with a published pixel scale, so absolute physical sizes come
+from it alone (1 px = 0.000023 mm², 1 patch = 0.0616 mm²), measured per connected component:
+
+| class | components | median mm² | p95 mm² | median as fraction of a patch |
+| --- | --- | --- | --- | --- |
+| IRF | 1,399 | **0.0036** | 0.054 | **1/17** |
+| SRF | 885 | 0.0470 | 0.682 | 3/4 |
+| PED | 1,616 | 0.0348 | 0.540 | 4/7 |
+
+A median IRF lesion is 0.0036 mm² — smaller than a single ViT-L/16 patch by a factor of 17.
 
 **The three classes lie on one curve.** At matched patch-relative size IRF is the *best* of
 the three in four of six bins. Its poor headline recall is a consequence of where its
@@ -176,7 +226,8 @@ comparison unit.
 
 ### 6b. Fragmentation — null
 
-IRF fragments into 3.21 components per scan versus 1.40 for PED. With total area in the
+IRF fragments into 3.21 components per scan versus 1.40 for PED in AMD-SD, and the pattern
+replicates in AROI (6.14 vs 1.59 per slice). With total area in the
 model, component count adds 0.011 pseudo-R² and its CI crosses zero
 (+0.506 [−0.210, +1.128]). `log(total_area)` is the best single predictor
 (pseudo-R² 0.226) ahead of `log(max_component)` (0.188) and `log(n_components)` (0.094).
@@ -207,13 +258,16 @@ that co-occur in the same class.
 RETFound averages all 196 patch tokens into one vector. Swapping the pooling, frozen
 encoder, head-only training, out-of-fold on 2,609 pool scans:
 
-| pooling | IRF | SRF | PED |
-| --- | --- | --- | --- |
-| mean (RETFound default) | 0.756 | 0.944 | 0.911 |
-| max | 0.672 | 0.943 | 0.917 |
-| top-5% | 0.677 | 0.925 | 0.911 |
-| mean + matched-capacity MLP | 0.704 | 0.939 | 0.911 |
-| **attention** | **0.811** | **0.962** | **0.950** |
+| pooling | IRF | SRF | PED | seeds |
+| --- | --- | --- | --- | --- |
+| mean (RETFound default) | 0.756 | 0.944 | 0.911 | deterministic |
+| max | 0.672 | 0.943 | 0.917 | deterministic |
+| top-5% | 0.677 | 0.925 | 0.911 | deterministic |
+| mean + matched-capacity MLP | 0.714 ± 0.014 | 0.942 ± 0.005 | 0.905 ± 0.008 | 3 |
+| **attention** | **0.819 ± 0.007** | **0.953 ± 0.015** | **0.948 ± 0.007** | 3 |
+
+Over 3 seeds: attention − mean = +0.064 / +0.010 / +0.037, attention − matched MLP =
+**+0.105** / +0.012 / +0.043. Seed SD is 0.007–0.015, well inside the gaps.
 
 Paired patient bootstrap, Holm across nine tests:
 
@@ -331,10 +385,27 @@ Clinical review of both is pending.
 - **20 test patients.** CIs are wide (IRF AUPRC spans 0.58–0.90 at last-4). Multi-seed
   confirms stability (SD ≤ 0.012) but cannot narrow sampling uncertainty.
 - **No true negatives.** All AMD-SD eyes are wet AMD; prevalences are within-disease.
+- **Selection bias in the source annotation.** AMD-SD excluded predominantly-normal B-scans
+  before annotation, so every prevalence here is conditional on a slice already being
+  pathological (IRF 23.8%, SRF 58.7%, PED 68.4% at scan level). Thresholds are tuned to that
+  inflated base rate and will be miscalibrated on an unselected scan stream — consistent
+  with the threshold transfer failure in §5. AROI's slice selection is content-driven for
+  the same reason (§ Limitations, below), so it does not correct the bias.
 - **Controls at last-4 are single-seed.** RETFound has 3; the comparison is asymmetric.
-- **Attention pooling hyperparameters are untuned.** Epochs (40), L (64), lr and weight
-  decay were chosen, not selected. Changing epochs 40 → 120 moves IRF AUPRC by 0.008. The
-  result needs inner-CV selection and test-set confirmation before publication.
+- **Most hyperparameters are fixed defaults, applied identically across arms.** Only the
+  logistic-head regularisation `C` is selected (grid `[0.001, 0.01, 0.1, 1.0]`, by inner CV
+  on the training folds) — for the encoder probes and, since this revision, for the
+  mean-pooling baseline in §6d. Fixed throughout: 20 epochs, batch 32, warmup 2, weight
+  decay 0.05, `drop_path` 0.1 for full FT and 0 elsewhere. Applying them identically makes
+  the arms comparable but leaves open whether any arm would benefit from its own tuning.
+- **Fine-tuning learning rates were chosen, not selected**: 1e-3 (LP), 1e-4 (last-4),
+  2e-5 (full FT). The equivalence in §2 could in principle reflect 2e-5 suiting full FT
+  less well than 1e-4 suits last-4. A three-point lr sweep for both arms is running to
+  test this. No layer-wise lr decay is used, whereas the upstream RETFound recipe applies
+  0.65 — full FT is the arm that recipe most protects.
+- **Attention head hyperparameters are untuned.** Epochs (40), L (64), lr and weight decay
+  were chosen. Changing epochs 40 → 120 moves IRF AUPRC by 0.008. Nested-CV selection with
+  test-set confirmation is running.
 - **Pooling results are out-of-fold on the pool split**, not the held-out test set, and are
   not comparable to the AUPRC figures in §1–3.
 - **AROI SRF includes SHRM; AMD-SD SRF does not.** Only PED is a like-for-like

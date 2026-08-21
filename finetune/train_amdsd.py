@@ -170,7 +170,9 @@ def main():
 
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     pre = "" if a.encoder == "retfound" else f"{a.encoder}_"
-    tag = f"{pre}{a.mode}_{a.input_size}_f{a.fold}_s{a.seed}"
+    # an explicit --lr gets its own tag, so a sweep cannot overwrite the default run
+    lrtag = "" if a.lr is None else f"_lr{a.lr:g}"
+    tag = f"{pre}{a.mode}_{a.input_size}{lrtag}_f{a.fold}_s{a.seed}"
     np.savez(out / f"preds_{tag}.npz",
              val_p=Pv, val_y=Yv, val_g=va.group.values,
              test_p=Pt, test_y=Yt, test_g=te.group.values,

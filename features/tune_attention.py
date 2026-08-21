@@ -24,8 +24,6 @@ GRIDS = {
 
 
 class AttnTracked(AttnPool):
-    """AttnPool that scores a held-out set every `every` epochs, so the epoch
-    count is selected from the validation curve rather than fixed in advance."""
 
     def fit_tracked(self, Z, y, Zv, yv, max_epochs, every=5, batch=64):
         self.epochs = every

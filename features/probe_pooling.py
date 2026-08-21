@@ -5,6 +5,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score as AP, roc_auc_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parent.parent
 T = ['IRF', 'SRF', 'PED']
@@ -27,6 +29,30 @@ def pool_fixed(X, how):
         idx = np.argsort(X.sum(-1), axis=1)[:, -k:]
         return np.take_along_axis(X, idx[:, :, None], axis=1).mean(1)
     raise ValueError(how)
+
+
+CGRID = [0.001, 0.01, 0.1, 1.0]          # same grid the LP probes use
+
+
+def fit_mean_baseline(Ztr, ytr, Zva, folds_tr, y_all, tr_mask):
+    """Mean pooling + logistic head, C selected by inner CV on the training folds."""
+    from sklearn.model_selection import StratifiedKFold
+    best_C, best_s = CGRID[0], -np.inf
+    if len(np.unique(ytr)) > 1 and np.bincount(ytr.astype(int)).min() >= 3:
+        for C in CGRID:
+            oof = np.full(len(ytr), np.nan)
+            for itr, iva in StratifiedKFold(3, shuffle=True,
+                                            random_state=0).split(Ztr, ytr):
+                sc = StandardScaler().fit(Ztr[itr])
+                m = LogisticRegression(C=C, max_iter=3000).fit(
+                    sc.transform(Ztr[itr]), ytr[itr])
+                oof[iva] = m.predict_proba(sc.transform(Ztr[iva]))[:, 1]
+            s = AP(ytr, oof)
+            if s > best_s:
+                best_C, best_s = C, s
+    sc = StandardScaler().fit(Ztr)
+    m = LogisticRegression(C=best_C, max_iter=3000).fit(sc.transform(Ztr), ytr)
+    return m.predict_proba(sc.transform(Zva))[:, 1], best_C
 
 
 class AttnPool:
@@ -181,14 +207,11 @@ def main():
                         np.asarray(X[tr], np.float32), y[tr].astype(float))
                     oof[va] = m.decision(np.asarray(X[va], np.float32))
                 else:
-                    from sklearn.linear_model import LogisticRegression
-                    from sklearn.preprocessing import StandardScaler
                     Ztr = layernorm(pool_fixed(np.asarray(X[tr], np.float32), how))
                     Zva = layernorm(pool_fixed(np.asarray(X[va], np.float32), how))
-                    sc = StandardScaler().fit(Ztr)
-                    lr = LogisticRegression(C=0.01, max_iter=3000).fit(
-                        sc.transform(Ztr), y[tr])
-                    oof[va] = lr.predict_proba(sc.transform(Zva))[:, 1]
+                    oof[va], chosen_C = fit_mean_baseline(Ztr, y[tr], Zva,
+                                                          None, y, tr)
+                    print(f'      {how} fold{k} C={chosen_C}', flush=True)
             m_ = pool
             rows.append(dict(pool=how, cls=c,
                              oof_auprc=AP(y[m_], oof[m_]),

@@ -11,7 +11,8 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from probe_pooling import AttnPool, layernorm, pool_fixed
+from probe_pooling import (AttnPool, layernorm, pool_fixed,
+                           fit_mean_baseline, CGRID)
 from pooling_control import mlp_hidden_for
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,13 +49,15 @@ def fit_oof(X, df, pool, y, how, seed, epochs, L, h):
         else:
             Ztr = layernorm(pool_fixed(np.asarray(X[tr], np.float32), 'mean'))
             Zva = layernorm(pool_fixed(np.asarray(X[va], np.float32), 'mean'))
-            sc = StandardScaler().fit(Ztr)
-            mdl = (LogisticRegression(C=0.01, max_iter=3000) if how == 'mean'
-                   else MLPClassifier(hidden_layer_sizes=(h,), alpha=1e-2,
-                                      max_iter=800, random_state=seed,
-                                      early_stopping=True, n_iter_no_change=20))
-            mdl.fit(sc.transform(Ztr), y[tr])
-            oof[va] = mdl.predict_proba(sc.transform(Zva))[:, 1]
+            if how == 'mean':
+                oof[va], _ = fit_mean_baseline(Ztr, y[tr], Zva, None, y, tr)
+            else:
+                sc = StandardScaler().fit(Ztr)
+                mdl = MLPClassifier(hidden_layer_sizes=(h,), alpha=1e-2,
+                                    max_iter=800, random_state=seed,
+                                    early_stopping=True, n_iter_no_change=20)
+                mdl.fit(sc.transform(Ztr), y[tr])
+                oof[va] = mdl.predict_proba(sc.transform(Zva))[:, 1]
     return oof
 
 

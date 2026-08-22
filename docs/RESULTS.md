@@ -190,6 +190,28 @@ A median IRF lesion is 0.0036 mm² — smaller than a single ViT-L/16 patch by a
 the three in four of six bins. Its poor headline recall is a consequence of where its
 lesions sit on this axis, not of the class being intrinsically harder.
 
+**Small lesions are scored low, not scored as negative.** The recall figures are binary;
+the underlying score is continuous and rises monotonically with area. Spearman ρ between
+lesion area and score, among positives: IRF 0.71, SRF 0.70, PED 0.53 (all p < 1e-19).
+
+Median score by patch-unit bin, against each class's Youden threshold:
+
+| | 0.08–0.22 | 0.22–0.58 | 0.58–1.55 | 1.55–4.17 | threshold | negative median |
+| --- | --- | --- | --- | --- | --- | --- |
+| IRF | 0.11 | 0.51 | 0.83 | 1.00 | 0.16 | 0.012 |
+| SRF | **0.59** | 0.88 | 0.97 | 1.00 | **0.80** | 0.032 |
+| PED | **0.83** | 0.90 | 0.99 | 0.99 | **0.83** | 0.384 |
+
+SRF lesions of 0.08–0.22 patches score a median 0.59 — far above the negative median of
+0.032, but below the 0.80 cutoff, so they are recorded as missed. The encoder sees them;
+the operating point discards them.
+
+This links three findings that were previously separate: the size dependence in this
+section, the high thresholds in §7, and the AROI calibration failure in §5 are the same
+mechanism. It also implies a cheap intervention — a size-conditional or simply lower
+threshold would recover much of the small-lesion loss at a specificity cost, testable from
+the existing predictions with no retraining.
+
 **The 50% point is ~0.2 patches, not 1.0** (IRF 0.11, SRF 0.22, PED 0.23; AROI SRF 0.20,
 PED 0.21). Sub-patch lesions are detected at *reduced* rate, not missed. The transition is
 graded; one patch is not a cliff.

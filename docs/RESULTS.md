@@ -73,6 +73,31 @@ Marginal CIs overlap almost completely and establish nothing. The paired patient
 **Full FT vs last-4 is a demonstrated equivalence, not an absence of evidence.** The
 intervals are narrow (±0.03 or better), so this is a positive claim about the null.
 
+**The equivalence is not an artefact of the chosen learning rates.** Three-point sweep,
+seed 0, AUPRC:
+
+| arm | lr | IRF | SRF | PED |
+| --- | --- | --- | --- | --- |
+| full FT | 1e-5 | 0.779 | 0.984 | 0.947 |
+| full FT | **2e-5** (default) | **0.785** | 0.984 | 0.952 |
+| full FT | 5e-5 | 0.777 | 0.982 | 0.953 |
+| last-4 | 3e-5 | 0.734 | 0.980 | 0.950 |
+| last-4 | **1e-4** (default) | 0.791 | 0.985 | 0.960 |
+| last-4 | **3e-4** | **0.806** | 0.984 | 0.960 |
+
+Full FT is flat across an order of magnitude — 0.777–0.785 on IRF — so 2e-5 was not an
+unlucky choice. Last-4 improves at 3e-4 (IRF 0.791 → 0.806). Comparing each arm at its own
+best rate, last-4 is still equal or ahead:
+
+| Class | last-4 @ 3e-4 | full FT @ 2e-5 | Δ | 95% CI | p |
+| --- | --- | --- | --- | --- | --- |
+| IRF | 0.806 | 0.785 | +0.020 | [−0.028, +0.048] | 0.437 |
+| SRF | 0.984 | 0.984 | −0.000 | [−0.007, +0.009] | 0.793 |
+| PED | 0.960 | 0.952 | +0.008 | [−0.006, +0.032] | 0.332 |
+
+Tuning therefore strengthens rather than weakens the conclusion. One caveat: last-4's
+optimum sits at the top of the tested range, so a higher rate might do better still.
+
 **The headline IRF gain does not clear zero.** last-4 − LP on IRF is +0.108
 [−0.032, +0.271], and does not survive correction. Direction is well-supported
 (P(Δ>0) = 0.938) but 10 IRF-positive test patients cannot establish it at 95%.
@@ -260,7 +285,8 @@ encoder, head-only training, out-of-fold on 2,609 pool scans:
 
 | pooling | IRF | SRF | PED | seeds |
 | --- | --- | --- | --- | --- |
-| mean (RETFound default) | 0.756 | 0.944 | 0.911 | deterministic |
+| mean, `C` tuned by inner CV | 0.759 | 0.939 | 0.907 | deterministic |
+| mean (RETFound default, fixed `C`) | 0.756 | 0.944 | 0.911 | deterministic |
 | max | 0.672 | 0.943 | 0.917 | deterministic |
 | top-5% | 0.677 | 0.925 | 0.911 | deterministic |
 | mean + matched-capacity MLP | 0.714 ± 0.014 | 0.942 ± 0.005 | 0.905 ± 0.008 | 3 |
@@ -268,6 +294,11 @@ encoder, head-only training, out-of-fold on 2,609 pool scans:
 
 Over 3 seeds: attention − mean = +0.064 / +0.010 / +0.037, attention − matched MLP =
 **+0.105** / +0.012 / +0.043. Seed SD is 0.007–0.015, well inside the gaps.
+
+**The baseline was not handicapped.** Selecting the logistic head's `C` by inner CV, on the
+same grid used for the encoder probes, moves mean-pooled IRF from 0.756 to 0.759. The fixed
+`C = 0.01` was already near-optimal, so attention's margin is not an artefact of an
+under-fitted comparator.
 
 Paired patient bootstrap, Holm across nine tests:
 
@@ -399,10 +430,11 @@ Clinical review of both is pending.
   decay 0.05, `drop_path` 0.1 for full FT and 0 elsewhere. Applying them identically makes
   the arms comparable but leaves open whether any arm would benefit from its own tuning.
 - **Fine-tuning learning rates were chosen, not selected**: 1e-3 (LP), 1e-4 (last-4),
-  2e-5 (full FT). The equivalence in §2 could in principle reflect 2e-5 suiting full FT
-  less well than 1e-4 suits last-4. A three-point lr sweep for both arms is running to
-  test this. No layer-wise lr decay is used, whereas the upstream RETFound recipe applies
-  0.65 — full FT is the arm that recipe most protects.
+  2e-5 (full FT). A three-point sweep (§2) shows full FT is flat across 1e-5–5e-5 and
+  last-4 improves at 3e-4, so the equivalence is not an lr artefact — but last-4's optimum
+  is at the edge of the tested range and the sweep is single-seed. No layer-wise lr decay
+  is used, whereas the upstream RETFound recipe applies 0.65 — full FT is the arm that
+  recipe most protects, and that remains untested.
 - **Attention head hyperparameters are untuned.** Epochs (40), L (64), lr and weight decay
   were chosen. Changing epochs 40 → 120 moves IRF AUPRC by 0.008. Nested-CV selection with
   test-set confirmation is running.

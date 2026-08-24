@@ -225,6 +225,19 @@ includes SHRM. Matching the definition, AMD-SD SRF+SHRM is 40.6% sub-patch again
 
 ## 5. External validation: discrimination transfers, calibration does not
 
+AROI prevalence differs from AMD-SD, which matters for reading these numbers:
+
+| | AROI slices | AROI patients | AMD-SD slices |
+| --- | --- | --- | --- |
+| IRF | 228 (20.1%) | 13/24 (54%) | 23.8% |
+| SRF | 648 (57.0%) | 21/24 (88%) | 58.7% |
+| PED | 1014 (**89.3%**) | **24/24 (100%)** | 68.4% |
+
+IRF and SRF are comparable across datasets. PED is not: 89.3% of AROI slices are positive,
+leaving only 122 negatives, so its AUROC below is measured against a much easier negative
+set than AMD-SD's. IRF is present in only 13 of 24 patients, so the AROI IRF curves rest on
+about half the cohort.
+
 AMD-SD-trained last-4 model, 5 folds ensembled, applied zero-shot to AROI:
 
 | | AUROC | mean p (positive) | mean p (negative) |
@@ -386,6 +399,27 @@ F1-optimal versus Youden's J at last-4, identical AUROC:
 
 Optimal thresholds span 0.16–0.85; none is near 0.5. Threshold choice is a modelling
 decision, not a detail — and §5 shows it is also the part that fails to transfer.
+
+**How much small-lesion recall a lower threshold buys, and what it costs.** Following from
+§4, the threshold decides the fate of sub-patch lesions almost exclusively: above-patch
+recall is flat (IRF 0.949 across thresholds 0.10–0.50).
+
+| class | operating point | sub-patch recall | specificity |
+| --- | --- | --- | --- |
+| SRF | Youden 0.80 | 0.500 | 0.986 |
+| **SRF** | **0.20** | **0.784** | **0.937** |
+| IRF | Youden 0.16 | 0.671 | 0.901 |
+| IRF | 0.07 | 0.800 | 0.783 |
+| PED | Youden 0.83 | 0.597 | 0.900 |
+| PED | 0.50 | 0.807 | 0.593 |
+
+SRF is the favourable case: **+0.284 sub-patch recall for −0.049 specificity**. IRF costs
+roughly as much as it gains. PED is expensive — its negatives have a median score of 0.384,
+so lowering the cutoff sweeps them in, costing 31 points of specificity for 21 of recall.
+
+A **size-conditional** threshold is not deployable: lesion area is unknown at inference, so
+only a single global cutoff can be chosen. This is a trade-off curve to be selected on
+clinical cost, not a free improvement.
 
 ---
 

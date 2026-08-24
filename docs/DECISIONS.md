@@ -136,10 +136,13 @@ positive almost always. Observed directly on PED (68% prevalence):
 
 | PED         | F1-optimal | Youden |
 | ----------- | ---------- | ------ |
-| threshold   | 0.28       | 0.83   |
-| recall      | 0.973      | 0.803  |
-| specificity | 0.271      | 0.900  |
+| threshold   | 0.22       | 0.83   |
+| recall      | 0.970      | 0.803  |
+| specificity | 0.386      | 0.900  |
 | AUROC       | 0.910      | 0.910  |
+
+_Revised: these were recomputed at last-4 over three seeds. The earlier figures
+(threshold 0.28, specificity 0.271) came from a single-seed run._
 
 Identical AUROC — same model, same ranking, only the cutoff moved. Final thresholds span
 0.16–0.85; none is near 0.5. Threshold choice is a first-order modelling decision here.
@@ -175,11 +178,19 @@ differs. Note the two controls disagree with each other on IRF (0.682 vs 0.510) 
 natural images gives the _worst_ features here, so the gain is not "SSL is good" but
 specifically MAE **paired with retinal data**.
 
-Largest gap is on small lesions: SRF small-lesion recall 0.716 (RETFound) vs 0.230 (MAE-IN1k)
-vs 0.297 (Sup-IN21k).
+_Superseded._ That claim used size quartiles from a single seed. Repeated with absolute
+patch-unit strata, three seeds per arm, and Holm correction across 20 tests (RESULTS.md §3),
+the picture is different: at **linear probe** the surviving differences are all
+**above-patch**, and the sub-patch differences run *against* RETFound (IRF −0.177,
+PED −0.148 vs Sup-IN21k, neither significant). Only after fine-tuning to last-4 does
+RETFound gain on small lesions, and only SRF survives correction there (+0.277, p_holm
+0.042).
 
-Caveat: this comparison is at linear-probe depth. Since frozen features understate RETFound
-(LP → last-4 lifts IRF by +0.11), the fair test runs the controls at last-4 as well. Queued.
+_Resolved._ The controls were run at last-4 with three seeds each (RESULTS.md §3). The
+advantage shrinks substantially: MAE-IN1k's IRF deficit falls from +0.189 at LP to +0.055
+at last-4 (p 0.203), and Sup-IN21k matches RETFound on IRF at both depths. SRF and PED
+retain smaller but significant advantages. RETFound's value is concentrated in what it
+provides without fine-tuning.
 
 ---
 

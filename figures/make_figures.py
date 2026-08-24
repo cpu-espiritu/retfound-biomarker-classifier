@@ -370,6 +370,16 @@ def figS1(d):
 FIGS = {'fig1': fig1, 'fig2': fig2, 'fig3': fig3,
         'fig4': fig4, 'fig5': fig5, 'figS1': figS1}
 
+# every figure maps to a numbered claim; a figure with no claim does not belong here
+FINDING = {
+    'fig1':  'Findings 1, 2, 4 - paired Delta AUPRC across depth, resolution, pretraining',
+    'fig2':  'Finding 3 - recall vs lesion size in absolute patch units',
+    'fig3':  'Finding 5 - F1 vs Youden threshold rule',
+    'fig4':  'Finding 3 - detection probability vs lesion size',
+    'fig5':  'Main result - AUPRC per arm against prevalence',
+    'figS1': 'Labels - lesion areas, no minimum-area threshold',
+}
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
@@ -383,7 +393,7 @@ def main():
     print(f'  {len(d["te"])} test scans, {len(np.unique(d["G"]))} patients\n')
 
     for name in (a.only or FIGS):
-        print(f'{name}: {FIGS[name].__doc__.splitlines()[0]}')
+        print(f'{name}: {FINDING[name]}')
         out = FIGS[name](d)
         if isinstance(out, pd.DataFrame):
             print(out.to_string(index=False, float_format=lambda v: f'{v:.3f}'))

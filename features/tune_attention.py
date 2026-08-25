@@ -71,7 +71,11 @@ def main():
     rec = pd.read_csv(out).to_dict('records') if out.exists() else []
     done = {(r['cls'], r['outer']) for r in rec}
 
-    oof = {c: np.full(len(df), np.nan) for c in a.classes}
+    # resume must reload the OOF arrays too, or skipped folds stay NaN
+    oof = {}
+    for c in a.classes:
+        f = out.with_name(f'attn_tuned_oof_{c}.npy')
+        oof[c] = np.load(f) if f.exists() else np.full(len(df), np.nan)
     for c in a.classes:
         i = T.index(c)
         y = df[f'label_{c}'].values

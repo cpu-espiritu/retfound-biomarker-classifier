@@ -14,18 +14,15 @@ data/**/images/
 data/**/masks/
 
 # rejected branch: cropping was tested and dropped (see DECISIONS.md)
-data/amdsd_features/*_crop.npy
+data/amdsd_features/
 
 # local experimentation — never committed
 .venv/
 notebooks/
 *.ipynb
 .ipynb_checkpoints/
-figures/*.png
 
-# generated figures — regenerate with: python figures/make_figures.py
-figures/*.pdf
-figures/*.png
+# generated figures — regenerate with: python analysis/make_figures.py
 
 # AROI licence prohibits redistribution.
 data/aroi/
@@ -34,9 +31,8 @@ data/**/aroi*
 *aroi*.npy
 *aroi*.png
 
-# generated figures live in subfolders
-figures/**/*.pdf
-figures/**/*.png
+# generated figures
+analysis/output/
 
 # committed data artefacts withdrawn — regenerate with the pipeline in README.md
 data/amdsd_features/

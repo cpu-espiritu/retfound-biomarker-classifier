@@ -1,93 +1,87 @@
-# RETFound / AMD-SD — Stage 1
+# Wet AMD fluid biomarker classification with RETFound
 
-Multi-label B-scan classification of wet AMD fluid biomarkers (IRF, SRF, PED) with a
-RETFound-MAE-OCT encoder. Results: [docs/RESULTS.md](docs/RESULTS.md). Rationale for every
-choice: [docs/DECISIONS.md](docs/DECISIONS.md).
+Multi-label B-scan classification of three wet AMD fluid biomarkers (IRF, SRF, PED),
+Stage 1 of a programme predicting anti-VEGF treatment response.
+
+- **Findings and numbers:** [RESULTS.md](RESULTS.md)
+- **Why each choice was made:** [DECISIONS.md](DECISIONS.md)
+
+## Reproduce a headline number in under a minute
+
+No GPU, no dataset access, no model weights — the measurements are in `results/`.
+
+```bash
+git clone https://github.com/cpu-espiritu/retfound-biomarker-classifier.git
+cd retfound-biomarker-classifier
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+python analysis/reproduce.py pooling
+```
+
+Expected output:
+
+```
+cls         IRF    SRF    PED
+mean      0.759  0.939  0.907
+mean+mlp  0.704  0.939  0.911
+attn      0.811  0.962  0.950
+
+attention − matched-capacity MLP, IRF: +0.108
+```
+
+That is the central mechanistic result: replacing RETFound's mean pooling over patch
+tokens with attention pooling gains +0.108 AUPRC on IRF, and the gain survives a
+matched-parameter control (66,625 vs 66,691 parameters).
+
+Other headlines: `main`, `depth`, `encoder`, `size`.
+
+## Reproduce the figures
+
+```bash
+python analysis/make_figures.py          # the six report figures
+python analysis/paper_figures.py         # the composed paper figures
+```
+
+These need `data/amdsd_preds/` and `data/amdsd_splits/manifest.csv`, which are not
+redistributable. See [data/README.md](data/README.md).
+
+## Rerun the experiments
+
+Needs a GPU, the source datasets, and the RETFound weights.
+
+```bash
+pip install torch torchvision timm huggingface-hub    # see requirements.txt for versions
+python scripts/prep/prep_amdsd.py --root <AMD-SD> --out data/amdsd_splits \
+    --demographics <AMD-SD>/demographics.xlsx
+sbatch scripts/slurm/train_amdsd.sh last4 224 retfound 0
+```
+
+Every arm reported has a config in `configs/`, carrying its exact arguments and the
+submit line that produced it.
 
 ## Layout
 
-Directories follow the order the pipeline runs in.
-
-| Directory   | Stage                                                              |
-| ----------- | ------------------------------------------------------------------ |
-| `explore/`  | One-off dataset forensics. Run before writing any prep.             |
-| `prep/`     | Raw dataset → splits (`manifest.csv`, or ImageFolder symlink trees).|
-| `features/` | Cache frozen encoder features, then probe them. CPU-cheap arm.      |
-| `finetune/` | Fine-tune the encoder end-to-end, then analyse its predictions.     |
-| `slurm/`    | Cluster wrappers for AMD-SD. Thin — parameters live in the Python.  |
-| `slurm/diagnosis/` | Wrappers for the secondary CNV/DRUSEN/NORMAL track.          |
-| `docs/`     | Results and the decision log.                                       |
-| `data/`     | Committed prediction artefacts (`amdsd_preds/*.npz`, `*.json`).     |
-
-`features/` and `finetune/` are the two experimental arms compared in RESULTS.md: linear
-probe on cached features vs. last-4 / full fine-tuning.
-
-## AMD-SD pipeline (the main line of work)
-
 ```
-explore/inspect_amdsd.py    --root RAW                        # inventory: sizes, modes, mask palette
-explore/probe_classes.py    --masks RAW/masks                 # recover mask index → class by geometry
-        ↓
-prep/prep_amdsd.py          --root RAW --out SPLITS \         # → SPLITS/manifest.csv
-                            --demographics demographics.xlsx  #   patient-level, stratified, leak-gated
-        ↓
-   ┌────────────────────────────────────┬─────────────────────────────────────┐
-   │ frozen-feature arm                 │ fine-tuning arm                     │
-   │                                    │                                     │
-   │ slurm/extract_amdsd.sh SPLITS SIZE │ slurm/train_amdsd.sh MODE SIZE      │
-   │   → features/extract_features.py   │   → finetune/train_amdsd.py         │
-   │   → features_{tag}.npy (12 MB)     │   (sbatch --array=0-4, one per fold)│
-   │                                    │   → data/amdsd_preds/preds_{tag}.npz│
-   │ features/probe_heads.py            │                                     │
-   │   --features … --manifest …        │ finetune/analyse_preds.py           │
-   │   → per-class AUPRC, Youden thr,   │   --preds … --manifest … --arm …    │
-   │     size-stratified recall, CIs    │   → ensembles folds, same metrics   │
-   └────────────────────────────────────┴─────────────────────────────────────┘
+data/splits/       patient-level fold and test assignments (factual; redistributable)
+configs/           one file per experimental arm
+scripts/prep/      raw dataset -> manifest and splits
+scripts/features/  frozen-feature and token extraction, pooling experiments
+scripts/finetune/  training, evaluation, external inference
+scripts/explore/   dataset forensics: class maps, lesion components, contrast
+scripts/slurm/     cluster wrappers
+results/           the CSVs every figure and table is built from
+analysis/          results -> figures and tables
+experiments.csv    run registry: one row per fold, with parameters and output path
 ```
 
-Encoder controls (ImageNet ViT-L, `mae_in1k` / `sup_in21k`) go through
-`slurm/extract_control.sh` → `features/extract_control.py`, producing features in the same
-format so `features/probe_heads.py` reads them unchanged.
+## Provenance
 
-`explore/check_crop.py MANIFEST MASKDIR` validates a `--crop` manifest (IS/OS containment,
-crop-height distribution). Cropping was tested and rejected — see DECISIONS.md — so this is
-only needed if the crop path is revisited.
+`experiments.csv` registers all 135 training runs with their parameters and outputs.
+`data/splits/manifest.sha256` pins the exact manifest every reported number used.
 
-## Diagnosis track: UCSD / NEH (secondary)
-
-3-class CNV/DRUSEN/NORMAL diagnosis, not fluid biomarkers. This track predates the AMD-SD
-work and shares none of its code: every job runs the upstream RETFound repo's
-`main_finetune.py` rather than `finetune/train_amdsd.py`, so `slurm/diagnosis/` scripts are
-the whole interface and the settings live in the `torchrun` flags.
-
-Data prep:
-
-- `prep/make_val_split.py` — carves a patient-level val set out of the Kermany/UCSD `train/`.
-- `prep/prep_neh.py` — leakage-safe patient-grouped NEH fold trees (`fold0…fold4`).
-- `prep/make_neh_sets.py` — three NEH eval sets: `A_scan_labels`, `B_patient_labels`,
-  `C_worstcase`. A vs B isolates the cost of patient-level labelling on identical images.
-
-Jobs, all under `slurm/diagnosis/`:
-
-| Script | Trains / evaluates on | Notes |
-| --- | --- | --- |
-| `train_ucsd.sh` | UCSD (`$OCT`) | baseline linear probe, 100 epochs |
-| `train_ucsd_seed.sh` | UCSD | needs `SEED` exported; task tagged `_s$SEED` |
-| `train_ucsd_weighted.sh` | UCSD | adds `--weighted_loss`; task tagged `_w_s$SEED` |
-| `train_neh_lp.sh` | NEH folds | `--array=0-4`, one fold per task |
-| `eval_diag.sh` | UCSD test | in-domain; needs `SRC` (checkpoint task name) |
-| `eval_neh.sh` | `neh_sets/$NEHSET` | external validation; needs `SRC` and `NEHSET` |
-
-The `_seed` / `_weighted` / `eval` scripts read `SEED`, `SRC`, and `NEHSET` from the
-environment, so submit them as `SEED=1 sbatch slurm/diagnosis/train_ucsd_seed.sh`. Unset
-variables fail at argparse rather than silently defaulting.
-
-## Dependencies
-
-`features/extract_features.py` and `finetune/train_amdsd.py` import `models_vit` and
-`util.pos_embed` from the **RETFound_MAE repo**, which is not vendored here. The SLURM
-wrappers handle this by `cd`-ing into it and exporting `PYTHONPATH`; running locally requires
-the same. Weights are pulled from `YukunZhou/RETFound_mae_natureOCT` on the HF Hub
-(`HF_HUB_OFFLINE=1` on compute nodes — cache them on the login node first).
-
-Everything else is numpy / pandas / scikit-learn / torch / timm / Pillow.
+Two honest gaps: runs completed before 2026-08-27 predate git-SHA recording, so their
+`git_sha` is blank — the trainer records it from that date onward. And 115 of the 135
+rows have parameters reconstructed from the output filename rather than read from a
+saved config, because early runs were pulled from the cluster without their `cfg_*.json`.
+The `params_from` column marks which is which.

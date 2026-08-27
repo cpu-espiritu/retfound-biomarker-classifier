@@ -1,0 +1,25 @@
+{
+  "arm": "mae_in1k_lp_224",
+  "script": "scripts/finetune/train_amdsd.py",
+  "encoder": "mae_in1k",
+  "mode": "lp",
+  "input_size": 224,
+  "lr": 0.001,
+  "epochs": 20,
+  "batch_size": 32,
+  "weight_decay": 0.05,
+  "warmup": 2,
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "submit": "sbatch scripts/slurm/train_amdsd.sh lp 224 mae_in1k $SEED"
+}

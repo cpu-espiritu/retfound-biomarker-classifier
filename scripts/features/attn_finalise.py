@@ -10,7 +10,7 @@ from sklearn.metrics import average_precision_score as AP
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from probe_pooling import AttnPool, layernorm, pool_fixed, fit_mean_baseline
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 T = ['IRF', 'SRF', 'PED']
 
 

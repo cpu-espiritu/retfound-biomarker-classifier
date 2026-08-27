@@ -1,0 +1,25 @@
+{
+  "arm": "sup_in21k_last4_224",
+  "script": "scripts/finetune/train_amdsd.py",
+  "encoder": "sup_in21k",
+  "mode": "last4",
+  "input_size": 224,
+  "lr": 0.0001,
+  "epochs": 20,
+  "batch_size": 32,
+  "weight_decay": 0.05,
+  "warmup": 2,
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "submit": "sbatch scripts/slurm/train_amdsd.sh last4 224 sup_in21k $SEED"
+}

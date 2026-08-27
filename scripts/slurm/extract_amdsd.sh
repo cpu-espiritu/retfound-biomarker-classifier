@@ -9,6 +9,8 @@
 #SBATCH --output=logs/%x_%j.out
 
 set -euo pipefail
+# repo root, derived from this script: <repo>/scripts/slurm/<this>
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source /rds/projects/w/wangsu-tennis-ai/retfound/env.sh
 export HF_HUB_OFFLINE=1
 cd $PROJECT/retfound/code/RETFound
@@ -20,7 +22,7 @@ CROP=${3:-}
 
 echo "[cfg] splits=$SPLITS size=$SIZE crop='$CROP'"
 
-python $PROJECT/retfound/code/scripts/features/extract_features.py \
+python $REPO/scripts/features/extract_features.py \
   --manifest   $SPLITS/manifest.csv \
   --images     $PROJECT/retfound/data/amdsd/images \
   --out        $PROJECT/retfound/data/amdsd_features \

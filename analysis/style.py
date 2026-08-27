@@ -10,7 +10,7 @@ from sklearn.metrics import average_precision_score as AP
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / 'data'
-OUT = ROOT / 'figures'
+OUT = ROOT / 'analysis' / 'output'
 
 # ---------------------------------------------------------------- fixed orders
 CLASSES = ['IRF', 'SRF', 'PED']                      # never reorder

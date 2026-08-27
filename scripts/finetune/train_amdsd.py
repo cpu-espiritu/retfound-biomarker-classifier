@@ -177,7 +177,20 @@ def main():
              val_p=Pv, val_y=Yv, val_g=va.group.values,
              test_p=Pt, test_y=Yt, test_g=te.group.values,
              classes=np.array(T), best_epoch=best_ep, val_mAP=best)
-    (out / f"cfg_{tag}.json").write_text(json.dumps(vars(a) | {'lr': lr}, indent=2))
+    # record the exact code version, so a run can always be traced to a commit
+    try:
+        import subprocess
+        sha = subprocess.run(['git', 'rev-parse', 'HEAD'],
+                             cwd=Path(__file__).resolve().parent,
+                             capture_output=True, text=True, timeout=10).stdout.strip()
+        dirty = bool(subprocess.run(['git', 'status', '--porcelain'],
+                                    cwd=Path(__file__).resolve().parent,
+                                    capture_output=True, text=True,
+                                    timeout=10).stdout.strip())
+    except Exception:
+        sha, dirty = '', None
+    (out / f"cfg_{tag}.json").write_text(json.dumps(
+        vars(a) | {'lr': lr, 'git_sha': sha, 'git_dirty': dirty}, indent=2))
     if a.save_model:
         torch.save({"model": best_state, "epoch": best_ep, "cfg": vars(a) | {"lr": lr}},
                    out / f"model_{tag}.pth")

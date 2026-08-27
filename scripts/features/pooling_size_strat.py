@@ -15,7 +15,7 @@ from probe_pooling import (AttnPool, layernorm, pool_fixed,
                            fit_mean_baseline, CGRID)
 from pooling_control import mlp_hidden_for
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 T = ['IRF', 'SRF', 'PED']
 PATCH = (380 / 14) * (570 / 14)
 EDGES = np.logspace(np.log10(0.03), np.log10(30), 8)

@@ -10,6 +10,8 @@
 #SBATCH --output=logs/%x_%A_%a.out
 
 set -euo pipefail
+# repo root, derived from this script: <repo>/scripts/slurm/<this>
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source /rds/projects/w/wangsu-tennis-ai/retfound/env.sh
 export HF_HUB_OFFLINE=1
 cd $PROJECT/retfound/code/RETFound
@@ -21,7 +23,7 @@ ENC=${3:-retfound}
 SEED=${4:-0}
 EXTRA=${5:-}
 
-python $PROJECT/retfound/code/scripts/finetune/train_amdsd.py \
+python $REPO/scripts/finetune/train_amdsd.py \
   --manifest $PROJECT/retfound/data/amdsd_splits/manifest.csv \
   --images   $PROJECT/retfound/data/amdsd/images \
   --out      $PROJECT/retfound/data/amdsd_preds \

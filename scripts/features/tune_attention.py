@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from probe_pooling import AttnPool, layernorm, pool_fixed
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 T = ['IRF', 'SRF', 'PED']
 
 GRIDS = {

@@ -1,0 +1,23 @@
+{
+  "arm": "full_384",
+  "script": "scripts/finetune/train_amdsd.py",
+  "encoder": "retfound",
+  "mode": "full",
+  "input_size": 384,
+  "lr": 2e-05,
+  "epochs": 20,
+  "batch_size": 32,
+  "weight_decay": 0.05,
+  "warmup": 2,
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    0
+  ],
+  "submit": "sbatch scripts/slurm/train_amdsd.sh full 384 retfound $SEED"
+}

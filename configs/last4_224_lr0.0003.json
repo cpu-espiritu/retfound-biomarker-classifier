@@ -1,0 +1,23 @@
+{
+  "arm": "last4_224_lr0.0003",
+  "script": "scripts/finetune/train_amdsd.py",
+  "encoder": "retfound",
+  "mode": "last4",
+  "input_size": 224,
+  "lr": 0.0003,
+  "epochs": 20,
+  "batch_size": 32,
+  "weight_decay": 0.05,
+  "warmup": 2,
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    0
+  ],
+  "submit": "sbatch scripts/slurm/train_amdsd.sh last4 224 retfound $SEED --lr 0.0003"
+}

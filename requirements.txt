@@ -1,0 +1,17 @@
+# Analysis only — reproduces every number and figure from results/ on CPU.
+# Verified with Python 3.12.4.
+numpy==2.5.1
+pandas==3.0.5
+scipy==1.18.0
+scikit-learn==1.9.0
+matplotlib==3.11.1
+pillow==12.3.0
+
+# Training and feature extraction only. Needs a GPU and the source datasets;
+# not required to reproduce the reported numbers. Versions are those used on the
+# cluster — confirm with `pip freeze` there before relying on them.
+# torch==2.13.0
+# torchvision==0.24.0
+# timm==1.0.19
+# huggingface-hub==0.35.3
+# openpyxl==3.1.5          # reading demographics.xlsx in prep/prep_amdsd.py

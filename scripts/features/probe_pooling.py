@@ -8,7 +8,7 @@ from sklearn.metrics import average_precision_score as AP, roc_auc_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 T = ['IRF', 'SRF', 'PED']
 
 

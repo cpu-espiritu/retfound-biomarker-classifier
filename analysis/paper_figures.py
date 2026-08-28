@@ -129,14 +129,79 @@ def figure1(df, pred, thr):
     S.save(fig, 'figure1_effect', 'paper')
 
 
+def figure3(_df, _pred, _thr):
+    """Lesion size in patch units. AMD-SD always; AROI only if its measurements
+    are present locally — they are gitignored, being derived from restricted masks."""
+    A = pd.read_csv(RESULTS / 'amdsd_components_per_lesion.csv')
+    AM = RESULTS / 'amdsd_MERGED_per_lesion.csv'
+    aroi_p = RESULTS / 'aroi_components.csv'
+    patch_mm2 = S.patch_mm2(224)
+
+    panels = [('AMD-SD', A.assign(u=A.px / PATCH_AMDSD),
+               pd.read_csv(AM).pipe(lambda d: d.assign(u=d.px / PATCH_AMDSD))
+               if AM.exists() else None)]
+    if aroi_p.exists():
+        C = pd.read_csv(aroi_p)
+        panels.append(('AROI', C.assign(u=C.mm2 / patch_mm2), None))
+    else:
+        print('    aroi_components.csv absent — AMD-SD panel only '
+              '(see data/README.md)')
+
+    allu = [p_['u'] for _, p_, _ in panels] + [x['u'] for _, _, x in panels if x is not None]
+    lo = min(u[u > 0].min() for u in allu)
+    hi = max(u.max() for u in allu)
+    bins = np.logspace(np.log10(lo), np.log10(hi), 55)
+
+    fig, axes = plt.subplots(len(panels), 1, figsize=(S.WIDTH, 2.6 * len(panels)),
+                             sharex=True, squeeze=False)
+    for ax, (name, D_, extra) in zip(axes[:, 0], panels):
+        for c in T:
+            v = D_.loc[D_.cls == c, 'u']
+            if not len(v):
+                continue
+            ax.hist(v, bins=bins, histtype='step', lw=1.7, color=S.CLASS_COLOR[c],
+                    label=f'{c}  n={len(v)},  {(v < 1).mean():.0%} sub-patch')
+        if extra is not None:
+            v = extra['u']
+            ax.hist(v, bins=bins, histtype='step', lw=1.5, ls='--',
+                    color=S.CLASS_COLOR['SRF'],
+                    label=f'SRF+SHRM merged  n={len(v)},  {(v < 1).mean():.0%} sub-patch')
+        ax.axvline(1.0, color='k', ls='--', lw=1.2)
+        ax.set_xscale('log')
+        ax.set_ylabel('lesions')
+        ax.set_ylim(bottom=0)
+        ax.set_title(name, loc='left', fontsize=9.5)
+        ax.legend(frameon=False, loc='upper left', fontsize=7)
+    axes[0, 0].annotate('1 patch', xy=(1.0, axes[0, 0].get_ylim()[1]), xytext=(4, -4),
+                        textcoords='offset points', va='top', fontsize=7.5)
+    axes[-1, 0].set_xlabel('lesion area (multiples of one ViT-L/16 patch, log scale)')
+    fig.tight_layout()
+    S.save(fig, 'figure3_patch_scale', 'paper')
+
+
 def main():
     ap = argparse.ArgumentParser(description='Compose the paper figure set.')
     ap.add_argument('--only', nargs='*')
     a = ap.parse_args()
     df = S.manifest()
     pred, thr = amdsd_predictions(df)
-    if not a.only or 'figure1' in a.only:
-        figure1(df, pred, thr)
+    for name, fn in [('figure1', figure1), ('figure3', figure3)]:
+        if not a.only or name in a.only:
+            fn(df, pred, thr)
+
+    # the rest are report figures adopted unchanged; copy them into the paper set
+    import shutil
+    for src, dst in [('fig1_paired_delta', 'figure2_eliminations'),
+                     ('fig5_main_result', 'figure4_main_result'),
+                     ('fig3_threshold_rule', 'figure5_thresholds'),
+                     ('figS1_lesion_area', 'figureS1_lesion_areas')]:
+        p_ = S.OUT / 'report' / f'{src}.pdf'
+        if p_.exists():
+            (S.OUT / 'paper').mkdir(parents=True, exist_ok=True)
+            shutil.copy(p_, S.OUT / 'paper' / f'{dst}.pdf')
+            print(f'  -> analysis/output/paper/{dst}.pdf  (from {src})')
+        else:
+            print(f'  [missing] {src}.pdf — run make_figures.py first')
 
 
 if __name__ == '__main__':

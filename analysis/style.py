@@ -84,7 +84,7 @@ mpl.rcParams.update({
 })
 
 
-SUBDIRS = ('report', 'exploratory', 'archive')
+SUBDIRS = ('paper', 'report', 'exploratory', 'archive')
 
 
 def save(fig, name, sub='report'):

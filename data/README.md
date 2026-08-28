@@ -50,6 +50,8 @@ recovers and verifies them; the confirmed map is in DECISIONS.md.
 ## Not committed
 
 - Raw B-scans and masks from either dataset
+- Any AROI-derived measurement, including `results/aroi_*.csv` — the lesion areas in
+  those files come from the restricted masks
 - Cached encoder features (`amdsd_features/`, ~48 MB) and per-token features (~1.2 GB)
 - Model predictions (`amdsd_preds/`) and checkpoints (`*.pth`, ~1.2 GB per fold)
 

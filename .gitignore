@@ -38,3 +38,6 @@ analysis/output/
 data/amdsd_features/
 data/amdsd_preds/
 data/amdsd_splits/
+
+# AROI-derived measurements: areas come from the restricted masks
+results/aroi_*.csv

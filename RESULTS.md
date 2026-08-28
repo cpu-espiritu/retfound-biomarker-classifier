@@ -384,6 +384,43 @@ Both hold; the claim must state which.
 **Attention pooling is therefore a better pooling operator, not a fix for the size
 bottleneck.** It cannot be framed as addressing §4.
 
+### Confirmed on the held-out test set
+
+Everything above is out-of-fold on the pool split with hyperparameters I chose. This is the
+clean version: L, learning rate, weight decay and epochs selected by nested CV inside the
+training folds, the baseline's `C` selected on the same grid, and the test set touched once.
+
+| class | attention | mean pooling | Δ AUPRC | 95% CI | p | Holm |
+| --- | --- | --- | --- | --- | --- | --- |
+| **IRF** | **0.831** | 0.699 | **+0.131** | [+0.052, +0.201] | 0.0016 | **0.0048** |
+| SRF | 0.980 | 0.967 | +0.012 | [−0.004, +0.041] | 0.125 | 0.125 |
+| **PED** | **0.953** | 0.902 | **+0.051** | [+0.011, +0.129] | 0.0032 | **0.0064** |
+
+IRF and PED survive correction. The IRF effect is **larger** on the test set than
+out-of-fold (+0.131 vs +0.105), so it is not selection-optimistic.
+
+**A frozen encoder with a 66k-parameter attention head beats fine-tuning 50M parameters on
+IRF**, on the same 20 test patients:
+
+| | frozen + attention | last-4 fine-tuned | Δ |
+| --- | --- | --- | --- |
+| IRF | **0.831** | 0.784 | **+0.047** |
+| SRF | 0.980 | 0.984 | −0.005 |
+| PED | 0.953 | 0.964 | −0.011 |
+
+That comparison is not perfectly matched — the attention head's hyperparameters were
+selected by nested CV while the fine-tuning arms used fixed defaults (§ Limitations) — but
+it reframes §1 and §2: on the hardest class, the gain from fine-tuning is available more
+cheaply by changing how the encoder's output is pooled.
+
+**Selected hyperparameters were unstable in epochs.** Five folds chose five different
+configurations; epochs ranged 5–80 for IRF and 5–60 for SRF, and the modal choices were
+IRF (L=64, lr=1e-3, wd=1e-3, 5 epochs), SRF (L=32, 3e-3, 1e-3, 55), PED (L=32, 3e-3,
+1e-3, 30). `L` and learning rate were stable; the stopping point was not, which means the
+inner-validation curve is flat and the epoch count is close to arbitrary within that range.
+The result holds despite that, but a reader should know the head is not tightly identified
+by 118 IRF-positive patients.
+
 ---
 
 ## 7. Decision thresholds are a first-order effect
@@ -491,9 +528,10 @@ Clinical review of both is pending.
   is at the edge of the tested range and the sweep is single-seed. No layer-wise lr decay
   is used, whereas the upstream RETFound recipe applies 0.65 — full FT is the arm that
   recipe most protects, and that remains untested.
-- **Attention head hyperparameters are untuned.** Epochs (40), L (64), lr and weight decay
-  were chosen. Changing epochs 40 → 120 moves IRF AUPRC by 0.008. Nested-CV selection with
-  test-set confirmation is running.
+- **Attention head hyperparameters are now selected, not chosen** (§6d), but the epoch
+  count is not identifiable — five folds chose values spanning 5–80. The fine-tuning arms
+  in §1–2 remain on fixed defaults, so the frozen+attention vs last-4 comparison gives the
+  attention arm a tuning advantage the fine-tuned arms did not get.
 - **Pooling results are out-of-fold on the pool split**, not the held-out test set, and are
   not comparable to the AUPRC figures in §1–3.
 - **AROI SRF includes SHRM; AMD-SD SRF does not.** Only PED is a like-for-like

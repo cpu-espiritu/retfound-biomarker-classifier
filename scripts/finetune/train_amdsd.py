@@ -40,7 +40,49 @@ TIMM_ARCH = {'mae_in1k': 'vit_large_patch16_224.mae',
              'sup_in21k': 'vit_large_patch16_224.augreg_in21k_ft_in1k'}
 
 
-def build(finetune, size, mode, device, encoder='retfound'):
+class AttnPoolViT(torch.nn.Module):
+    """RETFound trunk with attention pooling replacing the mean over patch tokens.
+
+        e_t = w . tanh(V h_t)      a = softmax(e)      z = sum_t a_t h_t
+
+    The trunk is the unmodified ViT; only the pooling step differs, so this is a
+    like-for-like swap against global_pool=True.
+    """
+
+    def __init__(self, vit, L=64):
+        super().__init__()
+        self.vit = vit
+        d = vit.pos_embed.shape[-1]
+        self.V = torch.nn.Linear(d, L, bias=False)
+        self.w = torch.nn.Linear(L, 1, bias=False)
+        torch.nn.init.normal_(self.V.weight, std=0.02)
+        torch.nn.init.normal_(self.w.weight, std=0.02)
+
+    def forward(self, x):
+        v = self.vit
+        x = v.patch_embed(x)
+        cls = v.cls_token.expand(x.shape[0], -1, -1)
+        x = torch.cat((cls, x), dim=1) + v.pos_embed
+        x = v.pos_drop(x)
+        for blk in v.blocks:
+            x = blk(x)
+        tok = x[:, 1:, :]                                   # (B, N, D)
+        a = torch.softmax(self.w(torch.tanh(self.V(tok))).squeeze(-1), dim=1)
+        z = torch.einsum('bn,bnd->bd', a, tok)
+        return v.head(v.fc_norm(z))
+
+    def attention(self, x):
+        """Per-token weights, for localisation checks."""
+        v = self.vit
+        h = v.pos_drop(torch.cat((v.cls_token.expand(x.shape[0], -1, -1),
+                                  v.patch_embed(x)), dim=1) + v.pos_embed)
+        for blk in v.blocks:
+            h = blk(h)
+        return torch.softmax(
+            self.w(torch.tanh(self.V(h[:, 1:, :]))).squeeze(-1), dim=1)
+
+
+def build(finetune, size, mode, device, encoder='retfound', pool='mean'):
     if encoder != 'retfound':
         m = timm.create_model(TIMM_ARCH[encoder], pretrained=True, img_size=size,
                               num_classes=3, global_pool='avg',
@@ -57,10 +99,10 @@ def build(finetune, size, mode, device, encoder='retfound'):
         print(f"[{encoder}/{mode}] trainable "
               f"{sum(x.numel() for x in m.parameters() if x.requires_grad)/1e6:.1f}M")
         return m.to(device)
-    return _build_retfound(finetune, size, mode, device)
+    return _build_retfound(finetune, size, mode, device, pool)
 
 
-def _build_retfound(finetune, size, mode, device):
+def _build_retfound(finetune, size, mode, device, pool='mean'):
     m = models.RETFound_mae(img_size=size, num_classes=3,
                             drop_path_rate=0.1 if mode == 'full' else 0.0,
                             global_pool=True)
@@ -82,8 +124,14 @@ def _build_retfound(finetune, size, mode, device):
         keep = lambda n: True
     for n, p in m.named_parameters():
         p.requires_grad = keep(n)
+    if pool == 'attn':
+        # freezing is applied to the trunk first, then the pooling head is added
+        # trainable on top, so `mode` keeps its usual meaning
+        m = AttnPoolViT(m)
+        for prm in list(m.V.parameters()) + list(m.w.parameters()):
+            prm.requires_grad = True
     n_tr = sum(p.numel() for p in m.parameters() if p.requires_grad)
-    print(f"[{mode}] trainable {n_tr/1e6:.1f}M")
+    print(f"[{mode}/{pool}] trainable {n_tr/1e6:.1f}M")
     return m.to(device)
 
 
@@ -104,6 +152,9 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--fold', type=int, required=True)
     ap.add_argument('--mode', choices=['lp', 'last4', 'full'], required=True)
+    ap.add_argument('--pool', default='mean', choices=['mean', 'attn'],
+                    help="'attn' replaces global mean pooling over patch tokens "
+                         "with learned attention pooling (RETFound encoder only)")
     ap.add_argument('--encoder', default='retfound',
                     choices=['retfound', 'mae_in1k', 'sup_in21k'])
     ap.add_argument('--finetune', default='RETFound_mae_natureOCT')
@@ -131,7 +182,9 @@ def main():
                                  num_workers=8, pin_memory=True, drop_last=t)
     dl_tr, dl_va, dl_te = mk(tr, True), mk(va, False), mk(te, False)
 
-    m = build(a.finetune, a.input_size, a.mode, dev, a.encoder)
+    if a.pool == 'attn' and a.encoder != 'retfound':
+        raise SystemExit('--pool attn is implemented for the RETFound trunk only')
+    m = build(a.finetune, a.input_size, a.mode, dev, a.encoder, a.pool)
     opt = torch.optim.AdamW([p for p in m.parameters() if p.requires_grad],
                             lr=lr, weight_decay=0.05)
     scaler = torch.cuda.amp.GradScaler()
@@ -172,7 +225,8 @@ def main():
     pre = "" if a.encoder == "retfound" else f"{a.encoder}_"
     # an explicit --lr gets its own tag, so a sweep cannot overwrite the default run
     lrtag = "" if a.lr is None else f"_lr{a.lr:g}"
-    tag = f"{pre}{a.mode}_{a.input_size}{lrtag}_f{a.fold}_s{a.seed}"
+    pooltag = "" if a.pool == "mean" else f"_{a.pool}"
+    tag = f"{pre}{a.mode}_{a.input_size}{pooltag}{lrtag}_f{a.fold}_s{a.seed}"
     np.savez(out / f"preds_{tag}.npz",
              val_p=Pv, val_y=Yv, val_g=va.group.values,
              test_p=Pt, test_y=Yt, test_g=te.group.values,

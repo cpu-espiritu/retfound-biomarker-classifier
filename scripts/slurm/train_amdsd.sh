@@ -21,10 +21,11 @@ MODE=${1:-last4}
 SIZE=${2:-224}
 ENC=${3:-retfound}
 SEED=${4:-0}
-EXTRA=${5:-}
+POOL=${5:-mean}
+EXTRA=${6:-}
 
 python $REPO/scripts/finetune/train_amdsd.py \
   --manifest $PROJECT/retfound/data/amdsd_splits/manifest.csv \
   --images   $PROJECT/retfound/data/amdsd/images \
   --out      $PROJECT/retfound/data/amdsd_preds \
-  --fold $SLURM_ARRAY_TASK_ID --mode $MODE --input-size $SIZE --encoder $ENC --seed $SEED $EXTRA
+  --fold $SLURM_ARRAY_TASK_ID --mode $MODE --input-size $SIZE --encoder $ENC --seed $SEED --pool $POOL $EXTRA

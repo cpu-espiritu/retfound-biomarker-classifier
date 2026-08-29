@@ -26,12 +26,15 @@ Test set, 5-fold ensembled, Youden thresholds, mean over 3 seeds.
 | **Last-4 blocks, 224** | **50 M**  | **0.784 [0.577–0.898]** | **0.984 [0.959–0.996]** | **0.964 [0.906–0.987]** |
 | Full FT, 224           | 303 M     | 0.774 [0.555–0.901]     | 0.985 [0.956–0.996]     | 0.955 [0.888–0.986]     |
 | Full FT, 384           | 303 M     | 0.799 [0.574–0.913]     | 0.979 [0.943–0.995]     | 0.942 [0.865–0.987]     |
-| Last-4, 448            | 50 M      | 0.806                   | 0.977                   | 0.914                   |
+| Last-4, 448            | 50 M      | 0.806 [0.531–0.917]     | 0.977 [0.933–0.995]     | 0.914 [0.801–0.976]     |
 
 Class prevalence in test: IRF 0.268, SRF 0.675, PED 0.682.
 
 **Seed-to-seed SD is negligible: ≤ 0.012 across all 21 measured cells** (max: RETFound
 last-4 IRF, 0.012). Every single-seed number previously reported was reliable.
+
+448's intervals are a single seed (only `preds_last4_448_f*_s0` exists), on the same
+5,000 patient-level replicates as every other arm.
 
 448 raises IRF AUPRC to 0.806 but costs PED (0.964 → 0.914) and recall across the board
 (IRF 0.763 → 0.661). It is not an improvement overall, and §6a shows it does not move the
@@ -383,6 +386,20 @@ Both hold; the claim must state which.
 
 **Attention pooling is therefore a better pooling operator, not a fix for the size
 bottleneck.** It cannot be framed as addressing §4.
+
+**Repeated at the selected hyperparameters, the conclusion is unchanged.** The table above
+used 40 epochs, chosen by hand; nested CV later selected 5 for IRF, 55 for SRF, 30 for PED.
+Rerunning with those, three seeds each and the tuned baseline:
+
+| | epochs=40, hand-chosen | nested-CV selected |
+| --- | --- | --- |
+| sub-patch Δ recall | +0.120 (24% of available gap) | +0.120 (24%) |
+| above-patch Δ recall | +0.077 (55%) | +0.068 (56%) |
+
+Five of 20 bins survive Holm under both, though which ones shifts: SRF's 0.08–0.22 bin now
+clears correction (+0.269, p_holm 0.008) where PED's smallest no longer does. The
+size-independence of the gain is therefore a property of attention pooling, not of the
+epoch count.
 
 ### Confirmed on the held-out test set
 

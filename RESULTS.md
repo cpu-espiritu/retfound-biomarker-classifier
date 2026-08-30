@@ -430,63 +430,52 @@ selected by nested CV while the fine-tuning arms used fixed defaults (§ Limitat
 it reframes §1 and §2: on the hardest class, the gain from fine-tuning is available more
 cheaply by changing how the encoder's output is pooled.
 
-### Attention pooling and fine-tuning are substitutes, not complements
+### Frozen encoder with attention pooling matches fine-tuning
 
-Adding attention pooling to the fine-tuned last-4 arm (`--pool attn`, encoder training
-jointly with the pooling head) gains nothing:
+All rows below are on the same held-out test set (440 scans, 20 patients) under the same
+protocol as §1: one model per fold, test predictions ensembled, thresholds from the
+held-out validation fold. Attention arms are the mean of 3 seeds; the logistic head on
+mean-pooled features is deterministic and runs once.
 
-All three rows below are AUPRC on the **same held-out test set** — 440 scans, 20 patients —
-unlike the pool out-of-fold table earlier in this section.
+| | IRF | SRF | PED | trainable |
+| --- | --- | --- | --- | --- |
+| **frozen + attention** | **0.807** ± 0.005 | 0.984 ± 0.001 | 0.963 ± 0.004 | **0.07 M** |
+| frozen + mean pooling | 0.707 | 0.971 | 0.919 | 0.003 M |
+| last-4 + mean pooling | 0.791 | 0.985 | 0.960 | 50 M |
+| last-4 + attention | 0.786 | 0.983 | 0.963 | 50 M |
 
-**They are not built the same way, and the difference favours the fine-tuned arms.** The
-last-4 rows are 5-fold ensembles: one model per fold, test predictions averaged, as in §1.
-The frozen + attention row is a single model fitted on all pool data. Ensembling usually
-helps, so 0.831 is if anything a conservative figure for the frozen arm — but the
-protocols are not matched and the comparison should not be quoted until they are. A
-fold-ensembled variant is being computed.
+**Attention pooling substantially improves frozen features**, paired patient bootstrap:
 
-| | IRF | SRF | PED |
+| class | Δ AUPRC | 95% CI | p |
 | --- | --- | --- | --- |
-| **frozen encoder + attention** | **0.831** | 0.980 | 0.953 |
-| last-4 fine-tuned + mean pooling | 0.791 | 0.985 | 0.960 |
-| last-4 fine-tuned + attention | 0.786 | 0.983 | 0.963 |
+| **IRF** | **+0.100** | [+0.024, +0.170] | 0.004 |
+| **SRF** | **+0.013** | [+0.002, +0.040] | 0.012 |
+| **PED** | **+0.044** | [+0.008, +0.112] | 0.006 |
 
-Paired bootstrap, attention − mean **within last-4**: IRF −0.005 [−0.020, +0.023] p 0.619,
-SRF −0.002, PED +0.004. All three intervals straddle zero and are narrow, so adding
-attention to a fine-tuned encoder demonstrably does nothing.
+**But it matches fine-tuning rather than beating it.** Paired against the last-4 arms,
+nothing survives Holm across six tests:
 
-**Three different "mean pooling" baselines appear in this document; they are not
-interchangeable:**
+| comparison | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| frozen+attn − last-4+mean | +0.016 [−0.061, +0.056] p 0.544 | −0.001 p 0.901 | +0.003 p 0.644 |
+| frozen+attn − last-4+attn | +0.021 [−0.050, +0.049] p 0.452 | +0.001 p 0.562 | −0.000 p 0.981 |
 
-| number | what it is |
-| --- | --- |
-| 0.678 (§1) | LP arm from `train_amdsd.py`: SGD head on the full forward pass, 5-fold ensembled, mean of 3 seeds, test set |
-| 0.699 (here) | logistic head on mean-pooled cached tokens, `C` selected by inner CV, single fit on pool, test set |
-| 0.756 / 0.759 (§6d above) | the same head, pool out-of-fold rather than test, with `C` fixed at 0.01 / selected |
+**Adding attention to a fine-tuned encoder gains nothing**: within last-4, attention − mean
+is −0.005 [−0.020, +0.023] on IRF, −0.002 SRF, +0.004 PED.
 
-The 0.756 → 0.759 shift quoted above is the effect of selecting `C`, measured
-out-of-fold. It is not comparable to either test-set figure.
+**The claim.** A frozen encoder with a 0.07 M-parameter pooling head reaches the same
+performance as fine-tuning 50 M parameters — an equivalence, not a win. The two
+interventions address the same deficiency: a frozen encoder carries localisation
+information that mean pooling discards and attention recovers; a fine-tuned encoder
+reorganises its features so the mean already carries it. Applying both gains nothing,
+which is what a substitution predicts.
 
-**The frozen + attention vs last-4 + mean difference has no interval yet.** The +0.040 on
-IRF is a difference of two point estimates on the same test set, which is not the same as a
-paired test — the finalisation run did not retain its test-set predictions, so the paired
-bootstrap could not be computed. Until it is, that comparison is suggestive only. The
-within-last-4 null above is properly paired and does stand.
-
-**Interpretation.** A frozen encoder carries localisation information that mean pooling
-discards and attention recovers. Once the last four blocks can adapt, they reorganise the
-representation so the mean already carries it, leaving attention nothing to add. The two
-interventions address the same deficiency by different routes.
-
-For IRF this sharpens the recommendation: **pool properly rather than fine-tune.** A
-66k-parameter pooling head on a frozen encoder outperforms fine-tuning 50M parameters, and
-adding those 50M back removes the advantage.
-
-Two caveats. The fine-tuned attention arm used the trainer's defaults (L=64, lr 1e-4,
-20 epochs) rather than nested-CV-selected hyperparameters, so it has not had the tuning the
-frozen arm received; since it lands on the mean-pooling result rather than below it,
-tuning would more plausibly close the gap upward to 0.791 than to 0.831, but that is an
-inference. It is also single-seed against three-seed figures elsewhere.
+_An earlier version of this section reported frozen + attention at 0.831 and claimed it beat
+fine-tuning by 0.045. That figure came from a single model fitted on all pool data, while
+the fine-tuned arms were 5-fold ensembles — the protocols were not matched, and the
+mismatch favoured the frozen arm because its single model saw 2,609 training scans against
+2,087 for each ensemble member. Under the matched protocol the difference is +0.016 with an
+interval spanning zero._
 
 **Selected hyperparameters were unstable in epochs.** Five folds chose five different
 configurations; epochs ranged 5–80 for IRF and 5–60 for SRF, and the modal choices were

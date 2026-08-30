@@ -31,8 +31,10 @@ attention − matched-capacity MLP, IRF: +0.108
 ```
 
 That is the central mechanistic result: replacing RETFound's mean pooling over patch
-tokens with attention pooling gains +0.108 AUPRC on IRF, and the gain survives a
-matched-parameter control (66,625 vs 66,691 parameters).
+tokens with attention pooling gains +0.108 AUPRC on IRF out-of-fold, and the gain survives
+a matched-parameter control (66,625 vs 66,691 parameters). On the held-out test set under
+the protocol of RESULTS.md §1 the gain is +0.100 [+0.024, +0.170], which brings a frozen
+encoder level with fine-tuning 50M parameters — see RESULTS.md §6d.
 
 Other headlines: `main`, `depth`, `encoder`, `size`.
 

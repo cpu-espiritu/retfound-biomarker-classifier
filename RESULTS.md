@@ -430,6 +430,37 @@ selected by nested CV while the fine-tuning arms used fixed defaults (§ Limitat
 it reframes §1 and §2: on the hardest class, the gain from fine-tuning is available more
 cheaply by changing how the encoder's output is pooled.
 
+### Attention pooling and fine-tuning are substitutes, not complements
+
+Adding attention pooling to the fine-tuned last-4 arm (`--pool attn`, encoder training
+jointly with the pooling head) gains nothing:
+
+| | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| **frozen encoder + attention** | **0.831** | 0.980 | 0.953 |
+| last-4 fine-tuned + mean pooling | 0.791 | 0.985 | 0.960 |
+| last-4 fine-tuned + attention | 0.786 | 0.983 | 0.963 |
+
+Paired bootstrap, attention − mean at last-4: IRF −0.005 [−0.020, +0.023] p 0.619,
+SRF −0.002, PED +0.004. All three intervals straddle zero and are narrow.
+
+Yet frozen + attention beats both fine-tuned arms on IRF by roughly 0.045.
+
+**Interpretation.** A frozen encoder carries localisation information that mean pooling
+discards and attention recovers. Once the last four blocks can adapt, they reorganise the
+representation so the mean already carries it, leaving attention nothing to add. The two
+interventions address the same deficiency by different routes.
+
+For IRF this sharpens the recommendation: **pool properly rather than fine-tune.** A
+66k-parameter pooling head on a frozen encoder outperforms fine-tuning 50M parameters, and
+adding those 50M back removes the advantage.
+
+Two caveats. The fine-tuned attention arm used the trainer's defaults (L=64, lr 1e-4,
+20 epochs) rather than nested-CV-selected hyperparameters, so it has not had the tuning the
+frozen arm received; since it lands on the mean-pooling result rather than below it,
+tuning would more plausibly close the gap upward to 0.791 than to 0.831, but that is an
+inference. It is also single-seed against three-seed figures elsewhere.
+
 **Selected hyperparameters were unstable in epochs.** Five folds chose five different
 configurations; epochs ranged 5–80 for IRF and 5–60 for SRF, and the modal choices were
 IRF (L=64, lr=1e-3, wd=1e-3, 5 epochs), SRF (L=32, 3e-3, 1e-3, 55), PED (L=32, 3e-3,

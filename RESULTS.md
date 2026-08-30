@@ -438,6 +438,13 @@ jointly with the pooling head) gains nothing:
 All three rows below are AUPRC on the **same held-out test set** — 440 scans, 20 patients —
 unlike the pool out-of-fold table earlier in this section.
 
+**They are not built the same way, and the difference favours the fine-tuned arms.** The
+last-4 rows are 5-fold ensembles: one model per fold, test predictions averaged, as in §1.
+The frozen + attention row is a single model fitted on all pool data. Ensembling usually
+helps, so 0.831 is if anything a conservative figure for the frozen arm — but the
+protocols are not matched and the comparison should not be quoted until they are. A
+fold-ensembled variant is being computed.
+
 | | IRF | SRF | PED |
 | --- | --- | --- | --- |
 | **frozen encoder + attention** | **0.831** | 0.980 | 0.953 |
@@ -447,6 +454,18 @@ unlike the pool out-of-fold table earlier in this section.
 Paired bootstrap, attention − mean **within last-4**: IRF −0.005 [−0.020, +0.023] p 0.619,
 SRF −0.002, PED +0.004. All three intervals straddle zero and are narrow, so adding
 attention to a fine-tuned encoder demonstrably does nothing.
+
+**Three different "mean pooling" baselines appear in this document; they are not
+interchangeable:**
+
+| number | what it is |
+| --- | --- |
+| 0.678 (§1) | LP arm from `train_amdsd.py`: SGD head on the full forward pass, 5-fold ensembled, mean of 3 seeds, test set |
+| 0.699 (here) | logistic head on mean-pooled cached tokens, `C` selected by inner CV, single fit on pool, test set |
+| 0.756 / 0.759 (§6d above) | the same head, pool out-of-fold rather than test, with `C` fixed at 0.01 / selected |
+
+The 0.756 → 0.759 shift quoted above is the effect of selecting `C`, measured
+out-of-fold. It is not comparable to either test-set figure.
 
 **The frozen + attention vs last-4 + mean difference has no interval yet.** The +0.040 on
 IRF is a difference of two point estimates on the same test set, which is not the same as a

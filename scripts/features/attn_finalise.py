@@ -59,10 +59,22 @@ def main():
         np.save(Path(a.out).with_name(f'attn_final_oof_{c}.npy'), oof)
 
         cfg = modal[c]
+        # single model on all pool data
         m = AttnPool(d, L=int(cfg['L']), lr=float(cfg['lr']), wd=float(cfg['wd']),
                      epochs=int(cfg['epochs']), seed=0)
         m.fit(np.asarray(X[pool], np.float32), y[pool].astype(float))
         p_attn = m.decision(np.asarray(X[test], np.float32))
+
+        # 5-fold ensemble, matching how the fine-tuned arms in RESULTS.md §1 are
+        # scored: one model per fold, test predictions averaged
+        ens = []
+        for k in range(5):
+            tr = pool & (df.fold != k).values
+            mk = AttnPool(d, L=int(cfg['L']), lr=float(cfg['lr']), wd=float(cfg['wd']),
+                          epochs=int(cfg['epochs']), seed=0)
+            mk.fit(np.asarray(X[tr], np.float32), y[tr].astype(float))
+            ens.append(mk.decision(np.asarray(X[test], np.float32)))
+        p_attn_ens = np.mean(ens, axis=0)
 
         Ztr = layernorm(pool_fixed(np.asarray(X[pool], np.float32), 'mean'))
         Zte = layernorm(pool_fixed(np.asarray(X[test], np.float32), 'mean'))
@@ -71,7 +83,7 @@ def main():
         # keep the test-set predictions: without them no paired comparison against
         # any other arm is possible, only a bare AUPRC difference
         np.savez(Path(a.out).with_name(f'attn_final_test_{c}.npz'),
-                 p_attn=p_attn, p_mean=p_mean, y=y[test],
+                 p_attn=p_attn, p_attn_ens=p_attn_ens, p_mean=p_mean, y=y[test],
                  g=df.loc[test, 'group'].values, file=df.loc[test, 'file'].values)
 
         yt = y[test]
@@ -91,13 +103,16 @@ def main():
         pv = min(2 * min((1 + (dd <= 0).sum()) / (B + 1),
                          (1 + (dd >= 0).sum()) / (B + 1)), 1.0)
         rows.append(dict(cls=c, oof_attn=AP(y[pool], oof[pool]),
-                         test_attn=AP(yt, p_attn), test_mean=AP(yt, p_mean),
+                         test_attn=AP(yt, p_attn),
+                         test_attn_ens=AP(yt, p_attn_ens),
+                         test_mean=AP(yt, p_mean),
                          delta=AP(yt, p_attn) - AP(yt, p_mean), lo=lo, hi=hi, p=pv,
                          baseline_C=chosen_C, **cfg))
         pd.DataFrame(rows).to_csv(a.out, index=False)
         r = rows[-1]
         print(f"  -> {c}: OOF {r['oof_attn']:.3f} | test attn {r['test_attn']:.3f} "
-              f"vs mean {r['test_mean']:.3f}  Δ {r['delta']:+.3f} "
+              f"(5-fold ens {r['test_attn_ens']:.3f}) vs mean {r['test_mean']:.3f}  "
+              f"Δ {r['delta']:+.3f} "
               f"[{lo:+.3f}, {hi:+.3f}]  p {pv:.3f}", flush=True)
 
     print(f'\n-> {a.out}')

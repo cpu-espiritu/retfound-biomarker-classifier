@@ -444,13 +444,21 @@ mean-pooled features is deterministic and runs once.
 | last-4 + mean pooling | 0.791 | 0.985 | 0.960 | 50 M |
 | last-4 + attention | 0.786 | 0.983 | 0.963 | 50 M |
 
-**Attention pooling substantially improves frozen features**, paired patient bootstrap:
+**Attention pooling helps a frozen encoder and does nothing to a fine-tuned one.** Both
+contrasts on the same 5,000 patient resamples, Holm across all six:
 
-| class | Δ AUPRC | 95% CI | p |
-| --- | --- | --- | --- |
-| **IRF** | **+0.100** | [+0.024, +0.170] | 0.004 |
-| **SRF** | **+0.013** | [+0.002, +0.040] | 0.012 |
-| **PED** | **+0.044** | [+0.008, +0.112] | 0.006 |
+| depth | class | attention | mean | Δ AUPRC | 95% CI | p | Holm |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **frozen** | IRF | 0.807 | 0.707 | **+0.100** | [+0.024, +0.170] | 0.004 | **0.026** |
+| **frozen** | SRF | 0.984 | 0.971 | **+0.013** | [+0.002, +0.040] | 0.012 | **0.046** |
+| **frozen** | PED | 0.963 | 0.919 | **+0.044** | [+0.008, +0.112] | 0.006 | **0.030** |
+| last-4 | IRF | 0.786 | 0.791 | −0.005 | [−0.020, +0.023] | 0.619 | 0.619 |
+| last-4 | SRF | 0.983 | 0.985 | −0.002 | [−0.007, +0.000] | 0.111 | 0.257 |
+| last-4 | PED | 0.963 | 0.960 | +0.004 | [−0.000, +0.012] | 0.086 | 0.257 |
+
+All three frozen contrasts survive correction; none of the fine-tuned ones does. The frozen
+attention arm is the mean of 3 seeds against a deterministic baseline; the last-4 rows are
+single-seed on both sides.
 
 **But it matches fine-tuning rather than beating it.** Paired against the last-4 arms,
 nothing survives Holm across six tests:

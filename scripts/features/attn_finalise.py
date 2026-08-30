@@ -68,6 +68,12 @@ def main():
         Zte = layernorm(pool_fixed(np.asarray(X[test], np.float32), 'mean'))
         p_mean, chosen_C = fit_mean_baseline(Ztr, y[pool], Zte, None, y, pool)
 
+        # keep the test-set predictions: without them no paired comparison against
+        # any other arm is possible, only a bare AUPRC difference
+        np.savez(Path(a.out).with_name(f'attn_final_test_{c}.npz'),
+                 p_attn=p_attn, p_mean=p_mean, y=y[test],
+                 g=df.loc[test, 'group'].values, file=df.loc[test, 'file'].values)
+
         yt = y[test]
         g = df.loc[test, 'group'].values
         rng = np.random.default_rng(0)

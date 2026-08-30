@@ -435,16 +435,24 @@ cheaply by changing how the encoder's output is pooled.
 Adding attention pooling to the fine-tuned last-4 arm (`--pool attn`, encoder training
 jointly with the pooling head) gains nothing:
 
+All three rows below are AUPRC on the **same held-out test set** — 440 scans, 20 patients —
+unlike the pool out-of-fold table earlier in this section.
+
 | | IRF | SRF | PED |
 | --- | --- | --- | --- |
 | **frozen encoder + attention** | **0.831** | 0.980 | 0.953 |
 | last-4 fine-tuned + mean pooling | 0.791 | 0.985 | 0.960 |
 | last-4 fine-tuned + attention | 0.786 | 0.983 | 0.963 |
 
-Paired bootstrap, attention − mean at last-4: IRF −0.005 [−0.020, +0.023] p 0.619,
-SRF −0.002, PED +0.004. All three intervals straddle zero and are narrow.
+Paired bootstrap, attention − mean **within last-4**: IRF −0.005 [−0.020, +0.023] p 0.619,
+SRF −0.002, PED +0.004. All three intervals straddle zero and are narrow, so adding
+attention to a fine-tuned encoder demonstrably does nothing.
 
-Yet frozen + attention beats both fine-tuned arms on IRF by roughly 0.045.
+**The frozen + attention vs last-4 + mean difference has no interval yet.** The +0.040 on
+IRF is a difference of two point estimates on the same test set, which is not the same as a
+paired test — the finalisation run did not retain its test-set predictions, so the paired
+bootstrap could not be computed. Until it is, that comparison is suggestive only. The
+within-last-4 null above is properly paired and does stand.
 
 **Interpretation.** A frozen encoder carries localisation information that mean pooling
 discards and attention recovers. Once the last four blocks can adapt, they reorganise the

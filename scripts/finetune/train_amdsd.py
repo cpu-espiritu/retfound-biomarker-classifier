@@ -14,6 +14,7 @@ import models_vit as models
 from util.pos_embed import interpolate_pos_embed
 
 T = ['IRF', 'SRF', 'PED']
+FULL_POOL_PATIENTS = 118
 
 
 class DS(Dataset):
@@ -164,6 +165,18 @@ def main():
     ap.add_argument('--lr', type=float, default=None)
     ap.add_argument('--warmup', type=int, default=2)
     ap.add_argument('--seed', type=int, default=0)
+    ap.add_argument('--n-train-patients', type=int, default=None,
+                    help='restrict the pool split to this many patients, sampled by '
+                         'patient so every scan of a sampled patient is kept; the test '
+                         'split is never touched')
+    ap.add_argument('--subsets', default=None,
+                    help='size_subsets.csv from scripts/prep/make_size_subsets.py')
+    ap.add_argument('--subset-seed', type=int, default=None,
+                    help='which subsample draw to use (default: --seed)')
+    ap.add_argument('--epoch-budget', choices=['steps', 'fixed'], default='steps',
+                    help="'steps' scales epochs and warmup by 118/n so every training "
+                         "set size gets a comparable number of gradient steps; 'fixed' "
+                         "keeps --epochs, so small sizes take proportionally fewer")
     ap.add_argument('--save-model', action='store_true')
     a = ap.parse_args()
 
@@ -172,10 +185,31 @@ def main():
     dev = torch.device('cuda')
 
     df = pd.read_csv(a.manifest)
-    tr = df[(df.split == 'pool') & (df.fold != a.fold)]
-    va = df[(df.split == 'pool') & (df.fold == a.fold)]
+    pool = df.split == 'pool'
+    epochs, warmup = a.epochs, a.warmup
+    if a.n_train_patients is not None:
+        if not a.subsets:
+            raise SystemExit('--n-train-patients needs --subsets')
+        S = pd.read_csv(a.subsets)
+        ss = a.seed if a.subset_seed is None else a.subset_seed
+        keep = S[(S.n_patients == a.n_train_patients) & (S.seed == ss)]
+        if keep.empty:
+            raise SystemExit(f'no subset for n={a.n_train_patients} seed={ss} '
+                             f'in {a.subsets}')
+        pool &= df.group.isin(keep.group.values)
+        if a.epoch_budget == 'steps':
+            # the tuned recipe is 20 epochs at the full 118-patient pool; hold the
+            # gradient-step count roughly there so a small-n arm is not simply
+            # undertrained, and keep the warmup fraction of the schedule intact
+            f = FULL_POOL_PATIENTS / a.n_train_patients
+            epochs, warmup = max(1, round(a.epochs * f)), max(1, round(a.warmup * f))
+    tr = df[pool & (df.fold != a.fold)]
+    va = df[pool & (df.fold == a.fold)]
     te = df[df.split == 'test']
-    print(f"fold {a.fold} | train {len(tr)} val {len(va)} test {len(te)}")
+    print(f"fold {a.fold} | train {len(tr)} val {len(va)} test {len(te)} | "
+          f"{tr.group.nunique()} train patients | {epochs} epochs warmup {warmup}")
+    if not len(tr) or not len(va):
+        raise SystemExit('empty train or val split after subsampling')
 
     mk = lambda d, t: DataLoader(DS(d, a.images, a.input_size, t),
                                  batch_size=a.batch_size, shuffle=t,
@@ -191,11 +225,11 @@ def main():
     crit = nn.BCEWithLogitsLoss(reduction='none')
 
     best, best_ep, best_state = -1, -1, None
-    for ep in range(a.epochs):
+    for ep in range(epochs):
         # cosine with warmup
-        if ep < a.warmup: cur = lr * (ep + 1) / a.warmup
+        if ep < warmup: cur = lr * (ep + 1) / warmup
         else: cur = 1e-6 + (lr - 1e-6) * 0.5 * (
-            1 + math.cos(math.pi * (ep - a.warmup) / max(a.epochs - a.warmup, 1)))
+            1 + math.cos(math.pi * (ep - warmup) / max(epochs - warmup, 1)))
         for g in opt.param_groups: g['lr'] = cur
 
         m.train(); tot, n = 0.0, 0
@@ -226,7 +260,11 @@ def main():
     # an explicit --lr gets its own tag, so a sweep cannot overwrite the default run
     lrtag = "" if a.lr is None else f"_lr{a.lr:g}"
     pooltag = "" if a.pool == "mean" else f"_{a.pool}"
-    tag = f"{pre}{a.mode}_{a.input_size}{pooltag}{lrtag}_f{a.fold}_s{a.seed}"
+    # a size-curve run always carries its own tag, so it can never overwrite the
+    # full-pool runs that back the numbers in RESULTS.md — not even at n=118, where
+    # the config happens to be identical
+    ntag = "" if a.n_train_patients is None else f"_n{a.n_train_patients}"
+    tag = f"{pre}{a.mode}_{a.input_size}{pooltag}{ntag}{lrtag}_f{a.fold}_s{a.seed}"
     np.savez(out / f"preds_{tag}.npz",
              val_p=Pv, val_y=Yv, val_g=va.group.values,
              test_p=Pt, test_y=Yt, test_g=te.group.values,
@@ -244,7 +282,9 @@ def main():
     except Exception:
         sha, dirty = '', None
     (out / f"cfg_{tag}.json").write_text(json.dumps(
-        vars(a) | {'lr': lr, 'git_sha': sha, 'git_dirty': dirty}, indent=2))
+        vars(a) | {'lr': lr, 'epochs_run': epochs, 'warmup_run': warmup,
+                   'n_train_patients_actual': int(tr.group.nunique()),
+                   'git_sha': sha, 'git_dirty': dirty}, indent=2))
     if a.save_model:
         torch.save({"model": best_state, "epoch": best_ep, "cfg": vars(a) | {"lr": lr}},
                    out / f"model_{tag}.pth")

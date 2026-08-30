@@ -10,8 +10,13 @@
 #SBATCH --output=logs/%x_%A_%a.out
 
 set -euo pipefail
-# repo root, derived from this script: <repo>/scripts/slurm/<this>
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# Repo root. Under sbatch the script is copied to /var/spool, so BASH_SOURCE
+# is useless there; SLURM_SUBMIT_DIR is the directory sbatch was run from.
+REPO="${RETFOUND_REPO:-${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}}"
+if [ ! -f "$REPO/scripts/finetune/train_amdsd.py" ]; then
+  echo "cannot locate the repo from $REPO — submit from the repo root, or set RETFOUND_REPO" >&2
+  exit 1
+fi
 source /rds/projects/w/wangsu-tennis-ai/retfound/env.sh
 export HF_HUB_OFFLINE=1
 cd $PROJECT/retfound/code/RETFound

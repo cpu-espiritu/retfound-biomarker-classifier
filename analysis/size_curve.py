@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import glob
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -38,9 +39,17 @@ def load_last4():
     for n in SIZES:
         arm = last4_arm(n)
         for s in SEEDS:
-            if not glob.glob(str(S.DATA / f'amdsd_preds/preds_{arm}_f*_s{s}.npz')):
+            fs = glob.glob(str(S.DATA / f'amdsd_preds/preds_{arm}_f*_s{s}.npz'))
+            if not fs:
                 print(f'  missing: {arm} seed {s} — skipped')
                 continue
+            # a partly-failed array task would otherwise be averaged silently, and a
+            # 3-fold ensemble is not comparable with the 5-fold ones it is plotted against
+            if len(fs) != 5:
+                raise SystemExit(
+                    f'{arm} seed {s}: found {len(fs)} folds, expected 5 — '
+                    f'rerun the missing folds before analysing\n  ' +
+                    '\n  '.join(sorted(Path(f).name for f in fs)))
             p, y, g = S.arm_preds(arm, s)
             vp, vy = S.val_preds(arm, s)
             for i, c in enumerate(S.CLASSES):
@@ -56,13 +65,75 @@ def load_last4():
     return pd.DataFrame(rows), P
 
 
-def load_frozen(path):
-    R = pd.read_csv(path)
+def load_frozen_full_pool():
+    """The n=118 point of the frozen arm, reused from the existing frozen_arms.py run.
+
+    At the full pool the subsample is the whole of `split == 'pool'` and the step
+    budget scales by 118/118 = 1, so frozen_size_curve.py at n=118 refits exactly what
+    frozen_arms.py already fitted: same mask, same modal hyperparameters, same
+    per-fold models, same Youden threshold. Recomputing it burns ~3 h of CPU for
+    identical numbers.
+    """
+    csv = S.ROOT / 'results/frozen_arms.csv'
+    if not csv.exists():
+        return None, {}
+    A = pd.read_csv(csv)
+    rows, P = [], {}
+    for how in ('attn', 'mean'):
+        avail = sorted(A[A.pool == how].seed.unique())
+        if not avail:
+            return None, {}
+        for c in S.CLASSES:
+            for s in SEEDS:
+                # mean pooling is a deterministic logistic fit and the full-pool
+                # subset does not depend on the seed, so its single run stands for
+                # every seed; the attention arm genuinely varies and is read per seed
+                src = s if (how == 'attn' and s in avail) else avail[0]
+                f = S.DATA / f'amdsd_preds/frozen_{how}_{c}_s{src}.npz'
+                r = A[(A.pool == how) & (A.cls == c) & (A.seed == src)]
+                if not f.exists() or r.empty:
+                    return None, {}
+                r = r.iloc[0]
+                P[(f'frozen_{how}', FULL, s, c)] = np.load(f)['test_p']
+                rows.append(dict(arm=f'frozen_{how}', pool=how, n_patients=FULL,
+                                 seed=s, cls=c, auprc=r.auprc, auroc=r.auroc,
+                                 recall=r.recall, spec=r.spec, thr=r.thr))
+    return pd.DataFrame(rows), P
+
+
+def load_frozen(pattern):
+    """One CSV per array task, or a single CSV if the arm was run in one go."""
+    fs = sorted(glob.glob(pattern))
+    if not fs:
+        raise SystemExit(f'no frozen results matching {pattern!r} — '
+                         f'run scripts/features/frozen_size_curve.py first')
+    print(f'  frozen: {len(fs)} file(s) — ' + ', '.join(Path(f).name for f in fs))
+    R = (pd.concat([pd.read_csv(f) for f in fs], ignore_index=True)
+           .drop_duplicates(['arm', 'n_patients', 'seed', 'cls'], keep='last'))
+    # a size is usable only if every cell ran: 2 pools x 3 classes x 3 seeds
+    want = 2 * len(S.CLASSES) * len(SEEDS)
+    have = R.groupby('n_patients').size()
+    for n, k in have.items():
+        if k < want:
+            print(f'  n={n}: {k}/{want} rows — incomplete, dropped')
+    R = R[R.n_patients.isin(have[have == want].index)]
+
     P = {}
     for _, r in R.iterrows():
         d = np.load(S.DATA / f"amdsd_preds/sizecurve_frozen_{r['pool']}_{r['cls']}"
                              f"_n{int(r['n_patients'])}_s{int(r['seed'])}.npz")
         P[(r['arm'], int(r['n_patients']), int(r['seed']), r['cls'])] = d['test_p']
+
+    if FULL not in set(R.n_patients):
+        Rf, Pf = load_frozen_full_pool()
+        if Rf is None:
+            print(f'  n={FULL}: not in the size-curve run and frozen_arms.py output '
+                  f'not found — the frozen curve will stop short of the full pool')
+        else:
+            print(f'  n={FULL}: reused from results/frozen_arms.csv '
+                  f'(identical protocol at the full pool)')
+            R = pd.concat([R, Rf], ignore_index=True)
+            P.update(Pf)
     return R, P
 
 
@@ -86,7 +157,8 @@ def main():
     import argparse
     ap = argparse.ArgumentParser(
         description='Learning curves for frozen+attention against last-4 fine-tuning.')
-    ap.add_argument('--frozen', default=str(S.ROOT / 'results/size_curve_frozen.csv'))
+    ap.add_argument('--frozen', default=str(S.ROOT / 'results/size_curve_frozen*.csv'),
+                    help='glob; the slurm array writes one CSV per training-set size')
     ap.add_argument('--out', default=str(S.ROOT / 'results/size_curve.csv'))
     a = ap.parse_args()
 

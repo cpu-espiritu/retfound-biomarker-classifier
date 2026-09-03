@@ -61,29 +61,32 @@ every class was measured on a single seed and does not hold.
 Marginal CIs overlap almost completely and establish nothing. The paired patient bootstrap
 (5,000 resamples, all arms scored on identical resamples) is the correct comparison.
 
-| Comparison | Class | Δ AUPRC | 95% CI | p | Holm |
-| --- | --- | --- | --- | --- | --- |
-| last-4 − LP | IRF | +0.108 | [−0.032, +0.271] | 0.125 | 0.998 |
-| last-4 − LP | SRF | +0.012 | [+0.000, +0.040] | 0.044 | 0.392 |
-| last-4 − LP | PED | +0.071 | [+0.009, +0.165] | 0.012 | 0.136 |
-| full − last-4 | IRF | −0.005 | [−0.044, +0.030] | 0.913 | 1.000 |
-| full − last-4 | SRF | −0.000 | [−0.008, +0.006] | 0.962 | 1.000 |
-| full − last-4 | PED | −0.008 | [−0.029, +0.007] | 0.348 | 1.000 |
-| 384 − 224 | IRF | +0.014 | [−0.023, +0.034] | 0.326 | 1.000 |
-| 384 − 224 | SRF | −0.006 | [−0.025, +0.004] | 0.246 | 1.000 |
-| 384 − 224 | PED | −0.010 | [−0.036, +0.014] | 0.426 | 1.000 |
+| Comparison | Class | Δ AUPRC | 95% CI | p |
+| --- | --- | --- | --- | --- |
+| last-4 − LP | IRF | +0.106 | [−0.041, +0.270] | 0.144 |
+| last-4 − LP | SRF | **+0.013** | [+0.001, +0.043] | 0.030 |
+| last-4 − LP | PED | **+0.072** | [+0.011, +0.165] | 0.008 |
+| full FT − last-4 | IRF | −0.008 | [−0.070, +0.031] | 0.817 |
+| full FT − last-4 | SRF | −0.000 | [−0.006, +0.004] | 0.989 |
+| full FT − last-4 | PED | −0.007 | [−0.024, +0.003] | 0.184 |
 
-Two further resolution contrasts, differenced on the same 5,000 resamples but **not** part
-of the Holm family above:
+**Depth and resolution are reported as differences with intervals, uncorrected.** They
+carry an equivalence claim and a null, neither of which a multiplicity correction serves;
+the interval is the evidence. Only the encoder family (§3) is Holm-corrected.
+
+Resolution, differenced on the same 5,000 resamples:
 
 | Comparison | Class | Δ AUPRC | 95% CI | p |
 | --- | --- | --- | --- | --- |
-| 384 − 224, linear probe | IRF | −0.064 | [−0.195, +0.007] | 0.086 |
-| 384 − 224, linear probe | SRF | −0.004 | [−0.054, +0.033] | 0.859 |
-| 384 − 224, linear probe | PED | −0.037 | [−0.159, +0.052] | 0.715 |
-| 448 − 224, last-4 | IRF | +0.015 | [−0.086, +0.100] | 0.833 |
-| 448 − 224, last-4 | SRF | −0.007 | [−0.033, +0.004] | 0.285 |
-| 448 − 224, last-4 | PED | −0.045 | [−0.123, +0.001] | 0.062 |
+| 384 − 224, full FT | IRF | +0.023 | [−0.005, +0.059] | 0.089 |
+| 384 − 224, full FT | SRF | −0.006 | [−0.027, +0.004] | 0.255 |
+| 384 − 224, full FT | PED | −0.015 | [−0.045, +0.011] | 0.295 |
+| 384 − 224, frozen probe | IRF | −0.064 | [−0.195, +0.007] | 0.086 |
+| 384 − 224, frozen probe | SRF | −0.004 | [−0.054, +0.033] | 0.859 |
+| 384 − 224, frozen probe | PED | −0.037 | [−0.159, +0.052] | 0.715 |
+| 448 − 224, last-4 | IRF | +0.022 | [−0.074, +0.111] | 0.782 |
+| 448 − 224, last-4 | SRF | −0.008 | [−0.035, +0.004] | 0.290 |
+| 448 − 224, last-4 | PED | **−0.050** | [−0.130, −0.003] | 0.030 |
 
 No `lp_384` arm was ever trained, so both linear-probe rows are logistic probes fitted on the
 cached 224 and 384 features under one recipe — the contrast is resolution, not a change of
@@ -117,27 +120,31 @@ best rate, last-4 is still equal or ahead:
 Tuning therefore strengthens rather than weakens the conclusion. One caveat: last-4's
 optimum sits at the top of the tested range, so a higher rate might do better still.
 
-**The headline IRF gain does not clear zero.** last-4 − LP on IRF is +0.108
-[−0.032, +0.271], and does not survive correction. Direction is well-supported
-(P(Δ>0) = 0.938) but 10 IRF-positive test patients cannot establish it at 95%.
+**The headline IRF gain does not clear zero.** last-4 − LP on IRF is +0.106
+[−0.041, +0.270], p 0.144. Direction is well-supported but 10 IRF-positive test
+patients cannot establish it at 95%. SRF and PED do clear zero uncorrected.
 
 ---
 
 ## 3. Encoder comparison: the advantage is depth-dependent
 
-Frozen-feature comparison (linear probe, 3 seeds, paired bootstrap):
+Both controls at both depths, 3 seeds every arm, paired on the same 5,000 resamples.
+Holm across this family of 12 — the family is the claim, and the claim spans both depths.
 
-| Comparison | IRF | SRF | PED |
-| --- | --- | --- | --- |
-| RETFound − MAE-IN1k | **+0.189** (Holm 0.029) | **+0.054** (Holm 0.006) | **+0.077** (Holm 0.026) |
-| RETFound − Sup-IN21k | +0.017 (p 0.625) | **+0.066** (Holm 0.022) | +0.107 (p 0.024) |
-
-At **last-4** depth, where the controls are given the same adaptation budget (3 seeds each):
-
-| Comparison | IRF | SRF | PED |
-| --- | --- | --- | --- |
-| RETFound − Sup-IN21k | +0.034 (p 0.482) | +0.053 (p <0.001) | +0.075 (p 0.031) |
-| RETFound − MAE-IN1k | +0.055 (p 0.203) | +0.036 (p <0.001) | +0.079 (p 0.012) |
+| Comparison | Class | Δ AUPRC | 95% CI | p | Holm |  |
+| --- | --- | --- | --- | --- | --- | --- |
+| RETFound − MAE-IN1k, LP | IRF | **+0.271** | [+0.039, +0.487] | 0.025 | 0.149 |  |
+| RETFound − MAE-IN1k, LP | SRF | **+0.096** | [+0.022, +0.228] | <0.001 | 0.005 | ** |
+| RETFound − MAE-IN1k, LP | PED | **+0.154** | [+0.026, +0.236] | 0.018 | 0.123 |  |
+| RETFound − MAE-IN1k, last-4 | IRF | +0.041 | [−0.050, +0.166] | 0.358 | 1.000 |  |
+| RETFound − MAE-IN1k, last-4 | SRF | **+0.029** | [+0.007, +0.078] | <0.001 | 0.005 | ** |
+| RETFound − MAE-IN1k, last-4 | PED | **+0.088** | [+0.010, +0.225] | 0.003 | 0.026 | ** |
+| RETFound − Sup-IN21k, LP | IRF | +0.040 | [−0.108, +0.275] | 0.597 | 1.000 |  |
+| RETFound − Sup-IN21k, LP | SRF | **+0.071** | [+0.016, +0.168] | 0.001 | 0.011 | ** |
+| RETFound − Sup-IN21k, LP | PED | +0.088 | [−0.015, +0.171] | 0.105 | 0.421 |  |
+| RETFound − Sup-IN21k, last-4 | IRF | +0.013 | [−0.105, +0.141] | 0.718 | 1.000 |  |
+| RETFound − Sup-IN21k, last-4 | SRF | **+0.046** | [+0.009, +0.128] | <0.001 | 0.008 | ** |
+| RETFound − Sup-IN21k, last-4 | PED | **+0.073** | [+0.003, +0.192] | 0.029 | 0.149 |  |
 
 **Size-stratified, 3 seeds per arm, Holm across 20 tests.** Six survive:
 
@@ -160,13 +167,13 @@ above-patch phenomenon; it is only after fine-tuning that RETFound gains on smal
 An earlier version of this comparison used 3 seeds for RETFound against 1 for the controls
 and found no surviving sub-patch result. The symmetric comparison changes that conclusion.
 
-**MAE-IN1k's IRF deficit collapses under fine-tuning**: AUPRC 0.406 → 0.736, a +0.330 gain,
-versus RETFound's +0.106. Poor frozen features, perfectly adequate initialisation.
+**MAE-IN1k's IRF deficit collapses under fine-tuning**: AUPRC 0.407 → 0.743, a +0.336 gain,
+versus RETFound's +0.106 (0.678 → 0.784), all arms at 3 seeds. Poor frozen features, perfectly adequate initialisation.
 
 **On IRF there is no significant encoder advantage at last-4** against either control.
 RETFound's value is concentrated in what it provides *without* fine-tuning.
 
-**Sup-IN21k matches RETFound on IRF at both depths** (+0.017 at LP, +0.034 at last-4, both
+**Sup-IN21k matches RETFound on IRF at both depths** (+0.040 at LP, +0.013 at last-4, both
 null). Supervised ImageNet pretraining is competitive on the hardest class.
 
 ---

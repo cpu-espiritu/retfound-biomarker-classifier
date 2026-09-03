@@ -51,11 +51,12 @@ def main():
 
     elif a.what == 'depth':
         d = need('pvalues.csv')
-        s = d[d.comparison == 'last-4 vs full FT']
-        print(s[['class', 'delta', 'lo', 'hi', 'p']].to_string(
+        s = d[d.comparison == 'full FT - last-4']
+        print(s[['cls', 'delta', 'lo', 'hi', 'p']].to_string(
             index=False, float_format=lambda v: f'{v:+.3f}'))
         print('\nAll three intervals contain zero and are narrower than ±0.05:')
         print('an equivalence, not an absence of evidence.')
+        print('Reported uncorrected: the claim is the interval, not a rejection.')
 
     elif a.what == 'size':
         d = need('amdsd_components_per_lesion.csv')

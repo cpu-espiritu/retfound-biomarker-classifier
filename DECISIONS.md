@@ -157,6 +157,21 @@ Resampling patients gives honest intervals — and they are wide (IRF AUPRC [0.5
 last-4). Fold-to-fold SD (±0.02) understates true uncertainty by roughly an order of
 magnitude and is not quoted as an uncertainty estimate.
 
+**Holm correction inside the encoder family only.**
+Multiplicity correction is applied within the family defined by the claim it supports, and
+only where the claim is a rejection. The encoder comparison (2 controls x 2 depths x 3
+classes = 12 tests) is Holm-corrected. Depth and resolution are reported as differences with
+intervals, uncorrected: depth carries an equivalence claim (full FT == last-4) and resolution
+a null, and a multiplicity correction serves neither — inflating p-values makes an
+equivalence claim look stronger, which is backwards. The interval is the evidence there.
+
+_Revised: an earlier `pvalues.csv` Holm-corrected all 15 depth, resolution and encoder tests
+as one family, and its encoder rows could not be regenerated from the saved predictions at
+either depth or any seed count. Both that file and `encoder_grid_auprc.csv` were orphans with
+no generator in the repo; `analysis/derive_tables.py` now produces both and is the only
+source. The stale encoder row (RETFound - MAE-IN1k, IRF +0.189, Holm 0.029) does not survive:
+the regenerated value is +0.271 at LP with Holm 0.149, and +0.041 at last-4._
+
 **Per-class recall and specificity always reported.**
 Accuracy and macro-F1 mask class collapse. Specificity was added after PED's inflated recall
 was traced to the F1 threshold problem.

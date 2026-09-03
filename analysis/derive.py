@@ -327,46 +327,13 @@ def fig5(man):
 
 # --------------------------------------------------------------- figure 6
 def fig6(man, y, g):
-    pool = (man.split == 'pool').values
-    test = (man.split == 'test').values
-    reps = cluster_reps(g)
-    P = {a: S.arm_preds(a)[0] for a in
-         ('lp_224', 'last4_224', 'full_224', 'full_384', 'last4_448',
-          'mae_in1k_lp_224', 'sup_in21k_lp_224',
-          'mae_in1k_last4_224', 'sup_in21k_last4_224')}
-
-    # one recipe at both resolutions, so the contrast is resolution and not head
-    for size in (224, 384):
-        F = layernorm(np.load(FEATURES / f'features_RETFound_mae_natureOCT_{size}.npy'))
-        P[f'probe_{size}'] = np.stack(
-            [fit_mean_baseline(F[pool], man[f'label_{c}'].values[pool], F[test], None,
-                               man[f'label_{c}'].values, pool)[0] for c in T], 1)
-
-    PANELS = [
-        ('Depth', [('last-4 - linear probe', 'last4_224', 'lp_224'),
-                   ('full FT - last-4', 'full_224', 'last4_224')]),
-        ('Resolution', [('384 - 224, linear probe', 'probe_384', 'probe_224'),
-                        ('384 - 224, full FT', 'full_384', 'full_224'),
-                        ('448 - 224, last-4', 'last4_448', 'last4_224')]),
-        ('Encoder', [('RETFound - Sup-IN21k, LP', 'lp_224', 'sup_in21k_lp_224'),
-                     ('RETFound - Sup-IN21k, last-4', 'last4_224',
-                      'sup_in21k_last4_224'),
-                     ('RETFound - MAE-IN1k, LP', 'lp_224', 'mae_in1k_lp_224'),
-                     ('RETFound - MAE-IN1k, last-4', 'last4_224',
-                      'mae_in1k_last4_224')]),
-    ]
-    rows = []
-    for panel, groups in PANELS:
-        for lab, hi_, lo_ in groups:
-            for i, c in enumerate(T):
-                d, lo, hi, pv = ap_delta(y[:, i], P[hi_][:, i], P[lo_][:, i], reps)
-                rows.append(dict(panel=panel, contrast=lab, cls=c, metric='AUPRC',
-                                 delta=d, lo=lo, hi=hi, p=pv, n=np.nan))
-    F_ = pd.DataFrame(rows)
-    # Holm inside the encoder panel only: the one place a marked row is worth having
-    F_['p_holm'] = np.nan
-    m = F_.panel == 'Encoder'
-    F_.loc[m, 'p_holm'] = S.holm(F_.loc[m, 'p'].values)
+    """Forest plot rows. Sourced from pvalues.csv so the figure and the tables in
+    RESULTS.md sections 2-3 cannot drift apart; regenerate it with
+    `python analysis/derive_tables.py` before this figure."""
+    D = pd.read_csv(RESULTS / 'pvalues.csv')
+    F_ = D.rename(columns={'family': 'panel', 'comparison': 'contrast'}).assign(
+        metric='AUPRC', n=np.nan)[
+        ['panel', 'contrast', 'cls', 'metric', 'delta', 'lo', 'hi', 'p', 'n', 'p_holm']]
 
     cr = pd.read_csv(RESULTS / 'crossers.csv').query("name == 'crossers'")
     F_ = pd.concat([F_, pd.DataFrame([

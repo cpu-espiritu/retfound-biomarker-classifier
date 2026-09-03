@@ -177,23 +177,35 @@ def main():
     y_all = S.test_rows()
     reps = S.replicates(y_all.group.values)
     print('\n=== frozen+attention − last-4+mean, paired patient bootstrap ===')
+    print('    (difference taken within each data draw, then averaged over seeds)')
     print(f"{'cls':<5}{'n':>5}{'attn':>8}{'last4':>8}{'delta':>9}{'95% CI':>20}{'p':>8}")
     tests = []
     for c in S.CLASSES:
         yt = y_all[f'label_{c}'].values
         for n in SIZES:
-            A = [P[('frozen_attn', n, s, c)] for s in SEEDS if ('frozen_attn', n, s, c) in P]
-            B = [P[('last4_mean', n, s, c)] for s in SEEDS if ('last4_mean', n, s, c) in P]
-            if not A or not B:
+            sd = [s for s in SEEDS if ('frozen_attn', n, s, c) in P
+                  and ('last4_mean', n, s, c) in P]
+            if not sd:
                 continue
-            A, B = np.mean(A, 0), np.mean(B, 0)
-            d = np.array([AP(yt[i], A[i]) - AP(yt[i], B[i]) for i in reps
-                          if yt[i].min() != yt[i].max()])
+            A = [P[('frozen_attn', n, s, c)] for s in sd]
+            B = [P[('last4_mean', n, s, c)] for s in sd]
+            # Difference within a seed, then average over seeds. Averaging the
+            # predictions first would pool three *different* patient draws at n<118
+            # and score a 3-draw ensemble as though it were one model trained on n
+            # patients — at n=15 that turns IRF 0.626 into 0.837. Both arms share the
+            # same subsample at a given seed, so the within-seed difference is paired.
+            d = np.array([np.mean([AP(yt[i], a[i]) - AP(yt[i], b[i])
+                                   for a, b in zip(A, B)])
+                          for i in reps if yt[i].min() != yt[i].max()])
             lo, hi = S.ci(d)
             p = S.two_sided_p(d)
-            tests.append(dict(cls=c, n_patients=n, attn=AP(yt, A), last4=AP(yt, B),
-                              delta=AP(yt, A) - AP(yt, B), lo=lo, hi=hi, p=p))
-            print(f'{c:<5}{n:>5}{tests[-1]["attn"]:>8.3f}{tests[-1]["last4"]:>8.3f}'
+            ma = float(np.mean([AP(yt, a) for a in A]))
+            mb = float(np.mean([AP(yt, b) for b in B]))
+            tests.append(dict(cls=c, n_patients=n, attn=ma, last4=mb,
+                              delta=float(np.mean([AP(yt, a) - AP(yt, b)
+                                                   for a, b in zip(A, B)])),
+                              lo=lo, hi=hi, p=p, n_seeds=len(sd)))
+            print(f'{c:<5}{n:>5}{ma:>8.3f}{mb:>8.3f}'
                   f'{tests[-1]["delta"]:>+9.3f}{f"[{lo:+.3f},{hi:+.3f}]":>20}{p:>8.3f}')
     T = pd.DataFrame(tests)
     if len(T):

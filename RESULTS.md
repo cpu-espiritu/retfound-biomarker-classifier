@@ -73,6 +73,22 @@ Marginal CIs overlap almost completely and establish nothing. The paired patient
 | 384 − 224 | SRF | −0.006 | [−0.025, +0.004] | 0.246 | 1.000 |
 | 384 − 224 | PED | −0.010 | [−0.036, +0.014] | 0.426 | 1.000 |
 
+Two further resolution contrasts, differenced on the same 5,000 resamples but **not** part
+of the Holm family above:
+
+| Comparison | Class | Δ AUPRC | 95% CI | p |
+| --- | --- | --- | --- | --- |
+| 384 − 224, linear probe | IRF | −0.064 | [−0.195, +0.007] | 0.086 |
+| 384 − 224, linear probe | SRF | −0.004 | [−0.054, +0.033] | 0.859 |
+| 384 − 224, linear probe | PED | −0.037 | [−0.159, +0.052] | 0.715 |
+| 448 − 224, last-4 | IRF | +0.015 | [−0.086, +0.100] | 0.833 |
+| 448 − 224, last-4 | SRF | −0.007 | [−0.033, +0.004] | 0.285 |
+| 448 − 224, last-4 | PED | −0.045 | [−0.123, +0.001] | 0.062 |
+
+No `lp_384` arm was ever trained, so both linear-probe rows are logistic probes fitted on the
+cached 224 and 384 features under one recipe — the contrast is resolution, not a change of
+head. Neither resolution increase helps at any depth, and PED trends against 448 at last-4.
+
 **Full FT vs last-4 is a demonstrated equivalence, not an absence of evidence.** The
 intervals are narrow (±0.03 or better), so this is a positive claim about the null.
 
@@ -493,50 +509,98 @@ inner-validation curve is flat and the epoch count is close to arbitrary within 
 The result holds despite that, but a reader should know the head is not tightly identified
 by 118 IRF-positive patients.
 
-### Sample efficiency: does the equivalence hold when data is scarce? — running
+### Sample efficiency: attention substitutes for fine-tuning across the range
 
-The section above establishes an equivalence at the full 118-patient pool. It does not say
-which arm gets there on less data, and that is the claim that matters for anyone deciding
-where to spend an annotation budget. Pre-registered protocol, results to follow:
+§6 establishes an equivalence at the full 118-patient pool. This asks which arm gets there
+on less data. Both arms were trained at 15, 30, 60 and 118 pool patients, three seeds each,
+scored on the fixed test set (20 patients, 440 scans).
 
-**Design.** Both arms trained at 15, 30, 60 and 118 pool patients, three seeds each,
-AUPRC on the fixed held-out test set (20 patients, 440 scans) plotted against training-set
-size.
+**Protocol.** Subsampling is by patient, so every scan of a sampled patient is kept and no
+eye straddles the boundary. Subsets nest within a seed and hold the five preset folds in
+proportion and the patient-level IRF rate. Both arms consume the identical patient set at
+each (size, seed). The whole pool split shrinks, training and validation alike, so
+best-epoch selection and the Youden threshold get noisier at small n — a real cost of
+fewer patients, paid equally by both. Hyperparameters stay fixed at the values tuned at
+118. The step budget is held constant rather than the epoch count, so a small-n arm is not
+merely undertrained. At 118 every fold is taken whole, so that point reproduces the
+existing runs rather than re-running them.
 
-- **Subsampling is by patient**, so every scan of a sampled patient is kept and no eye
-  straddles the boundary. Subsets **nest** within a seed (15 subset of 30 subset of 60 subset of 118),
-  so the curve is a curve and not four unrelated draws; each subset holds the five preset
-  folds in proportion and preserves the patient-level IRF rate, the scarcest label. At 118
-  every fold is taken whole, so that point *is* the existing run rather than a re-run.
-  `scripts/prep/make_size_subsets.py`, deterministic from the manifest.
-- **Both arms consume the identical patient set** at each (size, seed) — the same file
-  drives `frozen_size_curve.py` and `train_amdsd.py --n-train-patients`.
-- **The whole pool split shrinks, training and validation alike.** Best-epoch selection and
-  the Youden threshold get noisier at small n; that is a real cost of having fewer
-  patients, and it is paid equally by both arms.
-- **Hyperparameters are fixed at the values tuned at 118** for both arms. Re-tuning per
-  size would confound sample efficiency with tuning budget.
-- **The step budget is held constant, not the epoch count** (`--epoch-budget steps`,
-  epochs and warmup scaled by 118/n). A fixed 20 epochs would give the 15-patient arm 160
-  gradient steps against 1,300 at full size, and the curve would then measure
-  undertraining as much as data scarcity. Under the step budget every fold-job is
-  1,131–1,264 steps. Overfitting at small n is *not* corrected for — that is the
-  phenomenon being measured, and best-epoch-on-validation already bounds it.
-- **The test set is never touched by the subsampling.**
+**AUPRC, mean over the three seeds:**
 
-**Cost.** Both arms run on BlueBEAR; the token cache and the images are only there.
-The frozen arm is head-only on cached tokens but not free: holding the step budget makes
-every size cost what the full pool costs, so the grid is ~4x the existing
-`frozen_arms.py` run — about 5.5 CPU-hours single-threaded, one batch job.
-(`--epoch-budget fixed` would be ~2.7 h, since the large sizes dominate either way.)
-The fine-tuned arm is 45 new A100 fold-jobs (3 sizes x 3 seeds x 5 folds), each ~1,200
-gradient steps, i.e. roughly the cost of an existing full-pool run; the 15 jobs at n=118
-already exist as `last4_224_f*_s{0,1,2}`.
+| class | arm | 15 | 30 | 60 | 118 |
+| --- | --- | --- | --- | --- | --- |
+| **IRF** | frozen + attention | 0.626 | 0.767 | **0.816** | 0.806 |
+| | last-4 + mean | 0.594 | 0.640 | 0.768 | 0.784 |
+| | frozen + mean | 0.569 | 0.623 | 0.644 | 0.707 |
+| **SRF** | frozen + attention | 0.908 | 0.983 | 0.986 | 0.984 |
+| | last-4 + mean | 0.905 | 0.976 | 0.982 | 0.984 |
+| | frozen + mean | 0.913 | 0.966 | 0.974 | 0.971 |
+| **PED** | frozen + attention | 0.841 | 0.899 | 0.924 | 0.962 |
+| | last-4 + mean | 0.856 | 0.912 | 0.958 | 0.964 |
+| | frozen + mean | 0.831 | 0.875 | 0.893 | 0.919 |
 
-**What would falsify the interesting reading.** If the two curves stay parallel, attention
-pooling is a cheaper route to the same place and nothing more — the §6 equivalence just
-extends downward. The claim worth making is the one where the gap *widens* as n falls, and
-IRF is where to look for it.
+**The pre-registered expectation was wrong.** This section previously said "the claim worth
+making is the one where the gap widens as n falls". It does not. Differencing within each
+data draw and averaging over seeds, on 5,000 patient resamples:
+
+| class | n | Δ AUPRC | 95% CI | p | Holm |
+| --- | --- | --- | --- | --- | --- |
+| IRF | 15 | +0.032 | [−0.008, +0.092] | 0.131 | 1.000 |
+| IRF | 30 | +0.127 | [+0.021, +0.214] | 0.017 | 0.170 |
+| **IRF** | **60** | **+0.048** | [+0.016, +0.086] | 0.002 | **0.019** |
+| IRF | 118 | +0.022 | [−0.057, +0.078] | 0.435 | 1.000 |
+| SRF | 30 | +0.007 | [+0.002, +0.019] | 0.008 | 0.077 |
+| SRF | 60 | +0.005 | [+0.001, +0.011] | 0.008 | 0.077 |
+| **PED** | **60** | **−0.033** | [−0.084, −0.005] | 0.004 | **0.044** |
+
+Two of twelve survive Holm, **both at n=60 and pointing in opposite directions**: IRF
+favours attention, PED favours fine-tuning. The gap is non-monotone in n (+0.032, +0.127,
++0.048, +0.022) and the smallest size gives the weakest result. SRF's two nominal cells are
++0.007 and +0.005 against a 0.98 ceiling — detectable, not meaningful.
+
+The n=118 row reproduces §6 (+0.022, p 0.435, against the published +0.016, p 0.544), which
+is the check that the subsampling pipeline does not disturb the protocol.
+
+**n=15 is underpowered, not null.** One of the three draws collapses both arms (IRF 0.303
+frozen, 0.245 last-4, against ~0.80 for the other two), so the ±1 SD band there spans about
+0.27. Nothing can be concluded about the 15-patient regime from three draws; the interval
+is wide because the design cannot resolve it, not because the effect is absent. Attention
+does degrade more gracefully on the unlucky draws — 0.716 against 0.449 at n=30 — which may
+be the more durable observation, but it rests on one bad draw.
+
+**Frozen attention at 60 patients does not reach fine-tuning at 118.** The one striking
+number in the table is IRF 0.816 at n=60 against last-4's 0.784 at the full pool. Tested
+directly (`results/size_curve_crosssize.csv`), it does not hold up:
+
+| class | frozen+attn @ 60 | last-4 @ 118 | Δ | 95% CI | p |
+| --- | --- | --- | --- | --- | --- |
+| IRF | 0.816 | 0.784 | +0.032 | [−0.002, +0.081] | 0.066 |
+| SRF | 0.986 | 0.984 | +0.002 | [−0.001, +0.008] | 0.289 |
+| **PED** | 0.924 | 0.964 | **−0.039** | [−0.095, −0.008] | **<0.001** |
+
+IRF and SRF match; PED is significantly worse. At n=30 and n=15 the frozen arm is worse on
+PED and, at 15, on every class. **Attention pooling does not buy back patients.**
+
+**The claim.** Attention pooling on a frozen encoder substitutes for last-4 fine-tuning
+across the whole range 15–118 patients, with class-dependent sign — better on IRF, worse on
+PED, indistinguishable on SRF. It is not more sample-efficient in the sense of reaching a
+given AUPRC with fewer patients. The §6 equivalence extends downward rather than widening,
+and this design cannot resolve the small-n end.
+
+**A trap worth recording.** The first version of this analysis averaged predictions across
+seeds before scoring. At n=118 that is harmless — every seed sees the same pool and only
+the init differs. Below 118 the seeds are *different patient draws*, so averaging their
+predictions scores a three-draw ensemble as though it were one model trained on n patients:
+at n=15 it turned IRF 0.626 into 0.837 and the contrast from +0.032 (p 0.131) into +0.079
+(p 0.034). The difference must be taken within a draw. `analysis/size_curve.py` does this.
+
+**Limitations of this section.** Three seeds is too few at n=15 and n=30; the small end
+needs ~10 draws before the interval means anything, which is cheap for the frozen arm and
+5 GPU jobs per extra seed for last-4. The recall and specificity columns of
+`results/size_curve.csv` are not trustworthy: the `AttnPool` bias gradient is shadowed by
+the feature dimension in `probe_pooling.py`, so the bias drifts by −lr x steps, and the
+step budget varies the step count up to 8x across sizes. AUPRC and AUROC are rank-invariant
+and unaffected, which is why the curve is reported on AUPRC alone.
 
 ---
 
@@ -666,5 +730,7 @@ Inner-CV selection of the attention head, then attention pooling at last-4 depth
 test set; three seeds for the controls at last-4; clinical review of eyes 143, 122 and 64;
 composing within-scan attention with across-slice decision-max for the eye-level model.
 
-The sample-efficiency curve in §6 is specified and queued; the frozen arm runs on CPU and
-the 45 fine-tuning fold-jobs are submitted with `scripts/slurm/size_curve.sh`.
+The sample-efficiency curve in §6 is done. What it leaves open: ~10 seeds at n=15 and n=30,
+where three draws cannot resolve the interval; and why PED runs the other way from IRF,
+which is the one class where fine-tuning holds an advantage at every size below the full
+pool.

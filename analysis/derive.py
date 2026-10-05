@@ -136,12 +136,13 @@ def fig1(man):
 
 # --------------------------------------------------------------- figure 2
 def fig2(y, g):
-    arms = ['lp_224', 'last4_224', 'last4_448', 'full_224', 'full_384']
-    trainable = {'lp_224': 0.003, 'last4_224': 50.0, 'last4_448': 50.0,
-                 'full_224': 303.0, 'full_384': 303.0}
-    depth = {'lp_224': 'linear probe', 'last4_224': 'last-4', 'last4_448': 'last-4',
+    arms = ['lp_224', 'lp_384', 'last4_224', 'last4_448', 'full_224', 'full_384']
+    trainable = {'lp_224': 0.003, 'lp_384': 0.003, 'last4_224': 50.0,
+                 'last4_448': 50.0, 'full_224': 303.0, 'full_384': 303.0}
+    depth = {'lp_224': 'linear probe', 'lp_384': 'linear probe',
+             'last4_224': 'last-4', 'last4_448': 'last-4',
              'full_224': 'full FT', 'full_384': 'full FT'}
-    size = {'lp_224': 224, 'last4_224': 224, 'last4_448': 448,
+    size = {'lp_224': 224, 'lp_384': 384, 'last4_224': 224, 'last4_448': 448,
             'full_224': 224, 'full_384': 384}
     reps = cluster_reps(g)
     rows = []

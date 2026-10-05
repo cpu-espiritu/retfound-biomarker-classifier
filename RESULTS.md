@@ -81,6 +81,9 @@ Resolution, differenced on the same 5,000 resamples:
 | 384 − 224, full FT      | IRF   | +0.023     | [−0.005, +0.059] | 0.089 |
 | 384 − 224, full FT      | SRF   | −0.006     | [−0.027, +0.004] | 0.255 |
 | 384 − 224, full FT      | PED   | −0.015     | [−0.045, +0.011] | 0.295 |
+| 384 − 224, LP           | IRF   | +0.047     | [−0.085, +0.127] | 0.463 |
+| 384 − 224, LP           | SRF   | **−0.019** | [−0.068, −0.001] | 0.033 |
+| 384 − 224, LP           | PED   | **−0.102** | [−0.197, −0.012] | 0.002 |
 | 384 − 224, frozen probe | IRF   | −0.064     | [−0.195, +0.007] | 0.086 |
 | 384 − 224, frozen probe | SRF   | −0.004     | [−0.054, +0.033] | 0.859 |
 | 384 − 224, frozen probe | PED   | −0.037     | [−0.159, +0.052] | 0.715 |
@@ -88,9 +91,21 @@ Resolution, differenced on the same 5,000 resamples:
 | 448 − 224, last-4       | SRF   | −0.008     | [−0.035, +0.004] | 0.290 |
 | 448 − 224, last-4       | PED   | **−0.050** | [−0.130, −0.003] | 0.030 |
 
-No `lp_384` arm was ever trained, so both linear-probe rows are logistic probes fitted on the
-cached 224 and 384 features under one recipe — the contrast is resolution, not a change of
-head. Neither resolution increase helps at any depth, and PED trends against 448 at last-4.
+An `lp_384` arm has now been trained under the §1 protocol — 5 folds ensembled, 3 seeds,
+the same recipe as `lp_224` (20 epochs, lr 1e-3, batch 32, warmup 2) with only the input
+size changed — so the LP row is a like-for-like contrast between two trained arms. The
+frozen-probe row is kept beside it: it is a logistic head fitted on cached 224 and 384
+features under one recipe, which is a different object, and the two disagree.
+
+**Training the head changes the answer on IRF and sharpens it on PED.** The frozen probe put
+IRF at −0.064; the trained arm puts it at +0.047, a sign flip, and neither is significant —
+384 is simply not identified on IRF at linear-probe depth. On PED the trained arm is
+decisively worse at 384 (−0.102, p 0.002) where the probe saw only −0.037 (p 0.715). Reading
+resolution effects off a frozen probe understated them.
+
+Neither resolution increase helps at any depth. At linear-probe depth 384 actively hurts on
+PED and SRF, and PED trends against 448 at last-4. Higher input resolution is not where the
+gains are.
 
 **Full FT vs last-4 is a demonstrated equivalence, not an absence of evidence.** The
 intervals are narrow (±0.03 or better), so this is a positive claim about the null.
@@ -184,13 +199,26 @@ Lesion areas are expressed in **patch units** — multiples of one ViT-L/16 patc
 which is 1105 px in AMD-SD (380×570 → 224) and 2675 px = 0.0616 mm² in AROI (1024×512).
 Quartiles cannot be compared across datasets; patch units can.
 
-|     | AMD-SD sub-patch | AROI sub-patch |
-| --- | ---------------- | -------------- |
-| IRF | 88.0%            | 95.4%          |
-| SRF | 53.5%            | 52.4%          |
-| PED | 56.4%            | 56.7%          |
+**Two different denominators appear in this section, and they are not
+interchangeable.** The sub-patch percentages below are **per connected component** — each
+annotated blob measured separately, 2,335 IRF components across 727 scans. The recall bins
+that follow are **per scan**, binned on the scan's *total* annotated area for that class.
+Both datasets use the per-component basis in the table below, so the cross-dataset
+comparison is like-for-like.
 
-Recall by patch-unit bin, AMD-SD (out-of-fold, all 3,049 scans):
+|     | AMD-SD sub-patch | AROI sub-patch | AMD-SD, per scan total |
+| --- | ---------------- | -------------- | ---------------------- |
+| IRF | 88.0%            | 95.4%          | 57.9%                  |
+| SRF | 53.5%            | 52.4%          | 35.9%                  |
+| PED | 56.4%            | 56.7%          | 37.5%                  |
+
+The IRF gap between the two columns is 30 points, and it is fragmentation doing the work:
+IRF breaks into 3.21 components per scan against PED's 1.40 (§6b), so most IRF *pieces* are
+sub-patch even when the scan's total burden is not. Claims about what the patch grid can
+resolve belong on the per-component number; claims about what the model sees in a whole
+B-scan belong on the per-scan one.
+
+Recall by patch-unit bin, AMD-SD (out-of-fold, all 3,049 scans), **per scan total area**:
 
 | patches   | IRF   | SRF   | PED   |
 | --------- | ----- | ----- | ----- |
@@ -288,6 +316,135 @@ AROI's optimal thresholds are far lower — SRF 0.80 → 0.11, PED 0.83 → 0.35
 **Deployment implication: a new scanner needs threshold recalibration on a small labelled
 sample, not retraining.** That is a substantially cheaper claim than "requires fine-tuning".
 
+### Where recall drops, and why
+
+The table above is composition-standardised and reports one sub-patch number. Binning AROI
+positives by lesion area in patch units — the §4 bins, adjacent bins merged until each holds
+20 scans and 5 patients — separates the two explanations. Patient bootstrap, 5,000
+replicates; the two thresholds score the same scans, so the difference is paired.
+
+| class | bin (patches) | n | AMD-SD thr | refit | Δ | 95% CI | p |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **IRF** | 0.03–0.08 | 23 | 0.217 | 0.522 | +0.304 | [+0.143, +0.556] | <0.001 |
+| | 0.08–0.22 | 59 | 0.424 | 0.780 | +0.356 | [+0.269, +0.475] | <0.001 |
+| | 0.22–0.58 | 43 | 0.767 | 0.884 | +0.116 | [+0.033, +0.308] | 0.006 |
+| | 0.58–1.55 | 37 | 0.919 | 0.973 | +0.054 | [+0.000, +0.250] | 0.677 |
+| | 1.55–30 | 56 | 1.000 | 1.000 | 0.000 | — | 1.000 |
+| **SRF** | 0.03–0.08 | 21 | 0.000 | 0.095 | +0.095 | [+0.000, +0.231] | 0.221 |
+| | 0.08–0.22 | 53 | 0.019 | 0.340 | +0.321 | [+0.160, +0.480] | <0.001 |
+| | 0.22–0.58 | 101 | 0.010 | 0.703 | +0.693 | [+0.505, +0.840] | <0.001 |
+| | 0.58–1.55 | 97 | 0.361 | 0.856 | +0.495 | [+0.306, +0.701] | <0.001 |
+| | 1.55–4.17 | 178 | 0.792 | 0.978 | +0.185 | [+0.053, +0.409] | 0.001 |
+| | 4.17–30 | 188 | 0.543 | 0.910 | +0.367 | [+0.066, +0.627] | 0.050 |
+| **PED** | 0.03–0.08 | 26 | 0.000 | 0.077 | +0.077 | [+0.000, +0.308] | 0.692 |
+| | 0.08–0.22 | 42 | 0.095 | 0.310 | +0.214 | [+0.062, +0.439] | 0.004 |
+| | 0.22–0.58 | 113 | 0.159 | 0.717 | +0.558 | [+0.356, +0.725] | <0.001 |
+| | 0.58–1.55 | 210 | 0.662 | 0.933 | +0.271 | [+0.171, +0.389] | <0.001 |
+| | 1.55–4.17 | 366 | 0.801 | 0.992 | +0.191 | [+0.062, +0.363] | <0.001 |
+| | 4.17–30 | 251 | 0.861 | 1.000 | +0.139 | [+0.025, +0.323] | 0.003 |
+
+**"Small lesions get lost first" is true of IRF only.** For IRF the recalibration gain is
+confined below one patch and is flat-zero above it (+0.054 then 0.000, both null): the
+AMD-SD threshold was already in the right place for anything a patch or larger. For SRF and
+PED the transferred threshold is wrong at *every* size — SRF recovers 0.543 → 0.910 in its
+largest bin and PED 0.861 → 1.000 in its own, both significant. The §5 sub-patch framing
+undersells the problem for two of three classes.
+
+One oddity: SRF recall at the AMD-SD threshold falls from 0.792 to 0.543 in the largest bin,
+against a monotone rise everywhere else. Only 8 patients contribute there, so it may be
+composition, but it is not explained.
+
+**Why it drops.** On positive scans of both datasets, with area in patch units — the only
+basis on which the two frame geometries compare — fitted
+`logit(score) ~ log(area) + dataset + log(area) x dataset`, OLS with a patient-level cluster
+bootstrap resampled within dataset:
+
+| class | AMD-SD slope | shift (AROI) | p | interaction | p |
+| --- | --- | --- | --- | --- | --- |
+| IRF | +1.89 | −1.72 | 0.086 | −1.085 | 0.066 |
+| **SRF** | +1.85 | **−3.24** | **<0.001** | −0.943 | 0.009 |
+| **PED** | +1.39 | **−2.23** | **0.002** | −0.377 | 0.232 |
+
+**PED is the clean case: parallel lines.** AROI shifts every score down by a constant and
+leaves the size response intact, so small lesions are lost first only because they started
+nearest the cutoff. That is the shape of failure a single rescalar threshold can fully
+correct, and it is what §5 assumes.
+
+**SRF's slope change does not survive scrutiny.** The interaction is nominally significant
+(p 0.009), but it is carried by saturated scores: re-fitting with the logit clipped at 1e-3
+gives p 0.020, and excluding saturated points entirely gives p 0.056. The downward shift is
+robust across all three handlings (p 0.001 throughout); the slope change is suggestive only.
+Consistent with that, refitting does not fully rescue small SRF lesions — 0.095 and 0.340 in
+the two smallest bins, against PED's recovery to near-ceiling by 0.22 patches.
+
+**IRF cannot be resolved here**: neither term reaches significance (0.086, 0.066) on 118
+AMD-SD test positives from 10 patients and 228 AROI positives from 13. The point estimates
+run the same way as SRF's.
+
+**What this does to the §5 claim.** Threshold recalibration remains the right remedy — the
+dominant term is a uniform shift in every class, and a shift is exactly what one scalar
+fixes. But the claim should be stated per class: for PED a refit threshold restores recall
+across the whole size range, while for SRF it leaves sub-patch lesions largely undetected,
+and that residue is the part retraining would have to address.
+
+### Falsifying the shift model directly
+
+The regression says PED is a parallel shift and SRF is not. That can be tested without the
+regression: take AMD-SD's own out-of-fold scores, move every logit down by the class's
+fitted shift, apply AMD-SD's own threshold, and read off recall per bin. If AROI really is
+AMD-SD displaced by one constant, that counterfactual reproduces the observed AROI curve.
+Only the dataset coefficient is applied, never the interaction — the parallel-lines model
+is what is on trial.
+
+| class | bin (patches) | predicted | observed | residual |
+| --- | --- | --- | --- | --- |
+| **IRF** | 0.03–0.08 | 0.111 | 0.217 | **+0.106** |
+| | 0.08–0.22 | 0.393 | 0.424 | +0.030 |
+| | 0.22–0.58 | 0.552 | 0.767 | **+0.215** |
+| | 0.58–1.55 | 0.830 | 0.919 | +0.089 |
+| | 1.55–30 | 0.906 | 1.000 | +0.094 |
+| **SRF** | 0.03–0.08 | 0.000 | 0.000 | 0.000 |
+| | 0.08–0.22 | 0.072 | 0.019 | −0.053 |
+| | 0.22–0.58 | 0.296 | 0.010 | **−0.286** |
+| | 0.58–1.55 | 0.635 | 0.361 | **−0.274** |
+| | 1.55–4.17 | 0.851 | 0.792 | −0.058 |
+| | 4.17–30 | 0.907 | 0.543 | **−0.365** |
+| **PED** | 0.03–0.08 | 0.114 | 0.000 | −0.114 |
+| | 0.08–0.22 | 0.096 | 0.095 | −0.001 |
+| | 0.22–0.58 | 0.299 | 0.159 | −0.139 |
+| | 0.58–1.55 | 0.579 | 0.662 | +0.083 |
+| | 1.55–4.17 | 0.720 | 0.801 | +0.080 |
+| | 4.17–30 | 0.874 | 0.861 | −0.014 |
+
+Mean absolute residual: **PED 0.072**, IRF 0.107, SRF 0.173, with 5 of 6 PED bins inside the
+predicted interval against 3 of 6 for SRF.
+
+**PED's transfer failure is fully explained by one number.** A single scalar reproduces its
+recall curve across two decades of lesion size, which is the strongest form of the §5 claim:
+nothing about the new scanner changed except the operating point.
+
+**SRF's is not, and the miss is largest where the lesions are biggest.** The pure shift
+over-predicts recall by 0.27–0.37 in the three bins at and above a quarter of a patch,
+including −0.365 in the largest. Whatever AROI does to SRF, it is not a constant offset, and
+it hurts large lesions most — the opposite of the sub-patch story.
+
+**IRF runs the other way**: every residual is positive, so AROI IRF recall is *better* than
+a pure shift predicts and the fitted shift is too pessimistic. Its shift was the least well
+identified of the three (p 0.086).
+
+**A caveat on footing.** The counterfactual uses out-of-fold scores while the shift was
+fitted on test scores, and out-of-fold scores are optimistic — each fold stopped on the very
+split it is scored against, putting them 1.4 logits above test on IRF, 0.7 on PED, 0.4 on
+SRF. Refitting the shift on out-of-fold scores so the bias cancels moves the numbers
+(`results/aroi_shift_model_recall.csv` carries both) but not the conclusions: PED stays
+well-predicted (MAE 0.079), SRF's largest bin still misses by −0.269, and IRF's residuals
+stay positive throughout. Note also that under the out-of-fold fit the interaction is
+significant for all three classes, including PED — that fit has roughly five times the
+AMD-SD positives but a biased baseline, which is why the test-fitted model above is the one
+reported.
+
+
+
 ---
 
 ## 6. Mechanism: what explains the size dependence
@@ -338,6 +495,20 @@ throughout.
 
 **IRF is not low-contrast** (−0.456, as dark as SRF). Small and faint are separate problems
 that co-occur in the same class.
+
+**SHRM separates from fluid by the sign of Weber contrast.** AMD-SD annotates SHRM as its
+own class; AROI does not, so anything hyperreflective in the subretinal space is labelled
+SRF there. Measuring both on AMD-SD with the same 8 px ring:
+
+| AMD-SD class | n components | median Weber | p10 | p90 | % at or above 0 | median px |
+| --- | --- | --- | --- | --- | --- | --- |
+| SRF (fluid) | 2,640 | **−0.468** | −0.566 | −0.295 | **0.7%** | 957 |
+| SHRM | 1,905 | **+0.238** | +0.051 | +0.450 | **94.9%** | 2,316 |
+
+The two barely overlap: thresholding at zero identifies SHRM with 94.9% sensitivity and
+99.3% specificity against fluid, and SHRM components are 2.4x the size. That makes the sign
+of Weber contrast a calibrated SHRM proxy, usable on a dataset whose labels do not
+distinguish the two — which is the test §5 needs for AROI's large-SRF failure.
 
 ### 6d. Global mean pooling — supported
 
@@ -691,6 +862,45 @@ Clinical review of both is pending.
 
 ---
 
+## Compute
+
+Accounted from `sacct` (430 array tasks over 100 submissions) and `sreport`, BlueBEAR
+account `wangsu-tennis-ai`, 1 July 2026 onwards.
+
+| | |
+| --- | --- |
+| GPU total, account (`sreport`, gres/gpu) | 3,114 TRES-minutes = **51.9 A100-hours** |
+| GPU accounted in the `sacct` extract | 403 tasks, 18.8 A100-hours |
+| CPU-only jobs (frozen heads, pooling, attention tuning) | 17 jobs, 58.7 node-hours at 16-18 cores |
+| Fine-tuning runs (`amdsd_ft`, completed) | 261, mean 2.9 min, median 2.3, max 9.6 |
+| Size-curve runs (`amdsd_sizecurve`, completed) | 90, mean 3.9 min |
+
+The `sacct` extract is a partial scrollback — it omits the UCSD/NEH diagnosis jobs and
+totals ~36% of the `sreport` GPU figure. Cite 51.9 A100-hours; the task-level numbers
+describe structure, not the total.
+
+**Platform.** BlueBEAR (University of Birmingham): 464 nodes, 41,828 cores, 235 TB RAM.
+The GPU partition is 24 Ice Lake nodes, each 2 x 36-core Xeon + 4 A100 and 512 GB: 11 nodes
+of A100-40 (44 GPUs) and 13 of A100-80 (52). Every job here requests `gres=gpu:a100:1`,
+which is the 40 GB pool, so the addressable pool for these runs is 44 GPUs. The
+`--cpus-per-task=18` in every script is the documented per-GPU binding (72 cores / 4 GPUs),
+not an arbitrary choice. No job uses more than one GPU — there is no distributed training
+anywhere in this work, only independent single-GPU tasks scheduled concurrently.
+
+**Parallel width.** 59 arrays of 5 (one task per fold), two arrays of 45 (`size_curve.sh`,
+`--array=0-44`: 3 training-set sizes x 3 seeds x 5 folds in one submission). The 45-way
+arrays are the widest: 2.73 h and 3.19 h of serial GPU time returned in 6.0 and 6.3
+minutes of wall-clock, 27x and 31x.
+
+**Arrays buy wall-clock, not compute.** The one place the record shows compute actually
+saved is `amdsd_frozen_curve`: as a single job it hit the 10 h wall and returned nothing
+(52727522, TIMEOUT); split one-task-per-size it completed in 2 h 30 m (53060359).
+
+**Failure cost.** 33.5 h of the 77.5 h in the extract (43%) went to failed, cancelled or
+timed-out jobs, concentrated in `attntune` (22.7 h across a 10 h TIMEOUT and a 12.6 h
+FAILED) and that frozen-curve TIMEOUT. GPU waste was negligible (0.17 h) because the
+fine-tuning arms are short and fail fast; the cost sat in the long CPU head-fitting jobs.
+
 ## Limitations
 
 - **20 test patients.** CIs are wide (IRF AUPRC spans 0.58–0.90 at last-4). Multi-seed
@@ -702,7 +912,10 @@ Clinical review of both is pending.
   inflated base rate and will be miscalibrated on an unselected scan stream — consistent
   with the threshold transfer failure in §5. AROI's slice selection is content-driven for
   the same reason (§ Limitations, below), so it does not correct the bias.
-- **Controls at last-4 are single-seed.** RETFound has 3; the comparison is asymmetric.
+- **Some arms are single-seed.** Every RETFound and control arm at LP and last-4 now
+  has 3 seeds, so the encoder comparison in §3 is symmetric. Still on one seed:
+  full FT 384, last-4 448, last-4 + attention, and the lr sweep — their intervals
+  rest on a single draw and are marked where they appear.
 - **Most hyperparameters are fixed defaults, applied identically across arms.** Only the
   logistic-head regularisation `C` is selected (grid `[0.001, 0.01, 0.1, 1.0]`, by inner CV
   on the training folds) — for the encoder probes and, since this revision, for the
@@ -732,9 +945,9 @@ Clinical review of both is pending.
 
 ## Next
 
-Inner-CV selection of the attention head, then attention pooling at last-4 depth on the
-test set; three seeds for the controls at last-4; clinical review of eyes 143, 122 and 64;
-composing within-scan attention with across-slice decision-max for the eye-level model.
+Clinical review of eyes 143, 122 and 64; composing within-scan attention with
+across-slice decision-max for the eye-level model; three seeds for last-4 + attention,
+which is single-seed against the frozen arm's three in §6d.
 
 The sample-efficiency curve in §6 is done. What it leaves open: ~10 seeds at n=15 and n=30,
 where three draws cannot resolve the interval; and why PED runs the other way from IRF,

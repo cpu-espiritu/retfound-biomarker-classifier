@@ -34,6 +34,7 @@ FAMILIES = [
     ('Depth', [('last-4 - LP', 'last4_224', 'lp_224'),
                ('full FT - last-4', 'full_224', 'last4_224')]),
     ('Resolution', [('384 - 224, full FT', 'full_384', 'full_224'),
+                    ('384 - 224, LP', 'lp_384', 'lp_224'),
                     ('384 - 224, frozen probe', 'probe_384', 'probe_224'),
                     ('448 - 224, last-4', 'last4_448', 'last4_224')]),
     ('Encoder', [('RETFound - MAE-IN1k, LP', 'lp_224', 'mae_in1k_lp_224'),

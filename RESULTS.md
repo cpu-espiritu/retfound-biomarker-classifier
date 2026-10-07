@@ -754,7 +754,7 @@ mean-pooled features is deterministic and runs once.
 
 |                        | IRF               | SRF           | PED           | trainable  |
 | ---------------------- | ----------------- | ------------- | ------------- | ---------- |
-| **frozen + attention** | **0.807** ± 0.005 | 0.984 ± 0.001 | 0.963 ± 0.004 | **0.07 M** |
+| **frozen + attention** | **0.807** ± 0.003 | 0.984 ± 0.001 | 0.962 ± 0.003 | **0.07 M** |
 | frozen + mean pooling  | 0.707             | 0.971         | 0.919         | 0.003 M    |
 | last-4 + mean pooling  | 0.791             | 0.985         | 0.960         | 50 M       |
 | last-4 + attention     | 0.786             | 0.983         | 0.963         | 50 M       |
@@ -764,16 +764,26 @@ contrasts on the same 5,000 patient resamples, Holm across all six:
 
 | depth      | class | attention | mean  | Δ AUPRC    | 95% CI           | p     | Holm      |
 | ---------- | ----- | --------- | ----- | ---------- | ---------------- | ----- | --------- |
-| **frozen** | IRF   | 0.807     | 0.707 | **+0.100** | [+0.024, +0.170] | 0.004 | **0.026** |
-| **frozen** | SRF   | 0.984     | 0.971 | **+0.013** | [+0.002, +0.040] | 0.012 | **0.046** |
-| **frozen** | PED   | 0.963     | 0.919 | **+0.044** | [+0.008, +0.112] | 0.006 | **0.030** |
+| **frozen** | IRF   | 0.807     | 0.707 | **+0.100** | [+0.025, +0.169] | 0.004 | **0.024** |
+| **frozen** | SRF   | 0.984     | 0.971 | **+0.014** | [+0.002, +0.041] | 0.006 | **0.032** |
+| frozen     | PED   | 0.963     | 0.919 | +0.044     | [+0.007, +0.116] | 0.016 | 0.062     |
 | last-4     | IRF   | 0.786     | 0.791 | −0.005     | [−0.020, +0.023] | 0.619 | 0.619     |
 | last-4     | SRF   | 0.983     | 0.985 | −0.002     | [−0.007, +0.000] | 0.111 | 0.257     |
 | last-4     | PED   | 0.963     | 0.960 | +0.004     | [−0.000, +0.012] | 0.086 | 0.257     |
 
-All three frozen contrasts survive correction; none of the fine-tuned ones does. The frozen
+**Two of the three frozen contrasts survive correction; none of the fine-tuned ones does.**
+PED is nominally significant (p 0.016) but its Holm-adjusted value is 0.062. The frozen
 attention arm is the mean of 3 seeds against a deterministic baseline; the last-4 rows are
 single-seed on both sides.
+
+_Remeasured after the `AttnPool` bias-gradient fix: every frozen-attention figure in this
+section now comes from the corrected code. Re-running the nested CV selected the identical
+modal configuration for all three classes, and the estimates barely moved — attention AUPRC
+rose by 0.0012, 0.0003 and 0.0008 on IRF, SRF and PED. **C2 itself is unchanged to three
+decimals**: frozen+attention − last-4+mean is +0.016 (p 0.544), −0.001 (p 0.901) and +0.003
+(p 0.644), exactly as reported below. PED's correction result is the one thing that moved —
+Holm 0.030 to 0.062 — while its point estimate shifted by 0.0005. That is better read as the
+PED contrast never having been robust than as the fix having weakened it._
 
 **But it matches fine-tuning rather than beating it.** Paired against the last-4 arms,
 nothing survives Holm across six tests:

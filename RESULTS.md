@@ -202,7 +202,7 @@ Quartiles cannot be compared across datasets; patch units can.
 **Two different denominators appear in this section, and they are not
 interchangeable.** The sub-patch percentages below are **per connected component** — each
 annotated blob measured separately, 2,335 IRF components across 727 scans. The recall bins
-that follow are **per scan**, binned on the scan's *total* annotated area for that class.
+that follow are **per scan**, binned on the scan's _total_ annotated area for that class.
 Both datasets use the per-component basis in the table below, so the cross-dataset
 comparison is like-for-like.
 
@@ -213,7 +213,7 @@ comparison is like-for-like.
 | PED | 56.4%            | 56.7%          | 37.5%                  |
 
 The IRF gap between the two columns is 30 points, and it is fragmentation doing the work:
-IRF breaks into 3.21 components per scan against PED's 1.40 (§6b), so most IRF *pieces* are
+IRF breaks into 3.21 components per scan against PED's 1.40 (§6b), so most IRF _pieces_ are
 sub-patch even when the scan's total burden is not. Claims about what the patch grid can
 resolve belong on the per-component number; claims about what the model sees in a whole
 B-scan belong on the per-scan one.
@@ -323,30 +323,30 @@ positives by lesion area in patch units — the §4 bins, adjacent bins merged u
 20 scans and 5 patients — separates the two explanations. Patient bootstrap, 5,000
 replicates; the two thresholds score the same scans, so the difference is paired.
 
-| class | bin (patches) | n | AMD-SD thr | refit | Δ | 95% CI | p |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| **IRF** | 0.03–0.08 | 23 | 0.217 | 0.522 | +0.304 | [+0.143, +0.556] | <0.001 |
-| | 0.08–0.22 | 59 | 0.424 | 0.780 | +0.356 | [+0.269, +0.475] | <0.001 |
-| | 0.22–0.58 | 43 | 0.767 | 0.884 | +0.116 | [+0.033, +0.308] | 0.006 |
-| | 0.58–1.55 | 37 | 0.919 | 0.973 | +0.054 | [+0.000, +0.250] | 0.677 |
-| | 1.55–30 | 56 | 1.000 | 1.000 | 0.000 | — | 1.000 |
-| **SRF** | 0.03–0.08 | 21 | 0.000 | 0.095 | +0.095 | [+0.000, +0.231] | 0.221 |
-| | 0.08–0.22 | 53 | 0.019 | 0.340 | +0.321 | [+0.160, +0.480] | <0.001 |
-| | 0.22–0.58 | 101 | 0.010 | 0.703 | +0.693 | [+0.505, +0.840] | <0.001 |
-| | 0.58–1.55 | 97 | 0.361 | 0.856 | +0.495 | [+0.306, +0.701] | <0.001 |
-| | 1.55–4.17 | 178 | 0.792 | 0.978 | +0.185 | [+0.053, +0.409] | 0.001 |
-| | 4.17–30 | 188 | 0.543 | 0.910 | +0.367 | [+0.066, +0.627] | 0.050 |
-| **PED** | 0.03–0.08 | 26 | 0.000 | 0.077 | +0.077 | [+0.000, +0.308] | 0.692 |
-| | 0.08–0.22 | 42 | 0.095 | 0.310 | +0.214 | [+0.062, +0.439] | 0.004 |
-| | 0.22–0.58 | 113 | 0.159 | 0.717 | +0.558 | [+0.356, +0.725] | <0.001 |
-| | 0.58–1.55 | 210 | 0.662 | 0.933 | +0.271 | [+0.171, +0.389] | <0.001 |
-| | 1.55–4.17 | 366 | 0.801 | 0.992 | +0.191 | [+0.062, +0.363] | <0.001 |
-| | 4.17–30 | 251 | 0.861 | 1.000 | +0.139 | [+0.025, +0.323] | 0.003 |
+| class   | bin (patches) | n   | AMD-SD thr | refit | Δ      | 95% CI           | p      |
+| ------- | ------------- | --- | ---------- | ----- | ------ | ---------------- | ------ |
+| **IRF** | 0.03–0.08     | 23  | 0.217      | 0.522 | +0.304 | [+0.143, +0.556] | <0.001 |
+|         | 0.08–0.22     | 59  | 0.424      | 0.780 | +0.356 | [+0.269, +0.475] | <0.001 |
+|         | 0.22–0.58     | 43  | 0.767      | 0.884 | +0.116 | [+0.033, +0.308] | 0.006  |
+|         | 0.58–1.55     | 37  | 0.919      | 0.973 | +0.054 | [+0.000, +0.250] | 0.677  |
+|         | 1.55–30       | 56  | 1.000      | 1.000 | 0.000  | —                | 1.000  |
+| **SRF** | 0.03–0.08     | 21  | 0.000      | 0.095 | +0.095 | [+0.000, +0.231] | 0.221  |
+|         | 0.08–0.22     | 53  | 0.019      | 0.340 | +0.321 | [+0.160, +0.480] | <0.001 |
+|         | 0.22–0.58     | 101 | 0.010      | 0.703 | +0.693 | [+0.505, +0.840] | <0.001 |
+|         | 0.58–1.55     | 97  | 0.361      | 0.856 | +0.495 | [+0.306, +0.701] | <0.001 |
+|         | 1.55–4.17     | 178 | 0.792      | 0.978 | +0.185 | [+0.053, +0.409] | 0.001  |
+|         | 4.17–30       | 188 | 0.543      | 0.910 | +0.367 | [+0.066, +0.627] | 0.050  |
+| **PED** | 0.03–0.08     | 26  | 0.000      | 0.077 | +0.077 | [+0.000, +0.308] | 0.692  |
+|         | 0.08–0.22     | 42  | 0.095      | 0.310 | +0.214 | [+0.062, +0.439] | 0.004  |
+|         | 0.22–0.58     | 113 | 0.159      | 0.717 | +0.558 | [+0.356, +0.725] | <0.001 |
+|         | 0.58–1.55     | 210 | 0.662      | 0.933 | +0.271 | [+0.171, +0.389] | <0.001 |
+|         | 1.55–4.17     | 366 | 0.801      | 0.992 | +0.191 | [+0.062, +0.363] | <0.001 |
+|         | 4.17–30       | 251 | 0.861      | 1.000 | +0.139 | [+0.025, +0.323] | 0.003  |
 
 **"Small lesions get lost first" is true of IRF only.** For IRF the recalibration gain is
 confined below one patch and is flat-zero above it (+0.054 then 0.000, both null): the
 AMD-SD threshold was already in the right place for anything a patch or larger. For SRF and
-PED the transferred threshold is wrong at *every* size — SRF recovers 0.543 → 0.910 in its
+PED the transferred threshold is wrong at _every_ size — SRF recovers 0.543 → 0.910 in its
 largest bin and PED 0.861 → 1.000 in its own, both significant. The §5 sub-patch framing
 undersells the problem for two of three classes.
 
@@ -359,22 +359,23 @@ basis on which the two frame geometries compare — fitted
 `logit(score) ~ log(area) + dataset + log(area) x dataset`, OLS with a patient-level cluster
 bootstrap resampled within dataset:
 
-| class | AMD-SD slope | shift (AROI) | p | interaction | p |
-| --- | --- | --- | --- | --- | --- |
-| IRF | +1.89 | −1.72 | 0.086 | −1.085 | 0.066 |
-| **SRF** | +1.85 | **−3.24** | **<0.001** | −0.943 | 0.009 |
-| **PED** | +1.39 | **−2.23** | **0.002** | −0.377 | 0.232 |
+| class   | AMD-SD slope | shift (AROI) | p          | interaction | p     |
+| ------- | ------------ | ------------ | ---------- | ----------- | ----- |
+| IRF     | +1.89        | −1.72        | 0.086      | −1.085      | 0.066 |
+| **SRF** | +1.85        | **−3.24**    | **<0.001** | −0.943      | 0.009 |
+| **PED** | +1.39        | **−2.23**    | **0.002**  | −0.377      | 0.232 |
 
 **PED is the clean case: parallel lines.** AROI shifts every score down by a constant and
 leaves the size response intact, so small lesions are lost first only because they started
 nearest the cutoff. That is the shape of failure a single rescalar threshold can fully
 correct, and it is what §5 assumes.
 
-**SRF's slope change does not survive scrutiny.** The interaction is nominally significant
-(p 0.009), but it is carried by saturated scores: re-fitting with the logit clipped at 1e-3
-gives p 0.020, and excluding saturated points entirely gives p 0.056. The downward shift is
-robust across all three handlings (p 0.001 throughout); the slope change is suggestive only.
-Consistent with that, refitting does not fully rescue small SRF lesions — 0.095 and 0.340 in
+**SRF's slope change is suggestive, not established.** The interaction is nominally
+significant (p 0.009), but it is carried by saturated scores: clipping the logit at 1e-3
+gives p 0.020 and excluding saturated points gives p 0.056. It weakens to −0.607 (p 0.062)
+after excluding SHRM-like slices, and remains sensitive to how saturated scores are handled.
+The downward shift is robust across every handling (p 0.001 throughout). Consistent with a
+residual slope term, refitting does not fully rescue small SRF lesions — 0.095 and 0.340 in
 the two smallest bins, against PED's recovery to near-ceiling by 0.22 patches.
 
 **IRF cannot be resolved here**: neither term reaches significance (0.086, 0.066) on 118
@@ -396,25 +397,25 @@ AMD-SD displaced by one constant, that counterfactual reproduces the observed AR
 Only the dataset coefficient is applied, never the interaction — the parallel-lines model
 is what is on trial.
 
-| class | bin (patches) | predicted | observed | residual |
-| --- | --- | --- | --- | --- |
-| **IRF** | 0.03–0.08 | 0.111 | 0.217 | **+0.106** |
-| | 0.08–0.22 | 0.393 | 0.424 | +0.030 |
-| | 0.22–0.58 | 0.552 | 0.767 | **+0.215** |
-| | 0.58–1.55 | 0.830 | 0.919 | +0.089 |
-| | 1.55–30 | 0.906 | 1.000 | +0.094 |
-| **SRF** | 0.03–0.08 | 0.000 | 0.000 | 0.000 |
-| | 0.08–0.22 | 0.072 | 0.019 | −0.053 |
-| | 0.22–0.58 | 0.296 | 0.010 | **−0.286** |
-| | 0.58–1.55 | 0.635 | 0.361 | **−0.274** |
-| | 1.55–4.17 | 0.851 | 0.792 | −0.058 |
-| | 4.17–30 | 0.907 | 0.543 | **−0.365** |
-| **PED** | 0.03–0.08 | 0.114 | 0.000 | −0.114 |
-| | 0.08–0.22 | 0.096 | 0.095 | −0.001 |
-| | 0.22–0.58 | 0.299 | 0.159 | −0.139 |
-| | 0.58–1.55 | 0.579 | 0.662 | +0.083 |
-| | 1.55–4.17 | 0.720 | 0.801 | +0.080 |
-| | 4.17–30 | 0.874 | 0.861 | −0.014 |
+| class   | bin (patches) | predicted | observed | residual   |
+| ------- | ------------- | --------- | -------- | ---------- |
+| **IRF** | 0.03–0.08     | 0.111     | 0.217    | **+0.106** |
+|         | 0.08–0.22     | 0.393     | 0.424    | +0.030     |
+|         | 0.22–0.58     | 0.552     | 0.767    | **+0.215** |
+|         | 0.58–1.55     | 0.830     | 0.919    | +0.089     |
+|         | 1.55–30       | 0.906     | 1.000    | +0.094     |
+| **SRF** | 0.03–0.08     | 0.000     | 0.000    | 0.000      |
+|         | 0.08–0.22     | 0.072     | 0.019    | −0.053     |
+|         | 0.22–0.58     | 0.296     | 0.010    | **−0.286** |
+|         | 0.58–1.55     | 0.635     | 0.361    | **−0.274** |
+|         | 1.55–4.17     | 0.851     | 0.792    | −0.058     |
+|         | 4.17–30       | 0.907     | 0.543    | **−0.365** |
+| **PED** | 0.03–0.08     | 0.114     | 0.000    | −0.114     |
+|         | 0.08–0.22     | 0.096     | 0.095    | −0.001     |
+|         | 0.22–0.58     | 0.299     | 0.159    | −0.139     |
+|         | 0.58–1.55     | 0.579     | 0.662    | +0.083     |
+|         | 1.55–4.17     | 0.720     | 0.801    | +0.080     |
+|         | 4.17–30       | 0.874     | 0.861    | −0.014     |
 
 Mean absolute residual: **PED 0.072**, IRF 0.107, SRF 0.173, with 5 of 6 PED bins inside the
 predicted interval against 3 of 6 for SRF.
@@ -428,9 +429,131 @@ over-predicts recall by 0.27–0.37 in the three bins at and above a quarter of 
 including −0.365 in the largest. Whatever AROI does to SRF, it is not a constant offset, and
 it hurts large lesions most — the opposite of the sub-patch story.
 
-**IRF runs the other way**: every residual is positive, so AROI IRF recall is *better* than
+**IRF runs the other way**: every residual is positive, so AROI IRF recall is _better_ than
 a pure shift predicts and the fitted shift is too pessimistic. Its shift was the least well
 identified of the three (p 0.086).
+
+### The SRF miss is hyperreflective material, not fluid
+
+AMD-SD annotates SHRM as its own class and AROI does not, so AROI's SRF label absorbs
+anything hyperreflective in the subretinal space. §6c calibrates the proxy: on AMD-SD the
+sign of Weber contrast separates fluid from SHRM at 94.9% sensitivity and 99.3% specificity.
+Applying that cut to AROI's 885 SRF components, area-weighted per slice:
+
+|                    | % components at Weber >= 0 | median px |
+| ------------------ | -------------------------- | --------- |
+| AMD-SD SRF (fluid) | 0.7%                       | 957       |
+| **AROI SRF**       | **12.7%**                  | **2,044** |
+| AMD-SD SHRM        | 94.9%                      | 2,316     |
+| AROI IRF (control) | 0.1%                       | 156       |
+
+AROI's SRF label is 18x enriched in bright components against AMD-SD's, and its components
+are twice the size — sitting between AMD-SD fluid and AMD-SD SHRM, where a mixture would.
+AROI IRF is the control: 0.1% bright against AMD-SD's 0.7%, so this is not a scanner-wide
+brightness effect or a ring artefact. It is specific to the SRF label.
+
+**Not one bright slice is detected.** Splitting the 648 SRF-positive AROI slices at an
+area-weighted Weber of zero and applying the AMD-SD threshold unchanged:
+
+| bin (patches) | shift-model prediction | dark n | dark recall | bright n | bright recall |
+| ------------- | ---------------------- | ------ | ----------- | -------- | ------------- |
+| 0.03–0.08     | 0.000                  | 21     | 0.000       | 0        | —             |
+| 0.08–0.22     | 0.072                  | 50     | 0.020       | 3        | 0.000         |
+| 0.22–0.58     | 0.296                  | 90     | 0.011       | 11       | 0.000         |
+| 0.58–1.55     | 0.635                  | 78     | 0.449       | 19       | 0.000         |
+| 1.55–4.17     | 0.851                  | 164    | **0.860**   | 14       | 0.000         |
+| 4.17–30       | 0.907                  | 132    | 0.773       | 56       | 0.000         |
+
+**0 of 104 bright slices are detected**, at any size. Their mean score is 0.141 against the
+dark slices' 0.642, and the highest-scoring bright slice reaches 0.411 — barely half the
+0.80 threshold. Mean residual against the shift model is −0.552 for bright slices and −0.130
+for dark.
+
+**This explains the large-lesion anomaly exactly.** The non-monotone drop flagged above —
+SRF recall falling to 0.543 in the largest bin — decomposes without remainder:
+
+> 0.543 = (132 x 0.773 + 56 x 0.000) / 188
+
+Bright components are 30% of that bin and contribute nothing. Remove them and the
+1.55–4.17 bin lands at 0.860 against a predicted 0.851: for genuine subretinal fluid, the
+pure shift model is correct at large sizes after all. The model was never failing on big
+SRF lesions; it was failing on a different tissue wearing the same label.
+
+**Recalibration only half-rescues them.** At AROI's refit threshold of 0.11, bright slices
+reach 0.587 against dark's 0.847. A threshold can drag them over the line because their
+scores are low but not zero, yet they remain the worst-served group — which is the residue
+§5 attributes to retraining.
+
+**The proxy is near-exact on the dataset that labels both.** Weber contrast classifies
+AMD-SD's 4,545 annotated SRF and SHRM components with AUROC **0.9973**; at a cut of zero,
+sensitivity 0.949, specificity 0.993, accuracy 0.975 (1,808/1,905 SHRM and 2,622/2,640 SRF
+correct). The Youden-optimal cut is −0.125 rather than 0, so a zero cut is marginally
+conservative — it calls slightly less tissue SHRM than the best separator would.
+
+**And the model behaves on AMD-SD SHRM exactly as it does on AROI's bright slices.** Taking
+out-of-fold SRF-head scores for AMD-SD scans that contain SHRM but no SRF — where the label
+is real, not a proxy:
+
+| group                          | n     | patients | mean      | median    | p90   | % at or above 0.80 |
+| ------------------------------ | ----- | -------- | --------- | --------- | ----- | ------------------ |
+| AMD-SD, SRF present            | 1,789 | 107      | 0.888     | 0.997     | 1.000 | 85.3%              |
+| **AMD-SD, SHRM only (no SRF)** | 745   | 75       | **0.228** | **0.053** | 0.928 | 12.3%              |
+| AMD-SD, neither                | 515   | 74       | 0.075     | 0.013     | 0.195 | 1.4%               |
+| **AROI, bright SRF slices**    | 104   | 6        | **0.141** | **0.124** | 0.300 | 0.0%               |
+| AROI, dark SRF slices          | 544   | 20       | 0.642     | 0.815     | 0.990 | 51.5%              |
+
+The SRF head does not fire on SHRM: on AMD-SD, scans with SHRM and no fluid score a median
+0.053 against 0.997 for scans with fluid. **AROI's bright slices sit with AMD-SD's SHRM, not
+with its SRF** — 0.141 against 0.228, where genuine fluid sits at 0.888 — and AROI's dark
+slices sit with AMD-SD's fluid. They score lower still than AMD-SD SHRM, which is what the
+−3.24 logit dataset shift predicts on top.
+
+**So this is a label-definition mismatch, not a model failure.** AMD-SD trained the head to
+exclude hyperreflective material from SRF, and it learned that correctly — scoring SHRM-only
+scans at 0.053 is the _right_ answer under AMD-SD's ontology. AROI annotates the same tissue
+as SRF, so identical, correct behaviour is scored as a miss. No amount of threshold
+recalibration fixes a disagreement about what the class means; only relabelling or
+retraining on the target definition does.
+
+**What remains after SHRM is removed is calibration, not discrimination — above a
+quarter-patch.** Refitting on dark slices only, the shift shrinks (−3.240 to −2.670) and the
+interaction weakens as above, but the shift model still misses: MAE 0.157, worst at
+0.22–0.58 patches where 1 of 90 dark slices is detected against a predicted 0.412. Within-bin
+AUROC settles what that is — each bin's positives against all SRF negatives, patient
+bootstrap:
+
+| bin (patches) | AROI n / patients | AROI AUROC | AMD-SD n / patients | AMD-SD AUROC | Δ (95% CI) |
+| --- | --- | --- | --- | --- | --- |
+| 0.03–0.08 | 21 / 9 | 0.614 | 26 / 17 | 0.736 | −0.122 [−0.362, +0.085] |
+| 0.08–0.22 | 50 / 12 | 0.693 | 83 / 36 | 0.791 | −0.098 [−0.276, +0.033] |
+| **0.22–0.58** | 90 / 16 | **0.880** | 215 / 53 | **0.888** | −0.009 [−0.128, +0.075] |
+| 0.58–1.55 | 78 / 10 | 0.975 | 382 / 61 | 0.953 | +0.022 [−0.044, +0.063] |
+| 1.55–4.17 | 164 / 10 | 0.995 | 435 / 50 | 0.984 | +0.012 [−0.009, +0.030] |
+| 4.17–30 | 132 / 6 | 0.997 | 345 / 35 | 0.989 | +0.008 [−0.004, +0.024] |
+
+**Not a discrimination loss at or above 0.22 patches** (within-bin AUROC 0.880 against 0.888,
+interval spanning zero); **a possible partial loss below 0.22 patches** (Δ −0.10 to −0.12),
+though both intervals cross zero and both datasets discriminate poorly at that size anyway.
+In the 0.22–0.58 bin the model ranks AROI lesions as well as it ranks AMD-SD's and still
+detects 1 of 90, which is the cleanest statement of §5's thesis available: the ordering
+transfers, the operating point does not.
+
+**The patient counts run opposite to intuition.** The small bins are the well-supported ones
+— 9, 12 and 16 of 18 available AROI patients — while the large bins rest on 10, 10 and 6.
+The SHRM result lives in those large bins, so it is the patient-thin finding; the
+small-lesion calibration result is the broad one.
+
+**The limitation is patient clustering.** The 104 bright slices come from **6 of 21**
+SRF-positive patients. The effect within those patients is absolute — zero detections out of
+104 — but the patient-level n is small, and a Weber-based proxy is not a SHRM annotation.
+Confirming this needs either AROI slices read by a clinician for SHRM, or AMD-SD's own SHRM
+masks used to show the model scores SHRM low there too, where the label exists.
+
+**A bug worth recording.** The first run of this split reported dark counts summing past the
+number of slices available. A left join leaves NaN in unmatched rows, which demotes a
+boolean column to object dtype, and `~` on object dtype negates bitwise — `~True` is −2, not
+False — so the "dark" mask selected nearly everything. The masks are now rebuilt after
+filtering rather than carried through the merge.
 
 **A caveat on footing.** The counterfactual uses out-of-fold scores while the shift was
 fitted on test scores, and out-of-fold scores are optimistic — each fold stopped on the very
@@ -442,8 +565,6 @@ stay positive throughout. Note also that under the out-of-fold fit the interacti
 significant for all three classes, including PED — that fit has roughly five times the
 AMD-SD positives but a biased baseline, which is why the test-fitted model above is the one
 reported.
-
-
 
 ---
 
@@ -500,10 +621,10 @@ that co-occur in the same class.
 own class; AROI does not, so anything hyperreflective in the subretinal space is labelled
 SRF there. Measuring both on AMD-SD with the same 8 px ring:
 
-| AMD-SD class | n components | median Weber | p10 | p90 | % at or above 0 | median px |
-| --- | --- | --- | --- | --- | --- | --- |
-| SRF (fluid) | 2,640 | **−0.468** | −0.566 | −0.295 | **0.7%** | 957 |
-| SHRM | 1,905 | **+0.238** | +0.051 | +0.450 | **94.9%** | 2,316 |
+| AMD-SD class | n components | median Weber | p10    | p90    | % at or above 0 | median px |
+| ------------ | ------------ | ------------ | ------ | ------ | --------------- | --------- |
+| SRF (fluid)  | 2,640        | **−0.468**   | −0.566 | −0.295 | **0.7%**        | 957       |
+| SHRM         | 1,905        | **+0.238**   | +0.051 | +0.450 | **94.9%**       | 2,316     |
 
 The two barely overlap: thresholding at zero identifies SHRM with 94.9% sensitivity and
 99.3% specificity against fluid, and SHRM components are 2.4x the size. That makes the sign
@@ -774,10 +895,19 @@ at n=15 it turned IRF 0.626 into 0.837 and the contrast from +0.032 (p 0.131) in
 **Limitations of this section.** Three seeds is too few at n=15 and n=30; the small end
 needs ~10 draws before the interval means anything, which is cheap for the frozen arm and
 5 GPU jobs per extra seed for last-4. The recall and specificity columns of
-`results/size_curve.csv` are not trustworthy: the `AttnPool` bias gradient is shadowed by
-the feature dimension in `probe_pooling.py`, so the bias drifts by −lr x steps, and the
-step budget varies the step count up to 8x across sizes. AUPRC and AUROC are rank-invariant
-and unaffected, which is why the curve is reported on AUPRC alone.
+`results/size_curve.csv` are not trustworthy: the `AttnPool` bias gradient was shadowed by
+the feature dimension in `probe_pooling.py`, so the bias drifted by −lr x steps, and the
+step budget varies the step count up to 8x across sizes.
+
+That bug is now fixed, and **every frozen-attention number in this document predates the
+fix**. An earlier version of this note claimed AUPRC and AUROC were unaffected because a
+constant bias is rank-invariant. That reasoning is wrong: the bias was wrong *during*
+training, so the gradient of every other parameter ran through `sigmoid(z + b)` with b
+drifting, and the attention and head weights partly compensated for it. The corrected code
+trains a different model, not the same model shifted, so the metrics must be remeasured
+rather than argued away. The drift was small (b ≈ −0.08 at the IRF configuration), so the
+numbers are expected to move little — but they have to be shown to, and the deposited code
+must be the code that produced them.
 
 ---
 
@@ -864,20 +994,22 @@ Clinical review of both is pending.
 
 ## Compute
 
-Accounted from `sacct` (430 array tasks over 100 submissions) and `sreport`, BlueBEAR
-account `wangsu-tennis-ai`, 1 July 2026 onwards.
+Accounted from `sacct` start/end timestamps (472 tasks over 141 submissions, 3 Jul to
+4 Sep 2026) and `sreport`, BlueBEAR account `wangsu-tennis-ai`. Regenerate with
+`scripts/explore/sacct_report.py`.
 
-| | |
-| --- | --- |
-| GPU total, account (`sreport`, gres/gpu) | 3,114 TRES-minutes = **51.9 A100-hours** |
-| GPU accounted in the `sacct` extract | 403 tasks, 18.8 A100-hours |
-| CPU-only jobs (frozen heads, pooling, attention tuning) | 17 jobs, 58.7 node-hours at 16-18 cores |
-| Fine-tuning runs (`amdsd_ft`, completed) | 261, mean 2.9 min, median 2.3, max 9.6 |
-| Size-curve runs (`amdsd_sizecurve`, completed) | 90, mean 3.9 min |
+|                                                         |                                                           |
+| ------------------------------------------------------- | --------------------------------------------------------- |
+| GPU total                                               | **51.9 A100-hours** (`sreport` and `sacct` agree exactly) |
+| Serial compute, all tasks                               | 116.0 h                                                   |
+| Peak concurrency                                        | 2 GPUs, 4 tasks                                           |
+| CPU-only jobs (frozen heads, pooling, attention tuning) | 17 jobs, 58.7 node-hours at 16-18 cores                   |
+| Fine-tuning runs (`amdsd_ft`, completed)                | 261, mean 2.9 min, median 2.3, max 9.6                    |
+| Size-curve runs (`amdsd_sizecurve`, completed)          | 90, mean 3.9 min                                          |
 
-The `sacct` extract is a partial scrollback — it omits the UCSD/NEH diagnosis jobs and
-totals ~36% of the `sreport` GPU figure. Cite 51.9 A100-hours; the task-level numbers
-describe structure, not the total.
+An earlier partial scrollback of this data undercounted the GPU total by ~64% and, read
+without start/end times, suggested a 27-31x array speedup. Both were wrong; the figures
+here come from the complete `--parsable2` extract.
 
 **Platform.** BlueBEAR (University of Birmingham): 464 nodes, 41,828 cores, 235 TB RAM.
 The GPU partition is 24 Ice Lake nodes, each 2 x 36-core Xeon + 4 A100 and 512 GB: 11 nodes
@@ -887,19 +1019,101 @@ which is the 40 GB pool, so the addressable pool for these runs is 44 GPUs. The
 not an arbitrary choice. No job uses more than one GPU — there is no distributed training
 anywhere in this work, only independent single-GPU tasks scheduled concurrently.
 
-**Parallel width.** 59 arrays of 5 (one task per fold), two arrays of 45 (`size_curve.sh`,
-`--array=0-44`: 3 training-set sizes x 3 seeds x 5 folds in one submission). The 45-way
-arrays are the widest: 2.73 h and 3.19 h of serial GPU time returned in 6.0 and 6.3
-minutes of wall-clock, 27x and 31x.
+**Parallel width: requested 45, observed 2.** The arrays ask for up to 45 tasks
+(`size_curve.sh --array=0-44`), but `sacct` start/end timestamps show the scheduler never
+ran more than **2 GPU tasks concurrently** for this account, and 4 tasks of any kind. The
+two 45-task arrays had their starts spread over 92 and 372 minutes. Overall the array
+tasks show **1.0x** speedup: 19.2 h of serial compute over 18.9 h of summed array spans.
 
-**Arrays buy wall-clock, not compute.** The one place the record shows compute actually
-saved is `amdsd_frozen_curve`: as a single job it hit the 10 h wall and returned nothing
-(52727522, TIMEOUT); split one-task-per-size it completed in 2 h 30 m (53060359).
+| array    | tasks | serial  | span    | peak concurrent |
+| -------- | ----- | ------- | ------- | --------------- |
+| 52727524 | 45    | 164 min | 94 min  | 2               |
+| 52931003 | 45    | 191 min | 374 min | 2               |
 
-**Failure cost.** 33.5 h of the 77.5 h in the extract (43%) went to failed, cancelled or
-timed-out jobs, concentrated in `attntune` (22.7 h across a 10 h TIMEOUT and a 12.6 h
-FAILED) and that frozen-curve TIMEOUT. GPU waste was negligible (0.17 h) because the
-fine-tuning arms are short and fail fast; the cost sat in the long CPU head-fitting jobs.
+Array width is what was submitted, not what ran. The likely cause is a per-user concurrent
+GPU limit on the `bbgpu` QoS (`sacctmgr show qos bbgpu` would confirm). Claiming "45
+configurations in parallel" would not survive a check against the scheduler record.
+
+**What the arrays actually bought.** Not wall-clock: at 2-4 minutes a task, queue waits
+dominate, and the tasks are effectively serialised. What they bought is operational — one
+submission per experiment grid, parameterised by `SLURM_ARRAY_TASK_ID`, so a 45-point grid
+is one reproducible script rather than 45 hand-edited jobs. The one real wall-clock win is
+`amdsd_frozen_curve`, where tasks are hours not minutes: as a single job it hit the 10 h
+wall and returned nothing (52727522, TIMEOUT); split one-task-per-size it completed in
+2 h 30 m (53060359).
+
+### Adaptation depth: what one sixth of the parameters costs
+
+One A100-40GB, batch 32, 20 epochs, fold 0 seed 0, all three arms in one job array so
+they share a GPU model and queue state. Measured 6 Oct 2026; regenerate with
+`scripts/slurm/bench_depth.sh` then `scripts/explore/bench_depth_report.py`.
+
+| | last-4 | full FT | frozen + attention |
+| --- | --- | --- | --- |
+| trainable parameters | 50.4 M (-83%) | 303.3 M | 0.069 M (-100%) |
+| seconds per epoch | 5.4 (-47%) | 10.2 | 4.4 (-57%) |
+| training wall-clock | 108 s (-47%) | 203 s | 88 s (-57%) |
+| peak GPU allocated | 2.74 GiB (-74%) | 10.43 GiB | 1.35 GiB (-87%) |
+| peak GPU reserved | 3.02 GiB (-73%) | 11.10 GiB | 1.45 GiB (-87%) |
+| weights at build | 1.13 GiB | 1.13 GiB | 1.13 GiB |
+
+**Memory scales with the trainable set, wall-clock does not.** Cutting trainable parameters
+6x cuts peak memory 3.8x but training time only 1.9x: both arms run an identical full
+ViT-L forward pass, and only the backward is cheaper. Quoting the parameter ratio as if it
+were a speedup would overstate the time saving by three-fold.
+
+The identical 1.13 GiB `weights at build` across all three is the control: the trunk is the
+same model in every arm, so the differences are optimizer state, gradients and the
+activations retained for backward, not a smaller network.
+
+**Failure cost.** 36.1 h of the 116.0 h (31%) went to failed, cancelled or timed-out jobs,
+concentrated in `attntune` (a 10 h TIMEOUT and a 12.6 h FAILED) and the frozen-curve
+TIMEOUT. GPU waste was negligible because the fine-tuning arms are short and fail fast;
+the cost sat in the long CPU head-fitting jobs.
+
+## Leakage, thresholds and the size gap
+
+Three numbers computed 5 Oct 2026 for the write-up, from the committed features and
+predictions. `scripts/explore/` has the script.
+
+**Patient-level splitting is worth up to 0.16 AUPRC.** Frozen RETFound features, logistic
+probe, C=0.01, pool split, 5 folds — only the fold assignment changes.
+
+| class | patient-level | scans shuffled at random | inflation  |
+| ----- | ------------- | ------------------------ | ---------- |
+| IRF   | 0.756         | 0.915                    | **+0.159** |
+| SRF   | 0.944         | 0.988                    | +0.045     |
+| PED   | 0.911         | 0.977                    | +0.066     |
+
+The leaky number is what a scan-level split reports for the same model on the same data.
+IRF inflates most because its lesions are the most eye-specific: a fellow slice of the same
+eye in training is close to the answer.
+
+**Youden is not a sensitivity gain in general.** Last-4, 224, test set, against the 0.5
+default:
+
+| class | Youden t | sens @0.5 | sens @t   | spec @0.5 | spec @t   |
+| ----- | -------- | --------- | --------- | --------- | --------- |
+| IRF   | 0.16     | 0.644     | **0.763** | 0.941     | 0.901     |
+| SRF   | 0.80     | 0.879     | 0.825     | 0.979     | 0.986     |
+| PED   | 0.83     | 0.907     | 0.803     | 0.593     | **0.900** |
+
+Only IRF gains sensitivity (+0.119 for −0.040 specificity). PED moves the other way: it
+gives up 0.103 sensitivity to buy 0.307 specificity, because at 0.5 its scores are
+inflated and it fires on almost everything. Quoting "Youden raises sensitivity" as a
+single claim would be true of one class in three.
+
+**The size gap, at the Youden threshold.** Positives split at one patch:
+
+| class | sub-patch n | recall | >=1 patch n | recall | gap       |
+| ----- | ----------- | ------ | ----------- | ------ | --------- |
+| IRF   | 79          | 0.671  | 39          | 0.949  | 0.278     |
+| SRF   | 88          | 0.500  | 209         | 0.962  | **0.462** |
+| PED   | 119         | 0.597  | 181         | 0.939  | 0.343     |
+
+**Reproduction cost.** `analysis/reproduce.py` regenerates any headline from the committed
+CSVs in **~1.0-1.5 s** per headline on an Apple M1 laptop, 5.5 s for all five — CPU only,
+no GPU, no dataset access, no model weights.
 
 ## Limitations
 

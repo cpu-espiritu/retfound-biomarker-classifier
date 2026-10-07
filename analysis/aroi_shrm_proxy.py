@@ -32,6 +32,60 @@ def slice_brightness(L):
     return out.drop(columns='w_sum')
 
 
+def dark_only(man, Z, pos, C):
+    """Test 2 and the shift model refitted on dark (fluid-like) AROI SRF only.
+
+    AMD-SD's SRF label already excludes SHRM — it is annotated as its own class — so
+    only the AROI side needs filtering. If the bright slices were driving SRF's
+    anomalies, three things follow: the shift shrinks, the interaction goes, and the
+    shift model fits dark SRF as well as it fits PED.
+    """
+    from aroi_transfer import (fit_interaction, shift_model_recall,
+                               amdsd_positive_scores, oof_and_test_scores, PATCH)
+
+    amd = amdsd_positive_scores(man)
+    amd = amd[amd.cls == 'SRF']
+    dark = pos[~pos.shrm_like]
+    aroi = pd.DataFrame(dict(dataset='AROI', cls='SRF', patient=dark.patient.values,
+                             area_patches=dark.area_SRF.values / PATCH_AROI,
+                             score=dark.p_SRF.values))
+    sc = pd.concat([amd, aroi], ignore_index=True)
+
+    print('\n=== prediction 1 and 2: logit(score) ~ log(area) * dataset, dark SRF only ===')
+    f = fit_interaction(sc)
+    allf = pd.read_csv(S.ROOT / 'results/aroi_score_size_model.csv')
+    old = allf[allf.cls == 'SRF'].set_index('term')
+    print(f"{'term':<18}{'all SRF':>10}{'p':>8}{'dark only':>12}{'p':>8}")
+    for t_ in ('log_area', 'dataset_AROI', 'log_area_x_AROI'):
+        n_ = f[f.term == t_].iloc[0]
+        print(f'{t_:<18}{old.loc[t_, "estimate"]:>10.3f}{old.loc[t_, "p"]:>8.3f}'
+              f'{n_.estimate:>12.3f}{n_.p:>8.3f}')
+    shift = float(f[f.term == 'dataset_AROI'].estimate.iloc[0])
+
+    print('\n=== prediction 3: shift model against dark SRF ===')
+    edges = sorted(set(C[C.cls == 'SRF'].lo_edge) | set(C[C.cls == 'SRF'].hi_edge))
+    scores = oof_and_test_scores(man)
+    P = shift_model_recall(man, scores, {'SRF': dict(zip(T, S.thresholds('last4_224')))['SRF'],
+                                         'IRF': 0.5, 'PED': 0.5},
+                           {'SRF': shift, 'IRF': 0.0, 'PED': 0.0},
+                           {'SRF': edges, 'IRF': edges, 'PED': edges})
+    P = P[P.cls == 'SRF'].set_index('lo_edge')
+    dark['u'] = dark.area_SRF / PATCH_AROI
+    print(f"{'bin':>14}{'n':>6}{'predicted':>11}{'observed':>10}{'residual':>10}")
+    res = []
+    for b in range(len(edges) - 1):
+        m = (dark.u >= edges[b]) & (dark.u < edges[b + 1])
+        if not m.sum():
+            continue
+        obs = dark[m].hit.mean(); pr = float(P.loc[edges[b], 'predicted'])
+        res.append(obs - pr)
+        print(f"{f'{edges[b]:.2f}-{edges[b+1]:.2f}':>14}{int(m.sum()):>6}"
+              f"{pr:>11.3f}{obs:>10.3f}{obs - pr:>+10.3f}")
+    print(f'\n  MAE dark-only SRF {np.mean(np.abs(res)):.3f}   '
+          f'(all SRF 0.173, PED 0.072, IRF 0.107)')
+    return f, np.mean(np.abs(res))
+
+
 def main():
     ap = argparse.ArgumentParser(
         description='Does AROI SRF contain SHRM, and does that explain where the '
@@ -62,6 +116,10 @@ def main():
     thr = dict(zip(T, S.thresholds('last4_224')))['SRF']
     Z = Z.merge(B, on=['patient', 'slice'], how='left')
     pos = Z[(Z.label_SRF == 1) & Z.weber_wt.notna()].copy()
+    # recomputed, not carried through the merge: a left join leaves NaN in the
+    # unmatched rows, which demotes the boolean column to object dtype, and `~` on
+    # object dtype negates bitwise (~True == -2) instead of logically
+    pos['shrm_like'] = (pos.weber_wt >= SHRM_CUT).astype(bool)
     pos['hit'] = (pos.p_SRF >= thr).astype(int)
     pos['u'] = pos.area_SRF / PATCH_AROI
     print(f'\n  {len(pos)} SRF-positive slices with contrast, '
@@ -97,6 +155,7 @@ def main():
               f'dark {ok.resid_dark.mean():+.3f}   bright {ok.resid_bright.mean():+.3f}')
         print('The hypothesis predicts the shortfall sits in the bright group, i.e. a '
               'bright residual much more negative than the dark one.')
+    dark_only(S.manifest(), Z, pos, C)
     print(f'\n-> results/aroi_shrm_residuals.csv')
 
 

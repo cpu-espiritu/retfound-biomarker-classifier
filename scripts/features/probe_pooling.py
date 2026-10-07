@@ -106,8 +106,8 @@ class AttnPool:
                 dE = A * (dA - (A * dA).sum(1, keepdims=True))
                 dTn = dE[:, :, None] * self.w[None, None, :]
                 dU = dTn * (1 - Tn ** 2)
-                nb, tb, db = Zb.shape
-                dV = Zb.reshape(-1, db).T @ dU.reshape(-1, dU.shape[-1])
+                nb, tb, dfeat = Zb.shape        # not `db`: that holds the bias gradient
+                dV = Zb.reshape(-1, dfeat).T @ dU.reshape(-1, dU.shape[-1])
                 dw = Tn.reshape(-1, Tn.shape[-1]).T @ dE.reshape(-1)
                 gr = dict(V=dV + self.wd * self.V, w=dw,
                           c=dc + self.wd * self.c, b=db)
@@ -149,12 +149,20 @@ def gradcheck(seed=0, n_probe=6):
     dU = dE[:, :, None] * m.w[None, None, :] * (1 - Tn ** 2)
     ana = dict(V=Z.reshape(-1, 8).T @ dU.reshape(-1, 4),
                w=Tn.reshape(-1, 4).T @ dE.reshape(-1),
-               c=dc)
+               c=dc,
+               b=np.array([g.sum()]))
 
     worst = 0.0
-    for name in ('V', 'w', 'c'):
+    for name in ('V', 'w', 'c', 'b'):
+        af = np.asarray(ana[name]).reshape(-1)
+        if name == 'b':                       # a scalar attribute, not an array view
+            o, h = m.b, 1e-6
+            m.b = o + h; lp = loss()
+            m.b = o - h; lm = loss()
+            m.b = o
+            worst = max(worst, abs((lp - lm) / (2 * h) - af[0]))
+            continue
         flat = getattr(m, name).reshape(-1)
-        af = ana[name].reshape(-1)
         for j in r.choice(flat.size, min(n_probe, flat.size), replace=False):
             o = flat[j]; h = 1e-6
             flat[j] = o + h; lp = loss()
@@ -162,6 +170,27 @@ def gradcheck(seed=0, n_probe=6):
             flat[j] = o
             worst = max(worst, abs((lp - lm) / (2 * h) - af[j]))
     return worst
+
+
+def bias_sanity(seed=0):
+    """The bias must respond to the data, not march by -lr every step.
+
+    The gradient assembled in fit() was once shadowed by the feature dimension, so
+    Adam saw a large constant and b landed on exactly -lr * steps whatever the
+    labels were. Fitting the same features against a label and its complement must
+    now move the bias in opposite directions.
+    """
+    r = np.random.default_rng(seed)
+    Z = r.normal(size=(256, 8, 16))
+    y = (r.random(256) < 0.3).astype(float)
+    Z[:, 0, 0] += 0.9 * y
+    lr, epochs = 1e-3, 20
+    b_pos = AttnPool(16, L=8, lr=lr, epochs=epochs, seed=0).fit(Z, y).b
+    b_neg = AttnPool(16, L=8, lr=lr, epochs=epochs, seed=0).fit(Z, 1 - y).b
+    drift = -lr * epochs * max(1, len(Z) // 64)
+    return dict(b_pos=float(b_pos), b_neg=float(b_neg),
+                old_buggy_value=float(drift),
+                data_dependent=bool(abs(b_pos - b_neg) > 1e-3))
 
 
 def main():

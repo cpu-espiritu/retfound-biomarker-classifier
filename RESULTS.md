@@ -313,8 +313,23 @@ thresholds on AROI restores it:
 
 AROI's optimal thresholds are far lower — SRF 0.80 → 0.11, PED 0.83 → 0.35.
 
-**Deployment implication: a new scanner needs threshold recalibration on a small labelled
-sample, not retraining.** That is a substantially cheaper claim than "requires fine-tuning".
+**Deployment implication: recalibration helps, but it is not the whole remedy and the
+collapse above overstates the domain effect.** Two corrections to the naive reading:
+
+- The transferred threshold is Youden on the *concatenated out-of-fold validation folds*,
+  while AROI is scored by the 5-fold ensemble. Those are different score scales, and the
+  out-of-fold one runs optimistic, so the threshold sits too high. Re-deriving it on the
+  ensemble scale moves SRF from 0.80 to 0.24 and lifts AROI SRF recall 0.432 → 0.671 —
+  about **64% of SRF's apparent collapse is this protocol mismatch, not the scanner**. PED
+  is ~23%; IRF is unaffected, its two thresholds coinciding at 0.16.
+- What remains is not uniform across classes. For PED a refit threshold restores recall
+  across the whole size range. For SRF it does not, because part of AROI's SRF label is
+  hyperreflective material the model was trained to exclude — a class-definition mismatch
+  no threshold can reach (see "The SRF miss is hyperreflective material").
+
+So: recalibration is cheap and recovers most of PED and genuine SRF fluid, but a transferred
+threshold must be derived on the same scoring protocol it will be applied under, and the
+SHRM residue needs relabelling or retraining rather than recalibration.
 
 ### Where recall drops, and why
 
@@ -452,7 +467,11 @@ are twice the size — sitting between AMD-SD fluid and AMD-SD SHRM, where a mix
 AROI IRF is the control: 0.1% bright against AMD-SD's 0.7%, so this is not a scanner-wide
 brightness effect or a ring artefact. It is specific to the SRF label.
 
-**Not one bright slice is detected.** Splitting the 648 SRF-positive AROI slices at an
+**Bright slices are detected far less often, and at the transferred threshold not at all.**
+The zero below is specific to that threshold, which is set too high for this score scale
+(see §5 opening): re-deriving it on the ensemble scale detects 19 of 104 bright slices, with
+dark at 0.765 against bright 0.183. The gap is the robust part; the zero is not. Splitting
+the 648 SRF-positive AROI slices at an
 area-weighted Weber of zero and applying the AMD-SD threshold unchanged:
 
 | bin (patches) | shift-model prediction | dark n | dark recall | bright n | bright recall |
@@ -801,10 +820,20 @@ is −0.005 [−0.020, +0.023] on IRF, −0.002 SRF, +0.004 PED.
 
 **The claim.** A frozen encoder with a 0.07 M-parameter pooling head reaches the same
 performance as fine-tuning 50 M parameters — an equivalence, not a win. The two
-interventions address the same deficiency: a frozen encoder carries localisation
+interventions plausibly address the same deficiency: a frozen encoder carries localisation
 information that mean pooling discards and attention recovers; a fine-tuned encoder
-reorganises its features so the mean already carries it. Applying both gains nothing,
-which is what a substitution predicts.
+reorganises its features so the mean already carries it. Applying both gains nothing, which
+is what a substitution predicts.
+
+Two caveats on the mechanism, as distinct from the equivalence. The frozen attention−mean
+contrast now clears Holm on IRF and SRF but not PED (adjusted 0.062), so "attention helps a
+frozen encoder" is a two-of-three result. And the cached tokens stop before RETFound's
+trained final norm, which both arms replace with a parameter-free layernorm *after* pooling;
+since attention computes its weights from the tokens and mean pooling cannot adapt at all,
+some of attention's frozen margin could be compensating for that missing normalisation
+rather than recovering localisation. `scripts/features/norm_sensitivity.py` tests exactly
+this and its result is not yet folded in. The equivalence claim does not depend on the
+answer; the mechanism sentence above does.
 
 _An earlier version of this section reported frozen + attention at 0.831 and claimed it beat
 fine-tuning by 0.045. That figure came from a single model fitted on all pool data, while
@@ -912,8 +941,10 @@ needs ~10 draws before the interval means anything, which is cheap for the froze
 the feature dimension in `probe_pooling.py`, so the bias drifted by −lr x steps, and the
 step budget varies the step count up to 8x across sizes.
 
-That bug is now fixed, and **every frozen-attention number in this document predates the
-fix**. An earlier version of this note claimed AUPRC and AUROC were unaffected because a
+That bug is now fixed. **§6's frozen-attention arms have been remeasured on the corrected
+code; the size curve in this section has not**, and neither have the other `AttnPool`
+consumers (`attn_final.csv`, `pooling_comparison.csv`, `pooling_control_tunedC.csv`,
+`pooling_size_tuned.csv`, `pooling_size_strat.csv`). An earlier version of this note claimed AUPRC and AUROC were unaffected because a
 constant bias is rank-invariant. That reasoning is wrong: the bias was wrong *during*
 training, so the gradient of every other parameter ran through `sigmoid(z + b)` with b
 drifting, and the attention and head weights partly compensated for it. The corrected code
@@ -1168,7 +1199,10 @@ no GPU, no dataset access, no model weights.
   area × spacing would be biased.
 - **Index→class mapping** was undocumented in both datasets and was recovered, then
   confirmed geometrically (AROI: IRF 0.23 → SRF 0.50 → PED 0.72 depth against the RPE–BM
-  band, across all 1,136 masks).
+  band, across all 1,136 masks). The indices are right; the *class definitions* are not
+  interchangeable. AMD-SD annotates SHRM separately, AROI has no SHRM class, so AROI's SRF
+  index covers both fluid and hyperreflective material. A depth check cannot detect this —
+  SHRM occupies the same subretinal band as SRF.
 
 ## Next
 

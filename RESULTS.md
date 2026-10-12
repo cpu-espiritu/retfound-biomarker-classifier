@@ -777,8 +777,11 @@ attention arm is the mean of 3 seeds against a deterministic baseline; the last-
 single-seed on both sides.
 
 _Remeasured after the `AttnPool` bias-gradient fix: every frozen-attention figure in this
-section now comes from the corrected code. Re-running the nested CV selected the identical
-modal configuration for all three classes, and the estimates barely moved — attention AUPRC
+section now comes from the corrected code. **The hyperparameters were not re-selected** —
+the nested-CV rerun failed (job 56554003) and the measurement job used the configuration
+chosen before the fix, so these arms are the corrected head fitted at the pre-fix modal
+settings (IRF L=64, 1e-3, 5 epochs; SRF L=32, 3e-3, 55; PED L=32, 3e-3, 30). Whether the
+corrected code would select the same settings is untested. The estimates barely moved — attention AUPRC
 rose by 0.0012, 0.0003 and 0.0008 on IRF, SRF and PED. **C2 itself is unchanged to three
 decimals**: frozen+attention − last-4+mean is +0.016 (p 0.544), −0.001 (p 0.901) and +0.003
 (p 0.644), exactly as reported below. PED's correction result is the one thing that moved —

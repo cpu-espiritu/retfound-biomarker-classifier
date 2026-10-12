@@ -156,7 +156,16 @@ def main():
         B = len(dd)
         p = min(2 * min((1 + (dd <= 0).sum()) / (B + 1),
                         (1 + (dd >= 0).sum()) / (B + 1)), 1.0)
-        rows.append(dict(cls=c, oof_attn=AP(y[pool], oof[c][pool]),
+        # oof is filled fold by fold and resumed from a cached .npy, so an
+        # interrupted or partial run leaves NaN in some pool rows. Score the rows
+        # that were actually predicted and say how many, rather than dying here
+        # after the expensive part has already been written to disk.
+        om = pool & np.isfinite(oof[c])
+        if om.sum() < pool.sum():
+            print(f'  [warn] {c}: {int(pool.sum() - om.sum())} of {int(pool.sum())} '
+                  f'pool scans have no out-of-fold prediction; OOF uses the rest')
+        rows.append(dict(cls=c, oof_attn=(AP(y[om], oof[c][om]) if om.any() else float('nan')),
+                         n_oof=int(om.sum()),
                          test_attn=AP(yt, p_attn), test_mean=AP(yt, p_mean),
                          delta=AP(yt, p_attn) - AP(yt, p_mean),
                          lo=lo, hi=hi, p=p, **cfg))

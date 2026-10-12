@@ -32,11 +32,22 @@ echo "stage=$STAGE  tokens=$TOKENS"
 
 case "$STAGE" in
   tune)
-    # the previous selection was made while the AttnPool bias gradient was wrong;
-    # keep it so the two can be diffed before anything downstream is rerun
-    if [ -f "$REPO/results/attn_tuned.csv" ] && [ ! -f "$REPO/results/attn_tuned_prefix.csv" ]; then
-      cp "$REPO/results/attn_tuned.csv" "$REPO/results/attn_tuned_prefix.csv"
-      echo "kept the pre-fix selection at results/attn_tuned_prefix.csv"
+    # tune_attention.py resumes from its own output: any (cls, outer) already in
+    # attn_tuned.csv is skipped. Copying the old file aside is not enough — it has
+    # to be MOVED, and the cached out-of-fold arrays with it, or the job reloads the
+    # previous selection, trains nothing, and exits in seconds looking successful.
+    if [ -f "$REPO/results/attn_tuned.csv" ]; then
+      mv "$REPO/results/attn_tuned.csv" "$REPO/results/attn_tuned_prefix.csv"
+      echo "moved the previous selection to results/attn_tuned_prefix.csv"
+    fi
+    for f in "$REPO"/results/attn_tuned_oof_*.npy; do
+      [ -e "$f" ] || continue
+      mv "$f" "${f%.npy}_prefix.npy"
+      echo "moved $(basename "$f") aside"
+    done
+    if [ -f "$REPO/results/attn_tuned.csv" ]; then
+      echo "attn_tuned.csv still present — the retune would resume, not restart" >&2
+      exit 1
     fi
     python $REPO/scripts/features/tune_attention.py \
       --tokens   $TOKENS \

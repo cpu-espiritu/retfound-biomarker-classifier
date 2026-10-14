@@ -1159,6 +1159,47 @@ single claim would be true of one class in three.
 CSVs in **~1.0-1.5 s** per headline on an Apple M1 laptop, 5.5 s for all five — CPU only,
 no GPU, no dataset access, no model weights.
 
+## Supplementary: sensitivity to RETFound's pretrained final norm
+
+The cached tokens stop before RETFound's trained final `norm`, and both frozen arms
+normalise only *after* pooling with a parameter-free layernorm. That norm's per-channel
+weights vary widely (mean 0.70, sd 0.48, range −0.05 to 4.5), and attention computes its
+weights from the tokens while mean pooling cannot adapt at all — so part of attention's
+frozen margin might be compensating for the missing scales rather than recovering
+localisation. Adding the per-token pretrained norm before pooling, everything else
+identical, 3 seeds, same protocol and resamples as §6:
+
+| | attention | | mean pooling | |
+| --- | --- | --- | --- | --- |
+| | parameter-free | pretrained | parameter-free | pretrained |
+| IRF | 0.8073 | 0.8071 | 0.7071 | 0.6978 |
+| SRF | 0.9842 | 0.9791 | 0.9706 | 0.9720 |
+| PED | 0.9603 | 0.9528 | 0.9194 | 0.9237 |
+
+| contrast | IRF | SRF | PED |
+| --- | --- | --- | --- |
+| attention − mean, parameter-free | +0.100 (p 0.004) | +0.014 (p 0.009) | +0.043 (p 0.021) |
+| attention − mean, pretrained | +0.109 (p 0.019) | +0.007 (p 0.235) | +0.030 (p 0.005) |
+| pretrained − parameter-free, attention | −0.001 (p 0.946) | −0.005 (p 0.019) | −0.008 (p 0.490) |
+| pretrained − parameter-free, mean | −0.009 (p 0.267) | +0.001 (p 0.076) | +0.004 (p 0.343) |
+
+**The compensation hypothesis is not supported.** If attention were making up for absent
+per-channel scales, restoring them would lift mean pooling much more than attention. It does
+not: mean pooling moves by at most +0.004 (PED) and is slightly *worse* on IRF (−0.009),
+while attention is flat to slightly worse throughout. Every one of the eight shifts is
+smaller than 0.01. C2 is insensitive to this choice, and the attention−mean contrast stands
+on IRF (+0.109) and PED (+0.030).
+
+**One thing does not survive.** SRF's attention advantage — already the smallest, +0.014
+against a 0.98 ceiling — falls to +0.007 and loses significance (p 0.009 → 0.235) under the
+pretrained norm, and attention itself drops 0.005 (p 0.019). SRF's frozen contrast should be
+read as fragile to this choice; IRF and PED are not.
+
+The parameter-free setting remains primary throughout; this is a sensitivity analysis.
+`results/norm_sensitivity.csv`, `scripts/features/norm_sensitivity.py`.
+
+---
+
 ## Limitations
 
 - **20 test patients.** CIs are wide (IRF AUPRC spans 0.58–0.90 at last-4). Multi-seed

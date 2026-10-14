@@ -316,10 +316,12 @@ AROI's optimal thresholds are far lower — SRF 0.80 → 0.11, PED 0.83 → 0.35
 **Deployment implication: recalibration helps, but it is not the whole remedy and the
 collapse above overstates the domain effect.** Two corrections to the naive reading:
 
-- The transferred threshold is Youden on the *concatenated out-of-fold validation folds*,
+- The transferred threshold is Youden on the _concatenated out-of-fold validation folds_,
   while AROI is scored by the 5-fold ensemble. Those are different score scales, and the
   out-of-fold one runs optimistic, so the threshold sits too high. Re-deriving it on the
-  ensemble scale moves SRF from 0.80 to 0.24 and lifts AROI SRF recall 0.432 → 0.671 —
+  ensemble scale — Youden taken on the AMD-SD **test** predictions, which is a diagnostic
+  for the scale gap and *not* a legitimate operating point, since it touches the held-out
+  set — moves SRF from 0.80 to 0.24 and lifts AROI SRF recall 0.432 → 0.671 —
   about **64% of SRF's apparent collapse is this protocol mismatch, not the scanner**. PED
   is ~23%; IRF is unaffected, its two thresholds coinciding at 0.16.
 - What remains is not uniform across classes. For PED a refit threshold restores recall
@@ -541,14 +543,14 @@ interaction weakens as above, but the shift model still misses: MAE 0.157, worst
 AUROC settles what that is — each bin's positives against all SRF negatives, patient
 bootstrap:
 
-| bin (patches) | AROI n / patients | AROI AUROC | AMD-SD n / patients | AMD-SD AUROC | Δ (95% CI) |
-| --- | --- | --- | --- | --- | --- |
-| 0.03–0.08 | 21 / 9 | 0.614 | 26 / 17 | 0.736 | −0.122 [−0.362, +0.085] |
-| 0.08–0.22 | 50 / 12 | 0.693 | 83 / 36 | 0.791 | −0.098 [−0.276, +0.033] |
-| **0.22–0.58** | 90 / 16 | **0.880** | 215 / 53 | **0.888** | −0.009 [−0.128, +0.075] |
-| 0.58–1.55 | 78 / 10 | 0.975 | 382 / 61 | 0.953 | +0.022 [−0.044, +0.063] |
-| 1.55–4.17 | 164 / 10 | 0.995 | 435 / 50 | 0.984 | +0.012 [−0.009, +0.030] |
-| 4.17–30 | 132 / 6 | 0.997 | 345 / 35 | 0.989 | +0.008 [−0.004, +0.024] |
+| bin (patches) | AROI n / patients | AROI AUROC | AMD-SD n / patients | AMD-SD AUROC | Δ (95% CI)              |
+| ------------- | ----------------- | ---------- | ------------------- | ------------ | ----------------------- |
+| 0.03–0.08     | 21 / 9            | 0.614      | 26 / 17             | 0.736        | −0.122 [−0.362, +0.085] |
+| 0.08–0.22     | 50 / 12           | 0.693      | 83 / 36             | 0.791        | −0.098 [−0.276, +0.033] |
+| **0.22–0.58** | 90 / 16           | **0.880**  | 215 / 53            | **0.888**    | −0.009 [−0.128, +0.075] |
+| 0.58–1.55     | 78 / 10           | 0.975      | 382 / 61            | 0.953        | +0.022 [−0.044, +0.063] |
+| 1.55–4.17     | 164 / 10          | 0.995      | 435 / 50            | 0.984        | +0.012 [−0.009, +0.030] |
+| 4.17–30       | 132 / 6           | 0.997      | 345 / 35            | 0.989        | +0.008 [−0.004, +0.024] |
 
 **Not a discrimination loss at or above 0.22 patches** (within-bin AUROC 0.880 against 0.888,
 interval spanning zero); **a possible partial loss below 0.22 patches** (Δ −0.10 to −0.12),
@@ -828,7 +830,7 @@ is what a substitution predicts.
 Two caveats on the mechanism, as distinct from the equivalence. The frozen attention−mean
 contrast now clears Holm on IRF and SRF but not PED (adjusted 0.062), so "attention helps a
 frozen encoder" is a two-of-three result. And the cached tokens stop before RETFound's
-trained final norm, which both arms replace with a parameter-free layernorm *after* pooling;
+trained final norm, which both arms replace with a parameter-free layernorm _after_ pooling;
 since attention computes its weights from the tokens and mean pooling cannot adapt at all,
 some of attention's frozen margin could be compensating for that missing normalisation
 rather than recovering localisation. `scripts/features/norm_sensitivity.py` tests exactly
@@ -945,7 +947,7 @@ That bug is now fixed. **§6's frozen-attention arms have been remeasured on the
 code; the size curve in this section has not**, and neither have the other `AttnPool`
 consumers (`attn_final.csv`, `pooling_comparison.csv`, `pooling_control_tunedC.csv`,
 `pooling_size_tuned.csv`, `pooling_size_strat.csv`). An earlier version of this note claimed AUPRC and AUROC were unaffected because a
-constant bias is rank-invariant. That reasoning is wrong: the bias was wrong *during*
+constant bias is rank-invariant. That reasoning is wrong: the bias was wrong _during_
 training, so the gradient of every other parameter ran through `sigmoid(z + b)` with b
 drifting, and the attention and head weights partly compensated for it. The corrected code
 trains a different model, not the same model shifted, so the metrics must be remeasured
@@ -989,6 +991,58 @@ so lowering the cutoff sweeps them in, costing 31 points of specificity for 21 o
 A **size-conditional** threshold is not deployable: lesion area is unknown at inference, so
 only a single global cutoff can be chosen. This is a trade-off curve to be selected on
 clinical cost, not a free improvement.
+
+---
+
+### The marked Youden points carry the same scale mismatch
+
+Every operating point in §4 and §7 uses `S.thresholds('last4_224')`: Youden on the
+*concatenated out-of-fold validation folds*, applied to *5-fold ensembled* test scores.
+Out-of-fold scores run optimistic, so the threshold is set high for the scores it is applied
+to. The sweep curves are unaffected — they vary the threshold directly — but the single
+marked Youden point on each is displaced:
+
+| class | thr used (OOF) | recall | spec | J | thr maximising J on test | recall | spec | J |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| IRF | 0.16 | 0.763 | 0.901 | 0.663 | 0.16 | 0.763 | 0.901 | 0.663 |
+| **SRF** | 0.80 | 0.825 | 0.986 | 0.811 | **0.24** | 0.923 | 0.958 | **0.881** |
+| PED | 0.83 | 0.803 | 0.900 | 0.703 | 0.78 | 0.830 | 0.893 | 0.723 |
+
+IRF is unaffected; its two thresholds coincide. **SRF is displaced materially** — the
+reported operating point gives recall 0.825 where 0.923 was available at a cost of 0.028
+specificity, and J falls 0.070 short of its maximum. PED is displaced slightly (J 0.703 vs
+0.723).
+
+The right-hand columns are a **diagnostic, not an alternative protocol**: they are Youden
+taken on the held-out test set, which no deployable procedure may do. The legitimate fix is
+a threshold derived on validation data scored the way deployment scores it — ensembled —
+which needs a dedicated calibration split. What §7 shows about threshold choice being a
+first-order effect stands and is if anything strengthened: the transferred threshold is
+wrong by more than the F1-versus-Youden distinction it contrasts.
+
+### The attention fits are not bit-reproducible
+
+Two runs of the identical frozen-attention configuration — `frozen_arms.py` and the
+parameter-free arm of `norm_sensitivity.py`, same code, same seeds, same selected
+hyperparameters — do not agree exactly. The divergence scales with the number of training
+steps:
+
+| class | epochs | per-seed AUPRC, run 1 | run 2 |
+| --- | --- | --- | --- |
+| IRF | 5 | 0.8086 / 0.8042 / 0.8092 | identical |
+| SRF | 55 | 0.9839 / 0.9828 / 0.9850 | 0.9852 / 0.9838 / 0.9836 |
+| PED | 30 | 0.9642 / 0.9585 / 0.9642 | 0.9640 / 0.9594 / 0.9575 |
+
+IRF, at 160 gradient steps, is bit-identical. SRF and PED diverge in the third or fourth
+decimal. `AttnPool` seeds its initialisation and its batch permutation, so the residue is
+floating-point: BLAS reduction order varies with thread count and scheduling between jobs.
+
+The effect on conclusions is nil — AUPRC moves by at most 0.002 and no contrast changes
+side — but it does bound what can be promised. **Reported frozen-attention figures are
+reproducible to about ±0.002 AUPRC and ±0.006 on a bootstrap p-value, not exactly.** §6
+quotes `results/frozen_arms_tests.csv` throughout (SRF p 0.006, PED p 0.016); the
+supplementary quotes its own run (0.009, 0.021). Both are correct measurements of the same
+quantity.
 
 ---
 
@@ -1092,14 +1146,14 @@ One A100-40GB, batch 32, 20 epochs, fold 0 seed 0, all three arms in one job arr
 they share a GPU model and queue state. Measured 6 Oct 2026; regenerate with
 `scripts/slurm/bench_depth.sh` then `scripts/explore/bench_depth_report.py`.
 
-| | last-4 | full FT | frozen + attention |
-| --- | --- | --- | --- |
-| trainable parameters | 50.4 M (-83%) | 303.3 M | 0.069 M (-100%) |
-| seconds per epoch | 5.4 (-47%) | 10.2 | 4.4 (-57%) |
-| training wall-clock | 108 s (-47%) | 203 s | 88 s (-57%) |
-| peak GPU allocated | 2.74 GiB (-74%) | 10.43 GiB | 1.35 GiB (-87%) |
-| peak GPU reserved | 3.02 GiB (-73%) | 11.10 GiB | 1.45 GiB (-87%) |
-| weights at build | 1.13 GiB | 1.13 GiB | 1.13 GiB |
+|                      | last-4          | full FT   | frozen + attention |
+| -------------------- | --------------- | --------- | ------------------ |
+| trainable parameters | 50.4 M (-83%)   | 303.3 M   | 0.069 M (-100%)    |
+| seconds per epoch    | 5.4 (-47%)      | 10.2      | 4.4 (-57%)         |
+| training wall-clock  | 108 s (-47%)    | 203 s     | 88 s (-57%)        |
+| peak GPU allocated   | 2.74 GiB (-74%) | 10.43 GiB | 1.35 GiB (-87%)    |
+| peak GPU reserved    | 3.02 GiB (-73%) | 11.10 GiB | 1.45 GiB (-87%)    |
+| weights at build     | 1.13 GiB        | 1.13 GiB  | 1.13 GiB           |
 
 **Memory scales with the trainable set, wall-clock does not.** Cutting trainable parameters
 6x cuts peak memory 3.8x but training time only 1.9x: both arms run an identical full
@@ -1162,30 +1216,30 @@ no GPU, no dataset access, no model weights.
 ## Supplementary: sensitivity to RETFound's pretrained final norm
 
 The cached tokens stop before RETFound's trained final `norm`, and both frozen arms
-normalise only *after* pooling with a parameter-free layernorm. That norm's per-channel
+normalise only _after_ pooling with a parameter-free layernorm. That norm's per-channel
 weights vary widely (mean 0.70, sd 0.48, range −0.05 to 4.5), and attention computes its
 weights from the tokens while mean pooling cannot adapt at all — so part of attention's
 frozen margin might be compensating for the missing scales rather than recovering
 localisation. Adding the per-token pretrained norm before pooling, everything else
 identical, 3 seeds, same protocol and resamples as §6:
 
-| | attention | | mean pooling | |
-| --- | --- | --- | --- | --- |
-| | parameter-free | pretrained | parameter-free | pretrained |
-| IRF | 0.8073 | 0.8071 | 0.7071 | 0.6978 |
-| SRF | 0.9842 | 0.9791 | 0.9706 | 0.9720 |
-| PED | 0.9603 | 0.9528 | 0.9194 | 0.9237 |
+|     | attention      |            | mean pooling   |            |
+| --- | -------------- | ---------- | -------------- | ---------- |
+|     | parameter-free | pretrained | parameter-free | pretrained |
+| IRF | 0.8073         | 0.8071     | 0.7071         | 0.6978     |
+| SRF | 0.9842         | 0.9791     | 0.9706         | 0.9720     |
+| PED | 0.9603         | 0.9528     | 0.9194         | 0.9237     |
 
-| contrast | IRF | SRF | PED |
-| --- | --- | --- | --- |
-| attention − mean, parameter-free | +0.100 (p 0.004) | +0.014 (p 0.009) | +0.043 (p 0.021) |
-| attention − mean, pretrained | +0.109 (p 0.019) | +0.007 (p 0.235) | +0.030 (p 0.005) |
+| contrast                               | IRF              | SRF              | PED              |
+| -------------------------------------- | ---------------- | ---------------- | ---------------- |
+| attention − mean, parameter-free       | +0.100 (p 0.004) | +0.014 (p 0.009) | +0.043 (p 0.021) |
+| attention − mean, pretrained           | +0.109 (p 0.019) | +0.007 (p 0.235) | +0.030 (p 0.005) |
 | pretrained − parameter-free, attention | −0.001 (p 0.946) | −0.005 (p 0.019) | −0.008 (p 0.490) |
-| pretrained − parameter-free, mean | −0.009 (p 0.267) | +0.001 (p 0.076) | +0.004 (p 0.343) |
+| pretrained − parameter-free, mean      | −0.009 (p 0.267) | +0.001 (p 0.076) | +0.004 (p 0.343) |
 
 **The compensation hypothesis is not supported.** If attention were making up for absent
 per-channel scales, restoring them would lift mean pooling much more than attention. It does
-not: mean pooling moves by at most +0.004 (PED) and is slightly *worse* on IRF (−0.009),
+not: mean pooling moves by at most +0.004 (PED) and is slightly _worse_ on IRF (−0.009),
 while attention is flat to slightly worse throughout. Every one of the eight shifts is
 smaller than 0.01. C2 is insensitive to this choice, and the attention−mean contrast stands
 on IRF (+0.109) and PED (+0.030).
@@ -1240,16 +1294,12 @@ The parameter-free setting remains primary throughout; this is a sensitivity ana
   area × spacing would be biased.
 - **Index→class mapping** was undocumented in both datasets and was recovered, then
   confirmed geometrically (AROI: IRF 0.23 → SRF 0.50 → PED 0.72 depth against the RPE–BM
-  band, across all 1,136 masks). The indices are right; the *class definitions* are not
+  band, across all 1,136 masks). The indices are right; the _class definitions_ are not
   interchangeable. AMD-SD annotates SHRM separately, AROI has no SHRM class, so AROI's SRF
   index covers both fluid and hyperreflective material. A depth check cannot detect this —
   SHRM occupies the same subretinal band as SRF.
 
 ## Next
-
-Clinical review of eyes 143, 122 and 64; composing within-scan attention with
-across-slice decision-max for the eye-level model; three seeds for last-4 + attention,
-which is single-seed against the frozen arm's three in §6d.
 
 The sample-efficiency curve in §6 is done. What it leaves open: ~10 seeds at n=15 and n=30,
 where three draws cannot resolve the interval; and why PED runs the other way from IRF,

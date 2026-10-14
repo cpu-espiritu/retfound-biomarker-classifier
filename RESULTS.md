@@ -260,12 +260,6 @@ SRF lesions of 0.08–0.22 patches score a median 0.59 — far above the negativ
 0.032, but below the 0.80 cutoff, so they are recorded as missed. The encoder sees them;
 the operating point discards them.
 
-This links three findings that were previously separate: the size dependence in this
-section, the high thresholds in §7, and the AROI calibration failure in §5 are the same
-mechanism. It also implies a cheap intervention — a size-conditional or simply lower
-threshold would recover much of the small-lesion loss at a specificity cost, testable from
-the existing predictions with no retraining.
-
 **The 50% point is ~0.2 patches, not 1.0** (IRF 0.11, SRF 0.22, PED 0.23; AROI SRF 0.20,
 PED 0.21). Sub-patch lesions are detected at _reduced_ rate, not missed. The transition is
 graded; one patch is not a cliff.
@@ -1250,6 +1244,11 @@ pretrained norm, and attention itself drops 0.005 (p 0.019). SRF's frozen contra
 read as fragile to this choice; IRF and PED are not.
 
 The parameter-free setting remains primary throughout; this is a sensitivity analysis.
+Its parameter-free column is re-measured inside this run so the pretrained−parameter-free
+contrast is paired; it therefore differs from §6 in the third decimal (SRF p 0.009 against
+0.006, PED 0.021 against 0.016) for the reason set out under "The attention fits are not
+bit-reproducible". **§6's `results/frozen_arms_tests.csv` is the canonical run and is what
+Holm is computed on**; this table is internally consistent and should not be mixed with it.
 `results/norm_sensitivity.csv`, `scripts/features/norm_sensitivity.py`.
 
 ---
@@ -1292,9 +1291,9 @@ The parameter-free setting remains primary throughout; this is a sensitivity ana
 - **AROI slice selection is content-driven** — 11 of 24 patients have a fully contiguous
   annotated block, and annotated fractions range 14.8%–80.5%. Volume estimates by
   area × spacing would be biased.
-- **Index→class mapping** was undocumented in both datasets and was recovered, then
-  confirmed geometrically (AROI: IRF 0.23 → SRF 0.50 → PED 0.72 depth against the RPE–BM
-  band, across all 1,136 masks). The indices are right; the _class definitions_ are not
+- **Index→class mapping** was taken from the dataset publications and confirmed
+  geometrically (AROI: IRF 0.23 → SRF 0.50 → PED 0.72 depth against the RPE–BM band, across
+  all 1,136 masks). The indices are right; the _class definitions_ are not
   interchangeable. AMD-SD annotates SHRM separately, AROI has no SHRM class, so AROI's SRF
   index covers both fluid and hyperreflective material. A depth check cannot detect this —
   SHRM occupies the same subretinal band as SRF.

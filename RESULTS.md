@@ -314,9 +314,9 @@ collapse above overstates the domain effect.** Two corrections to the naive read
   while AROI is scored by the 5-fold ensemble. Those are different score scales, and the
   out-of-fold one runs optimistic, so the threshold sits too high. Re-deriving it on the
   ensemble scale — Youden taken on the AMD-SD **test** predictions, which is a diagnostic
-  for the scale gap and *not* a legitimate operating point, since it touches the held-out
+  for the scale gap and _not_ a legitimate operating point, since it touches the held-out
   set — moves SRF from 0.80 to 0.24 and lifts AROI SRF recall 0.432 → 0.671 —
-  about **64% of SRF's apparent collapse is this protocol mismatch, not the scanner**. PED
+  about **64% of SRF's apparent collapse is this protocol mismatch, not the device**. PED
   is ~23%; IRF is unaffected, its two thresholds coinciding at 0.16.
 - What remains is not uniform across classes. For PED a refit threshold restores recall
   across the whole size range. For SRF it does not, because part of AROI's SRF label is
@@ -393,11 +393,18 @@ the two smallest bins, against PED's recovery to near-ceiling by 0.22 patches.
 AMD-SD test positives from 10 patients and 228 AROI positives from 13. The point estimates
 run the same way as SRF's.
 
-**What this does to the §5 claim.** Threshold recalibration remains the right remedy — the
-dominant term is a uniform shift in every class, and a shift is exactly what one scalar
-fixes. But the claim should be stated per class: for PED a refit threshold restores recall
-across the whole size range, while for SRF it leaves sub-patch lesions largely undetected,
-and that residue is the part retraining would have to address.
+**What this does to the §5 claim.** Threshold recalibration remains the right remedy for
+most of the loss — the dominant term is a uniform shift in every class, and a shift is what
+one scalar fixes. But the residue is not one thing, and it does not all need retraining.
+For PED a refit threshold restores recall across the whole size range. For SRF what is left
+splits in two. The hyperreflective part of AROI's SRF label (below) is a class-definition
+mismatch: the model correctly excludes it, and only relabelling or retraining on AROI's
+definition changes that. The small genuine-fluid lesions are different — within-bin AUROC
+at 0.22–0.58 patches is 0.880 on AROI against 0.888 on AMD-SD, so the model still ranks them
+correctly. Their loss is an operating-point problem, not lost discrimination: they sit below
+any single threshold that also suits large lesions, and since lesion size is unknown at
+inference (§7), recovering them means accepting a lower global threshold and its
+specificity cost. That is a trade-off to choose, not a retraining requirement.
 
 ### Falsifying the shift model directly
 
@@ -433,7 +440,9 @@ predicted interval against 3 of 6 for SRF.
 
 **PED's transfer failure is fully explained by one number.** A single scalar reproduces its
 recall curve across two decades of lesion size, which is the strongest form of the §5 claim:
-nothing about the new scanner changed except the operating point.
+what changed for PED is the operating point and nothing else. Part of that operating-point
+shift — about 23% of PED's apparent loss — is the out-of-fold-versus-ensemble threshold
+mismatch rather than the new device.
 
 **SRF's is not, and the miss is largest where the lesions are biggest.** The pure shift
 over-predicts recall by 0.27–0.37 in the three bins at and above a quarter of a patch,
@@ -460,7 +469,7 @@ Applying that cut to AROI's 885 SRF components, area-weighted per slice:
 
 AROI's SRF label is 18x enriched in bright components against AMD-SD's, and its components
 are twice the size — sitting between AMD-SD fluid and AMD-SD SHRM, where a mixture would.
-AROI IRF is the control: 0.1% bright against AMD-SD's 0.7%, so this is not a scanner-wide
+AROI IRF is the control: 0.1% bright against AMD-SD's 0.7%, so this is not a device-wide
 brightness effect or a ring artefact. It is specific to the SRF label.
 
 **Bright slices are detected far less often, and at the transferred threshold not at all.**
@@ -663,6 +672,13 @@ encoder, head-only training, out-of-fold on 2,609 pool scans:
 Over 3 seeds: attention − mean = +0.064 / +0.010 / +0.037, attention − matched MLP =
 **+0.105** / +0.012 / +0.043. Seed SD is 0.007–0.015, well inside the gaps.
 
+_**Pre-fix — being remeasured.** This table and the Holm table below come from
+`pooling_comparison.csv` and `pooling_control_tunedC.csv`, both produced before the
+`AttnPool` bias-gradient fix. Rows not involving attention (mean, max, top-5%, matched MLP)
+do not use `AttnPool` and are unaffected; the attention row and every contrast against it
+are pending. Figure 5 does not read these files — it recomputes its own capacity control —
+so it is already post-fix._
+
 **The baseline was not handicapped.** Selecting the logistic head's `C` by inner CV, on the
 same grid used for the encoder probes, moves mean-pooled IRF from 0.756 to 0.759. The fixed
 `C = 0.01` was already near-optimal, so attention's margin is not an artefact of an
@@ -740,35 +756,6 @@ conclusion — a better pooling operator, not a size fix — is if anything stro
 specific surviving bins are not stable across configurations and should not be quoted as
 findings in their own right.
 
-### Confirmed on the held-out test set
-
-Everything above is out-of-fold on the pool split with hyperparameters I chose. This is the
-clean version: L, learning rate, weight decay and epochs selected by nested CV inside the
-training folds, the baseline's `C` selected on the same grid, and the test set touched once.
-
-| class   | attention | mean pooling | Δ AUPRC    | 95% CI           | p      | Holm       |
-| ------- | --------- | ------------ | ---------- | ---------------- | ------ | ---------- |
-| **IRF** | **0.831** | 0.699        | **+0.131** | [+0.052, +0.201] | 0.0016 | **0.0048** |
-| SRF     | 0.980     | 0.967        | +0.012     | [−0.004, +0.041] | 0.125  | 0.125      |
-| **PED** | **0.953** | 0.902        | **+0.051** | [+0.011, +0.129] | 0.0032 | **0.0064** |
-
-IRF and PED survive correction. The IRF effect is **larger** on the test set than
-out-of-fold (+0.131 vs +0.105), so it is not selection-optimistic.
-
-**A frozen encoder with a 66k-parameter attention head beats fine-tuning 50M parameters on
-IRF**, on the same 20 test patients:
-
-|     | frozen + attention | last-4 fine-tuned | Δ          |
-| --- | ------------------ | ----------------- | ---------- |
-| IRF | **0.831**          | 0.784             | **+0.047** |
-| SRF | 0.980              | 0.984             | −0.005     |
-| PED | 0.953              | 0.964             | −0.011     |
-
-That comparison is not perfectly matched — the attention head's hyperparameters were
-selected by nested CV while the fine-tuning arms used fixed defaults (§ Limitations) — but
-it reframes §1 and §2: on the hardest class, the gain from fine-tuning is available more
-cheaply by changing how the encoder's output is pooled.
-
 ### Frozen encoder with attention pooling matches fine-tuning
 
 All rows below are on the same held-out test set (440 scans, 20 patients) under the same
@@ -782,6 +769,11 @@ mean-pooled features is deterministic and runs once.
 | frozen + mean pooling  | 0.707             | 0.971         | 0.919         | 0.003 M    |
 | last-4 + mean pooling  | 0.791             | 0.985         | 0.960         | 50 M       |
 | last-4 + attention     | 0.786             | 0.983         | 0.963         | 50 M       |
+
+_The frozen-attention row is the mean ± SD of three per-seed AUPRCs. The contrast tables
+below score the **seed-averaged prediction**, a 3-model ensemble, which is why PED reads
+0.961 here and 0.962 there; IRF and SRF agree to three decimals either way. Quote the
+ensemble figure alongside a contrast and the per-seed mean alongside an SD._
 
 **Attention pooling helps a frozen encoder and does nothing to a fine-tuned one.** Both
 contrasts on the same 5,000 patient resamples, Holm across all six:
@@ -841,20 +833,22 @@ this and finds no compensation: restoring the pretrained norm moves neither arm 
 0.01 (Supplementary). The equivalence claim does not depend on the
 answer; the mechanism sentence above does.
 
-_An earlier version of this section reported frozen + attention at 0.831 and claimed it beat
-fine-tuning by 0.045. That figure came from a single model fitted on all pool data, while
+_An earlier version of this section reported frozen + attention at 0.831 — attention beating
+mean pooling by +0.131 and fine-tuning by 0.045 — and claimed it beat fine-tuning. That figure came from a single model fitted on all pool data, while
 the fine-tuned arms were 5-fold ensembles — the protocols were not matched, and the
 mismatch favoured the frozen arm because its single model saw 2,609 training scans against
 2,087 for each ensemble member. Under the matched protocol the difference is +0.016 with an
 interval spanning zero._
 
-**Selected hyperparameters were unstable in epochs.** Five folds chose five different
-configurations; epochs ranged 5–80 for IRF and 5–60 for SRF, and the modal choices were
-IRF (L=64, lr=1e-3, wd=1e-3, 5 epochs), SRF (L=32, 3e-3, 1e-3, 55), PED (L=32, 3e-3,
-1e-3, 30). `L` and learning rate were stable; the stopping point was not, which means the
-inner-validation curve is flat and the epoch count is close to arbitrary within that range.
-The result holds despite that, but a reader should know the head is not tightly identified
-by 118 IRF-positive patients.
+**Selected hyperparameters were unstable in epochs.** Re-selected by nested CV on the
+corrected code, the five outer folds chose four different configurations for IRF and five
+for SRF and PED; epochs ranged 5–75 for IRF, 5–70 for SRF and 5–35 for PED. The modal choices
+were IRF (L=64, lr=1e-3, wd=1e-3, 5 epochs), SRF (L=32, 3e-3, 1e-3, 70) and PED (L=64, 3e-3,
+1e-3, 5) — and PED's modal epoch count was chosen by one fold in five. Learning rate was
+stable; `L` and the stopping point were not, which means the inner-validation surface is
+flat and the epoch count close to arbitrary within that range. The equivalence holds
+despite that, but a reader should know the head is not tightly identified by 118 patients,
+and that PED's selection in particular is barely a selection.
 
 ### Sample efficiency: attention substitutes for fine-tuning across the range
 
@@ -1001,16 +995,16 @@ clinical cost, not a free improvement.
 ### The marked Youden points carry the same scale mismatch
 
 Every operating point in §4 and §7 uses `S.thresholds('last4_224')`: Youden on the
-*concatenated out-of-fold validation folds*, applied to *5-fold ensembled* test scores.
+_concatenated out-of-fold validation folds_, applied to _5-fold ensembled_ test scores.
 Out-of-fold scores run optimistic, so the threshold is set high for the scores it is applied
 to. The sweep curves are unaffected — they vary the threshold directly — but the single
 marked Youden point on each is displaced:
 
-| class | thr used (OOF) | recall | spec | J | thr maximising J on test | recall | spec | J |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| IRF | 0.16 | 0.763 | 0.901 | 0.663 | 0.16 | 0.763 | 0.901 | 0.663 |
-| **SRF** | 0.80 | 0.825 | 0.986 | 0.811 | **0.24** | 0.923 | 0.958 | **0.881** |
-| PED | 0.83 | 0.803 | 0.900 | 0.703 | 0.78 | 0.830 | 0.893 | 0.723 |
+| class   | thr used (OOF) | recall | spec  | J     | thr maximising J on test | recall | spec  | J         |
+| ------- | -------------- | ------ | ----- | ----- | ------------------------ | ------ | ----- | --------- |
+| IRF     | 0.16           | 0.763  | 0.901 | 0.663 | 0.16                     | 0.763  | 0.901 | 0.663     |
+| **SRF** | 0.80           | 0.825  | 0.986 | 0.811 | **0.24**                 | 0.923  | 0.958 | **0.881** |
+| PED     | 0.83           | 0.803  | 0.900 | 0.703 | 0.78                     | 0.830  | 0.893 | 0.723     |
 
 IRF is unaffected; its two thresholds coincide. **SRF is displaced materially** — the
 reported operating point gives recall 0.825 where 0.923 was available at a cost of 0.028
@@ -1031,11 +1025,11 @@ run and the parameter-free arm of `norm_sensitivity.py`, same code, same seeds, 
 pre-fix-selected hyperparameters — do not agree exactly. The divergence scales with the number of training
 steps:
 
-| class | epochs | per-seed AUPRC, run 1 | run 2 |
-| --- | --- | --- | --- |
-| IRF | 5 | 0.8086 / 0.8042 / 0.8092 | identical |
-| SRF | 55 | 0.9839 / 0.9828 / 0.9850 | 0.9852 / 0.9838 / 0.9836 |
-| PED | 30 | 0.9642 / 0.9585 / 0.9642 | 0.9640 / 0.9594 / 0.9575 |
+| class | epochs | per-seed AUPRC, run 1    | run 2                    |
+| ----- | ------ | ------------------------ | ------------------------ |
+| IRF   | 5      | 0.8086 / 0.8042 / 0.8092 | identical                |
+| SRF   | 55     | 0.9839 / 0.9828 / 0.9850 | 0.9852 / 0.9838 / 0.9836 |
+| PED   | 30     | 0.9642 / 0.9585 / 0.9642 | 0.9640 / 0.9594 / 0.9575 |
 
 IRF, at 160 gradient steps, is bit-identical. SRF and PED diverge in the third or fourth
 decimal. `AttnPool` seeds its initialisation and its batch permutation, so the residue is
@@ -1255,7 +1249,7 @@ read as fragile to this choice; IRF and PED are not.
 
 The parameter-free setting remains primary throughout; this is a sensitivity analysis.
 Its parameter-free column is re-measured inside this run so the pretrained−parameter-free
-contrast is paired. It was run at the hyperparameters selected *before* the `AttnPool`
+contrast is paired. It was run at the hyperparameters selected _before_ the `AttnPool`
 fix, so its parameter-free column differs from §6, which uses the re-selected ones (SRF p
 0.009 here against 0.016 in §6; PED 0.021 against 0.020), on top of the run-to-run variation
 set out under "The attention fits are not bit-reproducible". **§6's

@@ -39,7 +39,7 @@ aside () {
   echo "moved $(basename "$1") aside"
 }
 # STEPS selects which to run, e.g. STEPS="comparison final" to redo only those two
-STEPS=${STEPS:-"comparison tuned strat final"}
+STEPS=${STEPS:-"comparison control tuned strat final"}
 has () { [[ " $STEPS " == *" $1 "* ]]; }
 
 if has comparison; then
@@ -47,6 +47,13 @@ if has comparison; then
   aside $R/pooling_comparison.csv
   python $REPO/scripts/features/probe_pooling.py \
     --tokens $TOKENS --manifest $SPLITS/manifest.csv --out $R/pooling_comparison.csv
+fi
+if has control; then
+  echo "=============== pooling_control (pooling_control_tunedC)"
+  aside $R/pooling_control_tunedC.csv
+  aside $R/pooling_control_tests.csv
+  python $REPO/scripts/features/pooling_control.py \
+    --tokens $TOKENS --manifest $SPLITS/manifest.csv --out $R/pooling_control_tunedC.csv
 fi
 if has tuned; then
   echo "=============== pooling_size_tuned"

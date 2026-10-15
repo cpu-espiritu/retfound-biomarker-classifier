@@ -183,6 +183,11 @@ def main():
     lr = a.lr or {'lp': 1e-3, 'last4': 1e-4, 'full': 2e-5}[a.mode]
     torch.manual_seed(a.seed); np.random.seed(a.seed)
     dev = torch.device('cuda')
+    # Peak from here on covers weights, gradients, optimizer state and activations —
+    # everything the job actually had to hold. Reset before the model is built so the
+    # resident weights are inside the figure, not treated as a free baseline.
+    torch.cuda.reset_peak_memory_stats(dev)
+    t_start = time.time()
 
     df = pd.read_csv(a.manifest)
     pool = df.split == 'pool'
@@ -224,6 +229,11 @@ def main():
     scaler = torch.cuda.amp.GradScaler()
     crit = nn.BCEWithLogitsLoss(reduction='none')
 
+    torch.cuda.synchronize()
+    mem_weights = torch.cuda.memory_allocated(dev) / 2 ** 30
+    trainable_M = sum(prm.numel() for prm in m.parameters() if prm.requires_grad) / 1e6
+    t_train = time.time()
+
     best, best_ep, best_state = -1, -1, None
     for ep in range(epochs):
         # cosine with warmup
@@ -250,7 +260,16 @@ def main():
             best, best_ep = mAP, ep
             best_state = {k: v.detach().cpu().clone() for k, v in m.state_dict().items()}
 
+    torch.cuda.synchronize()
+    train_s = time.time() - t_train
+    peak_alloc = torch.cuda.max_memory_allocated(dev) / 2 ** 30
+    peak_reserved = torch.cuda.max_memory_reserved(dev) / 2 ** 30
     print(f"[best] epoch {best_ep} val mAP {best:.4f}")
+    print(f"[cost] {a.mode}/{a.input_size} trainable {trainable_M:.1f}M | "
+          f"train {train_s / 60:.2f} min over {epochs} ep "
+          f"({train_s / max(epochs, 1):.1f} s/ep) | peak GPU alloc {peak_alloc:.2f} GiB, "
+          f"reserved {peak_reserved:.2f} GiB, weights at build {mem_weights:.2f} GiB",
+          flush=True)
     m.load_state_dict(best_state)
     Pv, Yv = infer(m, dl_va, dev)
     Pt, Yt = infer(m, dl_te, dev)
@@ -284,7 +303,16 @@ def main():
     (out / f"cfg_{tag}.json").write_text(json.dumps(
         vars(a) | {'lr': lr, 'epochs_run': epochs, 'warmup_run': warmup,
                    'n_train_patients_actual': int(tr.group.nunique()),
-                   'git_sha': sha, 'git_dirty': dirty}, indent=2))
+                   'git_sha': sha, 'git_dirty': dirty,
+                   'trainable_M': round(trainable_M, 3),
+                   'train_seconds': round(train_s, 1),
+                   'seconds_per_epoch': round(train_s / max(epochs, 1), 2),
+                   'total_seconds': round(time.time() - t_start, 1),
+                   'peak_gpu_alloc_GiB': round(peak_alloc, 3),
+                   'peak_gpu_reserved_GiB': round(peak_reserved, 3),
+                   'weights_gpu_GiB': round(mem_weights, 3),
+                   'gpu_name': torch.cuda.get_device_name(dev),
+                   'batch_size_run': a.batch_size}, indent=2))
     if a.save_model:
         torch.save({"model": best_state, "epoch": best_ep, "cfg": vars(a) | {"lr": lr}},
                    out / f"model_{tag}.pth")

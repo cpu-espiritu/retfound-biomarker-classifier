@@ -1,0 +1,13 @@
+log,device,threads,pool,batch,ms_per_pass,ms_per_scan,scans_per_s
+amdsd_latency_57247872.out,NVIDIA A100-SXM4-40GB,,mean,1,8.9,8.93,112.0
+amdsd_latency_57247872.out,NVIDIA A100-SXM4-40GB,,mean,8,10.9,1.37,731.7
+amdsd_latency_57247872.out,NVIDIA A100-SXM4-40GB,,mean,32,31.7,0.99,1010.4
+amdsd_latency_57247872.out,CPU,18.0,mean,1,117.7,117.73,8.5
+amdsd_latency_57247872.out,CPU,18.0,mean,8,517.6,64.7,15.5
+amdsd_latency_57247872.out,CPU,18.0,mean,32,1816.2,56.76,17.6
+amdsd_latency_57247877.out,NVIDIA A100-SXM4-40GB,,mean,1,9.1,9.05,110.5
+amdsd_latency_57247877.out,NVIDIA A100-SXM4-40GB,,mean,8,11.0,1.37,730.2
+amdsd_latency_57247877.out,NVIDIA A100-SXM4-40GB,,mean,32,31.7,0.99,1009.8
+amdsd_latency_57247877.out,CPU,18.0,mean,1,117.8,117.82,8.5
+amdsd_latency_57247877.out,CPU,18.0,mean,8,518.4,64.79,15.4
+amdsd_latency_57247877.out,CPU,18.0,mean,32,1815.3,56.73,17.6

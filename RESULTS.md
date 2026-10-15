@@ -18,15 +18,15 @@ Stage 1 of a programme predicting anti-VEGF treatment response.
 
 ## 1. Main result: adaptation depth
 
-Test set, 5-fold ensembled, Youden thresholds, mean over 3 seeds.
+Test set, 5-fold ensembled. AUPRC is the mean of per-seed AUPRC over 3 seeds (the two high-resolution arms have one seed); intervals are a patient bootstrap of that same statistic on the shared 5,000 resamples. Source `results/section1_auprc.csv`. The intervals were re-derived on 15 Oct: the earlier ones came from a computation no longer in the code, and bounds moved by up to 0.02; no point estimate changed.
 
 | Arm                    | Trainable | IRF AUPRC               | SRF AUPRC               | PED AUPRC               |
 | ---------------------- | --------- | ----------------------- | ----------------------- | ----------------------- |
-| Linear probe, 224      | 0.003 M   | 0.678 [0.440–0.868]     | 0.972 [0.927–0.992]     | 0.891 [0.763–0.967]     |
-| **Last-4 blocks, 224** | **50 M**  | **0.784 [0.577–0.898]** | **0.984 [0.959–0.996]** | **0.964 [0.906–0.987]** |
-| Full FT, 224           | 303 M     | 0.774 [0.555–0.901]     | 0.985 [0.956–0.996]     | 0.955 [0.888–0.986]     |
-| Full FT, 384           | 303 M     | 0.799 [0.574–0.913]     | 0.979 [0.943–0.995]     | 0.942 [0.865–0.987]     |
-| Last-4, 448            | 50 M      | 0.806 [0.531–0.917]     | 0.977 [0.933–0.995]     | 0.914 [0.801–0.976]     |
+| Linear probe, 224      | 0.003 M  | 0.678 [0.432–0.870] | 0.972 [0.924–0.992] | 0.891 [0.764–0.966] |
+| **Last-4 blocks, 224** | **50 M** | **0.784 [0.565–0.903]** | **0.984 [0.956–0.996]** | **0.964 [0.915–0.988]** |
+| Full FT, 224           | 303 M    | 0.774 [0.537–0.898] | 0.985 [0.956–0.996] | 0.955 [0.895–0.986] |
+| Full FT, 384           | 303 M    | 0.799 [0.575–0.914] | 0.979 [0.938–0.995] | 0.942 [0.865–0.987] |
+| Last-4, 448            | 50 M     | 0.806 [0.531–0.917] | 0.977 [0.933–0.995] | 0.914 [0.801–0.976] |
 
 Class prevalence in test: IRF 0.268, SRF 0.675, PED 0.682.
 
@@ -488,9 +488,10 @@ area-weighted Weber of zero and applying the AMD-SD threshold unchanged:
 | 1.55–4.17     | 0.851                  | 164    | **0.860**   | 14       | 0.000         |
 | 4.17–30       | 0.907                  | 132    | 0.773       | 56       | 0.000         |
 
-**0 of 104 bright slices are detected**, at any size. Their mean score is 0.141 against the
-dark slices' 0.642, and the highest-scoring bright slice reaches 0.411 — barely half the
-0.80 threshold. Mean residual against the shift model is −0.552 for bright slices and −0.130
+**Bright slices score far below dark ones** — mean 0.141 against 0.642 — and the
+highest-scoring bright slice reaches 0.411. At the transferred 0.80 threshold that means none
+of the 104 is detected, at any size; that zero is specific to a threshold set too high for
+this score scale (at 0.24, 19 of 104 are), while the dark–bright gap holds at either. Mean residual against the shift model is −0.552 for bright slices and −0.130
 for dark.
 
 **This explains the large-lesion anomaly exactly.** The non-monotone drop flagged above —
@@ -625,11 +626,13 @@ More components predicts _better_ detection, because it proxies for more total f
 
 Per-lesion contrast against an 8 px ring, excluding all other annotated lesion pixels:
 
-| class | Weber contrast | corr(log area, contrast) | size-only R² | size+contrast R² |
+| class | Weber contrast | corr(log area, contrast)* | size-only R² | size+contrast R² |
 | ----- | -------------- | ------------------------ | ------------ | ---------------- |
 | IRF   | −0.456         | 0.068                    | 0.230        | **0.378**        |
 | SRF   | −0.468         | −0.217                   | 0.323        | **0.417**        |
 | PED   | −0.072         | −0.543                   | 0.222        | 0.227            |
+
+_* Per lesion component, against the **signed** raw grey-level difference. The regression itself uses different variables — per positive scan, log of summed component pixels against the **absolute area-weighted** raw difference — and on those the correlation is IRF +0.015, SRF +0.138, PED +0.347. That is the one that bears on whether the R² decomposition is identifiable; the IRF near-orthogonality holds more strongly there. Weber contrast (the second column) is descriptive and does not enter the regression._
 
 Size and contrast are **near-orthogonal** for IRF (r = 0.068) and explain different things.
 Contrast adds +0.148 pseudo-R² on IRF, versus fragmentation's +0.011.
@@ -667,17 +670,16 @@ encoder, head-only training, out-of-fold on 2,609 pool scans:
 | max                                | 0.672             | 0.943             | 0.917             | deterministic |
 | top-5%                             | 0.677             | 0.925             | 0.911             | deterministic |
 | mean + matched-capacity MLP        | 0.714 ± 0.014     | 0.942 ± 0.005     | 0.905 ± 0.008     | 3             |
-| **attention**                      | **0.819 ± 0.007** | **0.953 ± 0.015** | **0.948 ± 0.007** | 3             |
+| **attention** †                    | **0.819 ± 0.007** | **0.953 ± 0.015** | **0.948 ± 0.007** | 3             |
 
 Over 3 seeds: attention − mean = +0.064 / +0.010 / +0.037, attention − matched MLP =
 **+0.105** / +0.012 / +0.043. Seed SD is 0.007–0.015, well inside the gaps.
 
-_**Pre-fix — being remeasured.** This table and the Holm table below come from
-`pooling_comparison.csv` and `pooling_control_tunedC.csv`, both produced before the
-`AttnPool` bias-gradient fix. Rows not involving attention (mean, max, top-5%, matched MLP)
-do not use `AttnPool` and are unaffected; the attention row and every contrast against it
-are pending. Figure 5 does not read these files — it recomputes its own capacity control —
-so it is already post-fix._
+_† **Pre-fix, superseded by `fig5_capacity_control.csv` (test set).** The attention row here
+and every contrast against it in the Holm table below come from out-of-fold runs made before
+the `AttnPool` bias-gradient fix. Rows not involving attention (mean, max, top-5%, matched MLP)
+never use `AttnPool` and are unaffected. The test-set control in Figure 5b is post-fix and is
+the version to quote; an out-of-fold remeasurement is running and will replace the † rows._
 
 **The baseline was not handicapped.** Selecting the logistic head's `C` by inner CV, on the
 same grid used for the encoder probes, moves mean-pooled IRF from 0.756 to 0.759. The fixed
@@ -688,13 +690,30 @@ Paired patient bootstrap, Holm across nine tests:
 
 | test                | IRF                     | SRF            | PED                |
 | ------------------- | ----------------------- | -------------- | ------------------ |
-| attn − mean         | +0.056 (Holm 0.160)     | +0.019 (0.096) | +0.039 (**0.008**) |
-| **attn − mean+MLP** | **+0.108 (Holm 0.008)** | +0.024 (0.130) | **+0.039 (0.002)** |
+| attn − mean †       | +0.056 (Holm 0.160)     | +0.019 (0.096) | +0.039 (**0.008**) |
+| **attn − mean+MLP** † | **+0.108 (Holm 0.008)** | +0.024 (0.130) | **+0.039 (0.002)** |
 | mean+MLP − mean     | −0.052 (0.192)          | −0.005 (0.760) | +0.000 (0.960)     |
 
 **The gain is selectivity, not capacity.** A matched-parameter MLP (66,691 vs attention's
 66,625) on mean-pooled features buys nothing and makes IRF _worse_. Attention beats that
 control by more than it beats plain mean.
+
+_**Superseded for the attention-vs-MLP claim by the test-set control.**
+`results/fig5_capacity_control.csv` (figure 5b) repeats the capacity control on the held-out
+test set under the §6 protocol — post-fix frozen attention, 3 seeds averaged; matched MLP
+refit per fold on cached mean-pooled features; same 5,000 patient resamples. IRF attention −
+matched MLP **+0.109 [+0.015, +0.189], p 0.022**; matched MLP − mean −0.008
+[−0.056, +0.046], p 0.809. Quote these, not the out-of-fold table above, which is pre-fix.
+These p-values are uncorrected: the nine test-set capacity contrasts are not a Holm family
+anywhere. Only attention − mean is corrected, as part of the §6 family of six (IRF Holm 0.024).
+Were the nine treated as one family, IRF attention − MLP would adjust to 0.140; within IRF's
+three contrasts alone, to 0.045._
+
+**The capacity claim does not rest on the uncorrected attention − MLP contrast.** It rests on
+two things: attention − mean, Holm-corrected within the §6 family (IRF adjusted 0.024), and
+the null matched MLP − mean (−0.008, p 0.809) — extra parameters on mean-pooled features buy
+nothing, so the gain from attention is not a capacity effect. Attention − MLP is reported for
+completeness and is uncorrected.
 
 **Dilution alone is falsified.** `max` has zero dilution and is 0.084 _worse_ than mean on
 IRF; naive selection is high-variance. Attention keeps the averaging but concentrates it.
@@ -851,6 +870,8 @@ despite that, but a reader should know the head is not tightly identified by 118
 and that PED's selection in particular is barely a selection.
 
 ### Sample efficiency: attention substitutes for fine-tuning across the range
+
+_**Pre-fix, not in the paper.** The frozen arm of this section was measured with the `AttnPool` bias-gradient bug and the hyperparameters selected before the fix, and was not rerun. Its numbers are kept as a record and must not be quoted._
 
 §6 establishes an equivalence at the full 118-patient pool. This asks which arm gets there
 on less data. Both arms were trained at 15, 30, 60 and 118 pool patients, three seeds each,
@@ -1289,7 +1310,8 @@ more than 0.01, it is not expected to change the conclusion.
   is used, whereas the upstream RETFound recipe applies 0.65 — full FT is the arm that
   recipe most protects, and that remains untested.
 - **Attention head hyperparameters are now selected, not chosen** (§6d), but the epoch
-  count is not identifiable — five folds chose values spanning 5–80. The fine-tuning arms
+  count is not identifiable — under the re-selected configuration the five folds' epochs
+  span 5–75 (IRF), 5–70 (SRF) and 5–35 (PED). The fine-tuning arms
   in §1–2 remain on fixed defaults, so the frozen+attention vs last-4 comparison gives the
   attention arm a tuning advantage the fine-tuned arms did not get.
 - **Pooling results are out-of-fold on the pool split**, not the held-out test set, and are

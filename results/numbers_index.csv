@@ -1,0 +1,859 @@
+name,value,source,note
+MainLpIrfAuprc,0.678,section1_auprc.csv,mean of 3 seeds
+MainLpIrfLo,0.432,section1_auprc.csv,mean of 3 seeds
+MainLpIrfHi,0.870,section1_auprc.csv,mean of 3 seeds
+MainLpSrfAuprc,0.972,section1_auprc.csv,mean of 3 seeds
+MainLpSrfLo,0.924,section1_auprc.csv,mean of 3 seeds
+MainLpSrfHi,0.992,section1_auprc.csv,mean of 3 seeds
+MainLpPedAuprc,0.891,section1_auprc.csv,mean of 3 seeds
+MainLpPedLo,0.764,section1_auprc.csv,mean of 3 seeds
+MainLpPedHi,0.966,section1_auprc.csv,mean of 3 seeds
+MainLpHighIrfAuprc,0.723,section1_auprc.csv,mean of 3 seeds
+MainLpHighIrfLo,0.401,section1_auprc.csv,mean of 3 seeds
+MainLpHighIrfHi,0.906,section1_auprc.csv,mean of 3 seeds
+MainLpHighSrfAuprc,0.953,section1_auprc.csv,mean of 3 seeds
+MainLpHighSrfLo,0.869,section1_auprc.csv,mean of 3 seeds
+MainLpHighSrfHi,0.988,section1_auprc.csv,mean of 3 seeds
+MainLpHighPedAuprc,0.790,section1_auprc.csv,mean of 3 seeds
+MainLpHighPedLo,0.593,section1_auprc.csv,mean of 3 seeds
+MainLpHighPedHi,0.951,section1_auprc.csv,mean of 3 seeds
+MainLastFourIrfAuprc,0.784,section1_auprc.csv,mean of 3 seeds
+MainLastFourIrfLo,0.565,section1_auprc.csv,mean of 3 seeds
+MainLastFourIrfHi,0.903,section1_auprc.csv,mean of 3 seeds
+MainLastFourSrfAuprc,0.984,section1_auprc.csv,mean of 3 seeds
+MainLastFourSrfLo,0.956,section1_auprc.csv,mean of 3 seeds
+MainLastFourSrfHi,0.996,section1_auprc.csv,mean of 3 seeds
+MainLastFourPedAuprc,0.964,section1_auprc.csv,mean of 3 seeds
+MainLastFourPedLo,0.915,section1_auprc.csv,mean of 3 seeds
+MainLastFourPedHi,0.988,section1_auprc.csv,mean of 3 seeds
+MainFullIrfAuprc,0.774,section1_auprc.csv,mean of 3 seeds
+MainFullIrfLo,0.537,section1_auprc.csv,mean of 3 seeds
+MainFullIrfHi,0.898,section1_auprc.csv,mean of 3 seeds
+MainFullSrfAuprc,0.985,section1_auprc.csv,mean of 3 seeds
+MainFullSrfLo,0.956,section1_auprc.csv,mean of 3 seeds
+MainFullSrfHi,0.996,section1_auprc.csv,mean of 3 seeds
+MainFullPedAuprc,0.955,section1_auprc.csv,mean of 3 seeds
+MainFullPedLo,0.895,section1_auprc.csv,mean of 3 seeds
+MainFullPedHi,0.986,section1_auprc.csv,mean of 3 seeds
+MainFullHighIrfAuprc,0.799,section1_auprc.csv,single seed
+MainFullHighIrfLo,0.575,section1_auprc.csv,single seed
+MainFullHighIrfHi,0.914,section1_auprc.csv,single seed
+MainFullHighSrfAuprc,0.979,section1_auprc.csv,single seed
+MainFullHighSrfLo,0.938,section1_auprc.csv,single seed
+MainFullHighSrfHi,0.995,section1_auprc.csv,single seed
+MainFullHighPedAuprc,0.942,section1_auprc.csv,single seed
+MainFullHighPedLo,0.865,section1_auprc.csv,single seed
+MainFullHighPedHi,0.987,section1_auprc.csv,single seed
+MainLastFourHighIrfAuprc,0.806,section1_auprc.csv,single seed
+MainLastFourHighIrfLo,0.531,section1_auprc.csv,single seed
+MainLastFourHighIrfHi,0.917,section1_auprc.csv,single seed
+MainLastFourHighSrfAuprc,0.977,section1_auprc.csv,single seed
+MainLastFourHighSrfLo,0.933,section1_auprc.csv,single seed
+MainLastFourHighSrfHi,0.995,section1_auprc.csv,single seed
+MainLastFourHighPedAuprc,0.914,section1_auprc.csv,single seed
+MainLastFourHighPedLo,0.801,section1_auprc.csv,single seed
+MainLastFourHighPedHi,0.976,section1_auprc.csv,single seed
+DepthLastFourLpIrfDelta,\ensuremath{+0.106},pvalues.csv,
+DepthLastFourLpIrfLo,\ensuremath{-0.041},pvalues.csv,
+DepthLastFourLpIrfHi,\ensuremath{+0.270},pvalues.csv,
+DepthLastFourLpIrfP,0.144,pvalues.csv,
+DepthLastFourLpSrfDelta,\ensuremath{+0.013},pvalues.csv,
+DepthLastFourLpSrfLo,\ensuremath{+0.001},pvalues.csv,
+DepthLastFourLpSrfHi,\ensuremath{+0.043},pvalues.csv,
+DepthLastFourLpSrfP,0.030,pvalues.csv,
+DepthLastFourLpPedDelta,\ensuremath{+0.072},pvalues.csv,
+DepthLastFourLpPedLo,\ensuremath{+0.011},pvalues.csv,
+DepthLastFourLpPedHi,\ensuremath{+0.165},pvalues.csv,
+DepthLastFourLpPedP,0.008,pvalues.csv,
+DepthFullLastFourIrfDelta,\ensuremath{-0.008},pvalues.csv,
+DepthFullLastFourIrfLo,\ensuremath{-0.070},pvalues.csv,
+DepthFullLastFourIrfHi,\ensuremath{+0.031},pvalues.csv,
+DepthFullLastFourIrfP,0.817,pvalues.csv,
+DepthFullLastFourSrfDelta,\ensuremath{-0.000},pvalues.csv,
+DepthFullLastFourSrfLo,\ensuremath{-0.006},pvalues.csv,
+DepthFullLastFourSrfHi,\ensuremath{+0.004},pvalues.csv,
+DepthFullLastFourSrfP,0.989,pvalues.csv,
+DepthFullLastFourPedDelta,\ensuremath{-0.007},pvalues.csv,
+DepthFullLastFourPedLo,\ensuremath{-0.024},pvalues.csv,
+DepthFullLastFourPedHi,\ensuremath{+0.003},pvalues.csv,
+DepthFullLastFourPedP,0.184,pvalues.csv,
+ResFullIrfDelta,\ensuremath{+0.023},pvalues.csv,
+ResFullIrfLo,\ensuremath{-0.005},pvalues.csv,
+ResFullIrfHi,\ensuremath{+0.059},pvalues.csv,
+ResFullIrfP,0.089,pvalues.csv,
+ResFullSrfDelta,\ensuremath{-0.006},pvalues.csv,
+ResFullSrfLo,\ensuremath{-0.027},pvalues.csv,
+ResFullSrfHi,\ensuremath{+0.004},pvalues.csv,
+ResFullSrfP,0.255,pvalues.csv,
+ResFullPedDelta,\ensuremath{-0.015},pvalues.csv,
+ResFullPedLo,\ensuremath{-0.045},pvalues.csv,
+ResFullPedHi,\ensuremath{+0.011},pvalues.csv,
+ResFullPedP,0.295,pvalues.csv,
+ResLpIrfDelta,\ensuremath{+0.047},pvalues.csv,
+ResLpIrfLo,\ensuremath{-0.085},pvalues.csv,
+ResLpIrfHi,\ensuremath{+0.127},pvalues.csv,
+ResLpIrfP,0.463,pvalues.csv,
+ResLpSrfDelta,\ensuremath{-0.019},pvalues.csv,
+ResLpSrfLo,\ensuremath{-0.068},pvalues.csv,
+ResLpSrfHi,\ensuremath{-0.001},pvalues.csv,
+ResLpSrfP,0.033,pvalues.csv,
+ResLpPedDelta,\ensuremath{-0.102},pvalues.csv,
+ResLpPedLo,\ensuremath{-0.197},pvalues.csv,
+ResLpPedHi,\ensuremath{-0.012},pvalues.csv,
+ResLpPedP,0.002,pvalues.csv,
+ResProbeIrfDelta,\ensuremath{-0.064},pvalues.csv,
+ResProbeIrfLo,\ensuremath{-0.195},pvalues.csv,
+ResProbeIrfHi,\ensuremath{+0.007},pvalues.csv,
+ResProbeIrfP,0.086,pvalues.csv,
+ResProbeSrfDelta,\ensuremath{-0.004},pvalues.csv,
+ResProbeSrfLo,\ensuremath{-0.054},pvalues.csv,
+ResProbeSrfHi,\ensuremath{+0.033},pvalues.csv,
+ResProbeSrfP,0.859,pvalues.csv,
+ResProbePedDelta,\ensuremath{-0.037},pvalues.csv,
+ResProbePedLo,\ensuremath{-0.159},pvalues.csv,
+ResProbePedHi,\ensuremath{+0.052},pvalues.csv,
+ResProbePedP,0.715,pvalues.csv,
+ResLastFourIrfDelta,\ensuremath{+0.022},pvalues.csv,
+ResLastFourIrfLo,\ensuremath{-0.074},pvalues.csv,
+ResLastFourIrfHi,\ensuremath{+0.111},pvalues.csv,
+ResLastFourIrfP,0.782,pvalues.csv,
+ResLastFourSrfDelta,\ensuremath{-0.008},pvalues.csv,
+ResLastFourSrfLo,\ensuremath{-0.035},pvalues.csv,
+ResLastFourSrfHi,\ensuremath{+0.004},pvalues.csv,
+ResLastFourSrfP,0.290,pvalues.csv,
+ResLastFourPedDelta,\ensuremath{-0.050},pvalues.csv,
+ResLastFourPedLo,\ensuremath{-0.130},pvalues.csv,
+ResLastFourPedHi,\ensuremath{-0.003},pvalues.csv,
+ResLastFourPedP,0.030,pvalues.csv,
+EncMaeLpIrfDelta,\ensuremath{+0.271},pvalues.csv,
+EncMaeLpIrfLo,\ensuremath{+0.039},pvalues.csv,
+EncMaeLpIrfHi,\ensuremath{+0.487},pvalues.csv,
+EncMaeLpIrfP,0.025,pvalues.csv,
+EncMaeLpIrfHolm,0.149,pvalues.csv,
+EncMaeLpSrfDelta,\ensuremath{+0.096},pvalues.csv,
+EncMaeLpSrfLo,\ensuremath{+0.022},pvalues.csv,
+EncMaeLpSrfHi,\ensuremath{+0.228},pvalues.csv,
+EncMaeLpSrfP,\ensuremath{<0.001},pvalues.csv,
+EncMaeLpSrfHolm,0.005,pvalues.csv,
+EncMaeLpPedDelta,\ensuremath{+0.154},pvalues.csv,
+EncMaeLpPedLo,\ensuremath{+0.026},pvalues.csv,
+EncMaeLpPedHi,\ensuremath{+0.236},pvalues.csv,
+EncMaeLpPedP,0.018,pvalues.csv,
+EncMaeLpPedHolm,0.123,pvalues.csv,
+EncMaeLastFourIrfDelta,\ensuremath{+0.041},pvalues.csv,
+EncMaeLastFourIrfLo,\ensuremath{-0.050},pvalues.csv,
+EncMaeLastFourIrfHi,\ensuremath{+0.166},pvalues.csv,
+EncMaeLastFourIrfP,0.358,pvalues.csv,
+EncMaeLastFourIrfHolm,1.000,pvalues.csv,
+EncMaeLastFourSrfDelta,\ensuremath{+0.029},pvalues.csv,
+EncMaeLastFourSrfLo,\ensuremath{+0.007},pvalues.csv,
+EncMaeLastFourSrfHi,\ensuremath{+0.078},pvalues.csv,
+EncMaeLastFourSrfP,\ensuremath{<0.001},pvalues.csv,
+EncMaeLastFourSrfHolm,0.005,pvalues.csv,
+EncMaeLastFourPedDelta,\ensuremath{+0.088},pvalues.csv,
+EncMaeLastFourPedLo,\ensuremath{+0.010},pvalues.csv,
+EncMaeLastFourPedHi,\ensuremath{+0.225},pvalues.csv,
+EncMaeLastFourPedP,0.003,pvalues.csv,
+EncMaeLastFourPedHolm,0.026,pvalues.csv,
+EncSupLpIrfDelta,\ensuremath{+0.040},pvalues.csv,
+EncSupLpIrfLo,\ensuremath{-0.108},pvalues.csv,
+EncSupLpIrfHi,\ensuremath{+0.275},pvalues.csv,
+EncSupLpIrfP,0.597,pvalues.csv,
+EncSupLpIrfHolm,1.000,pvalues.csv,
+EncSupLpSrfDelta,\ensuremath{+0.071},pvalues.csv,
+EncSupLpSrfLo,\ensuremath{+0.016},pvalues.csv,
+EncSupLpSrfHi,\ensuremath{+0.168},pvalues.csv,
+EncSupLpSrfP,0.001,pvalues.csv,
+EncSupLpSrfHolm,0.011,pvalues.csv,
+EncSupLpPedDelta,\ensuremath{+0.088},pvalues.csv,
+EncSupLpPedLo,\ensuremath{-0.015},pvalues.csv,
+EncSupLpPedHi,\ensuremath{+0.171},pvalues.csv,
+EncSupLpPedP,0.105,pvalues.csv,
+EncSupLpPedHolm,0.421,pvalues.csv,
+EncSupLastFourIrfDelta,\ensuremath{+0.013},pvalues.csv,
+EncSupLastFourIrfLo,\ensuremath{-0.105},pvalues.csv,
+EncSupLastFourIrfHi,\ensuremath{+0.141},pvalues.csv,
+EncSupLastFourIrfP,0.718,pvalues.csv,
+EncSupLastFourIrfHolm,1.000,pvalues.csv,
+EncSupLastFourSrfDelta,\ensuremath{+0.046},pvalues.csv,
+EncSupLastFourSrfLo,\ensuremath{+0.009},pvalues.csv,
+EncSupLastFourSrfHi,\ensuremath{+0.128},pvalues.csv,
+EncSupLastFourSrfP,\ensuremath{<0.001},pvalues.csv,
+EncSupLastFourSrfHolm,0.008,pvalues.csv,
+EncSupLastFourPedDelta,\ensuremath{+0.073},pvalues.csv,
+EncSupLastFourPedLo,\ensuremath{+0.003},pvalues.csv,
+EncSupLastFourPedHi,\ensuremath{+0.192},pvalues.csv,
+EncSupLastFourPedP,0.029,pvalues.csv,
+EncSupLastFourPedHolm,0.149,pvalues.csv,
+EncAuprcMaeLastFourIrf,0.743,encoder_grid_auprc.csv,3-seed mean
+EncAuprcMaeLastFourPed,0.876,encoder_grid_auprc.csv,3-seed mean
+EncAuprcMaeLastFourSrf,0.956,encoder_grid_auprc.csv,3-seed mean
+EncAuprcMaeLpIrf,0.407,encoder_grid_auprc.csv,3-seed mean
+EncAuprcMaeLpPed,0.737,encoder_grid_auprc.csv,3-seed mean
+EncAuprcMaeLpSrf,0.876,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetFullIrf,0.776,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetFullPed,0.957,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetFullSrf,0.985,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetLastFourIrf,0.784,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetLastFourPed,0.964,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetLastFourSrf,0.985,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetLpIrf,0.678,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetLpPed,0.891,encoder_grid_auprc.csv,3-seed mean
+EncAuprcRetLpSrf,0.972,encoder_grid_auprc.csv,3-seed mean
+EncAuprcSupLastFourIrf,0.771,encoder_grid_auprc.csv,3-seed mean
+EncAuprcSupLastFourPed,0.891,encoder_grid_auprc.csv,3-seed mean
+EncAuprcSupLastFourSrf,0.939,encoder_grid_auprc.csv,3-seed mean
+EncAuprcSupLpIrf,0.638,encoder_grid_auprc.csv,3-seed mean
+EncAuprcSupLpPed,0.803,encoder_grid_auprc.csv,3-seed mean
+EncAuprcSupLpSrf,0.901,encoder_grid_auprc.csv,3-seed mean
+FrozenAttnMeanIrfDelta,\ensuremath{+0.100},section6_contrasts.csv,
+FrozenAttnMeanIrfLo,\ensuremath{+0.025},section6_contrasts.csv,
+FrozenAttnMeanIrfHi,\ensuremath{+0.169},section6_contrasts.csv,
+FrozenAttnMeanIrfP,0.004,section6_contrasts.csv,
+FrozenAttnMeanIrfHolm,0.024,section6_contrasts.csv,
+LastFourAttnMeanIrfDelta,\ensuremath{-0.005},section6_contrasts.csv,
+LastFourAttnMeanIrfLo,\ensuremath{-0.020},section6_contrasts.csv,
+LastFourAttnMeanIrfHi,\ensuremath{+0.023},section6_contrasts.csv,
+LastFourAttnMeanIrfP,0.619,section6_contrasts.csv,
+LastFourAttnMeanIrfHolm,0.619,section6_contrasts.csv,
+CtwoIrfDelta,\ensuremath{+0.017},section6_contrasts.csv,
+CtwoIrfLo,\ensuremath{-0.060},section6_contrasts.csv,
+CtwoIrfHi,\ensuremath{+0.056},section6_contrasts.csv,
+CtwoIrfP,0.528,section6_contrasts.csv,
+CtwoIrfFrozen,0.807,section6_contrasts.csv,seed-averaged prediction
+CtwoIrfLastFour,0.791,section6_contrasts.csv,seed 0
+CtwoAttnIrfDelta,\ensuremath{+0.022},section6_contrasts.csv,
+CtwoAttnIrfLo,\ensuremath{-0.048},section6_contrasts.csv,
+CtwoAttnIrfHi,\ensuremath{+0.049},section6_contrasts.csv,
+CtwoAttnIrfP,0.439,section6_contrasts.csv,
+FrozenAttnMeanSrfDelta,\ensuremath{+0.014},section6_contrasts.csv,
+FrozenAttnMeanSrfLo,\ensuremath{+0.002},section6_contrasts.csv,
+FrozenAttnMeanSrfHi,\ensuremath{+0.042},section6_contrasts.csv,
+FrozenAttnMeanSrfP,0.016,section6_contrasts.csv,
+FrozenAttnMeanSrfHolm,0.078,section6_contrasts.csv,
+LastFourAttnMeanSrfDelta,\ensuremath{-0.002},section6_contrasts.csv,
+LastFourAttnMeanSrfLo,\ensuremath{-0.007},section6_contrasts.csv,
+LastFourAttnMeanSrfHi,\ensuremath{+0.000},section6_contrasts.csv,
+LastFourAttnMeanSrfP,0.111,section6_contrasts.csv,
+LastFourAttnMeanSrfHolm,0.257,section6_contrasts.csv,
+CtwoSrfDelta,\ensuremath{-0.000},section6_contrasts.csv,
+CtwoSrfLo,\ensuremath{-0.007},section6_contrasts.csv,
+CtwoSrfHi,\ensuremath{+0.004},section6_contrasts.csv,
+CtwoSrfP,0.985,section6_contrasts.csv,
+CtwoSrfFrozen,0.984,section6_contrasts.csv,seed-averaged prediction
+CtwoSrfLastFour,0.985,section6_contrasts.csv,seed 0
+CtwoAttnSrfDelta,\ensuremath{+0.002},section6_contrasts.csv,
+CtwoAttnSrfLo,\ensuremath{-0.004},section6_contrasts.csv,
+CtwoAttnSrfHi,\ensuremath{+0.008},section6_contrasts.csv,
+CtwoAttnSrfP,0.424,section6_contrasts.csv,
+FrozenAttnMeanPedDelta,\ensuremath{+0.043},section6_contrasts.csv,
+FrozenAttnMeanPedLo,\ensuremath{+0.006},section6_contrasts.csv,
+FrozenAttnMeanPedHi,\ensuremath{+0.113},section6_contrasts.csv,
+FrozenAttnMeanPedP,0.020,section6_contrasts.csv,
+FrozenAttnMeanPedHolm,0.080,section6_contrasts.csv,
+LastFourAttnMeanPedDelta,\ensuremath{+0.004},section6_contrasts.csv,
+LastFourAttnMeanPedLo,\ensuremath{-0.000},section6_contrasts.csv,
+LastFourAttnMeanPedHi,\ensuremath{+0.012},section6_contrasts.csv,
+LastFourAttnMeanPedP,0.086,section6_contrasts.csv,
+LastFourAttnMeanPedHolm,0.257,section6_contrasts.csv,
+CtwoPedDelta,\ensuremath{+0.003},section6_contrasts.csv,
+CtwoPedLo,\ensuremath{-0.017},section6_contrasts.csv,
+CtwoPedHi,\ensuremath{+0.026},section6_contrasts.csv,
+CtwoPedP,0.708,section6_contrasts.csv,
+CtwoPedFrozen,0.962,section6_contrasts.csv,seed-averaged prediction
+CtwoPedLastFour,0.960,section6_contrasts.csv,seed 0
+CtwoAttnPedDelta,\ensuremath{-0.001},section6_contrasts.csv,
+CtwoAttnPedLo,\ensuremath{-0.025},section6_contrasts.csv,
+CtwoAttnPedHi,\ensuremath{+0.022},section6_contrasts.csv,
+CtwoAttnPedP,0.995,section6_contrasts.csv,
+FrozenAttnIrfAuprc,0.807,frozen_arms.csv,mean of per-seed AUPRC
+FrozenAttnIrfSd,0.003,frozen_arms.csv,
+FrozenMeanIrfAuprc,0.707,frozen_arms.csv,
+FrozenAttnSrfAuprc,0.984,frozen_arms.csv,mean of per-seed AUPRC
+FrozenAttnSrfSd,0.001,frozen_arms.csv,
+FrozenMeanSrfAuprc,0.971,frozen_arms.csv,
+FrozenAttnPedAuprc,0.961,frozen_arms.csv,mean of per-seed AUPRC
+FrozenAttnPedSd,0.003,frozen_arms.csv,
+FrozenMeanPedAuprc,0.919,frozen_arms.csv,
+CapAttnMeanIrfDelta,\ensuremath{+0.100},fig5_capacity_control.csv,uncorrected
+CapAttnMeanIrfLo,\ensuremath{+0.025},fig5_capacity_control.csv,
+CapAttnMeanIrfHi,\ensuremath{+0.169},fig5_capacity_control.csv,
+CapAttnMeanIrfP,0.004,fig5_capacity_control.csv,
+CapAttnMeanSrfDelta,\ensuremath{+0.014},fig5_capacity_control.csv,uncorrected
+CapAttnMeanSrfLo,\ensuremath{+0.002},fig5_capacity_control.csv,
+CapAttnMeanSrfHi,\ensuremath{+0.042},fig5_capacity_control.csv,
+CapAttnMeanSrfP,0.016,fig5_capacity_control.csv,
+CapAttnMeanPedDelta,\ensuremath{+0.043},fig5_capacity_control.csv,uncorrected
+CapAttnMeanPedLo,\ensuremath{+0.006},fig5_capacity_control.csv,
+CapAttnMeanPedHi,\ensuremath{+0.113},fig5_capacity_control.csv,
+CapAttnMeanPedP,0.020,fig5_capacity_control.csv,
+CapAttnMlpIrfDelta,\ensuremath{+0.109},fig5_capacity_control.csv,uncorrected
+CapAttnMlpIrfLo,\ensuremath{+0.015},fig5_capacity_control.csv,
+CapAttnMlpIrfHi,\ensuremath{+0.189},fig5_capacity_control.csv,
+CapAttnMlpIrfP,0.022,fig5_capacity_control.csv,
+CapAttnMlpSrfDelta,\ensuremath{+0.009},fig5_capacity_control.csv,uncorrected
+CapAttnMlpSrfLo,\ensuremath{-0.000},fig5_capacity_control.csv,
+CapAttnMlpSrfHi,\ensuremath{+0.028},fig5_capacity_control.csv,
+CapAttnMlpSrfP,0.053,fig5_capacity_control.csv,
+CapAttnMlpPedDelta,\ensuremath{+0.035},fig5_capacity_control.csv,uncorrected
+CapAttnMlpPedLo,\ensuremath{-0.010},fig5_capacity_control.csv,
+CapAttnMlpPedHi,\ensuremath{+0.113},fig5_capacity_control.csv,
+CapAttnMlpPedP,0.153,fig5_capacity_control.csv,
+CapMlpMeanIrfDelta,\ensuremath{-0.008},fig5_capacity_control.csv,uncorrected
+CapMlpMeanIrfLo,\ensuremath{-0.056},fig5_capacity_control.csv,
+CapMlpMeanIrfHi,\ensuremath{+0.046},fig5_capacity_control.csv,
+CapMlpMeanIrfP,0.809,fig5_capacity_control.csv,
+CapMlpMeanSrfDelta,\ensuremath{+0.004},fig5_capacity_control.csv,uncorrected
+CapMlpMeanSrfLo,\ensuremath{-0.006},fig5_capacity_control.csv,
+CapMlpMeanSrfHi,\ensuremath{+0.023},fig5_capacity_control.csv,
+CapMlpMeanSrfP,0.506,fig5_capacity_control.csv,
+CapMlpMeanPedDelta,\ensuremath{+0.008},fig5_capacity_control.csv,uncorrected
+CapMlpMeanPedLo,\ensuremath{-0.026},fig5_capacity_control.csv,
+CapMlpMeanPedHi,\ensuremath{+0.043},fig5_capacity_control.csv,
+CapMlpMeanPedP,0.560,fig5_capacity_control.csv,
+SubPatchAmdsdIrfCompPct,88.0,amdsd_components_per_lesion.csv,per connected component
+SubPatchAmdsdIrfScanPct,57.9,amdsd_components_per_lesion.csv,per scan total area
+SubPatchAmdsdSrfCompPct,53.5,amdsd_components_per_lesion.csv,per connected component
+SubPatchAmdsdSrfScanPct,35.9,amdsd_components_per_lesion.csv,per scan total area
+SubPatchAmdsdPedCompPct,56.4,amdsd_components_per_lesion.csv,per connected component
+SubPatchAmdsdPedScanPct,37.5,amdsd_components_per_lesion.csv,per scan total area
+SubPatchAroiIrfCompPct,95.4,aroi_components.csv,per connected component
+SubPatchAroiIrfScanPct,65.4,aroi_zeroshot.csv,per scan total area
+SubPatchAroiSrfCompPct,52.4,aroi_components.csv,per connected component
+SubPatchAroiSrfScanPct,35.8,aroi_zeroshot.csv,per scan total area
+SubPatchAroiPedCompPct,56.7,aroi_components.csv,per connected component
+SubPatchAroiPedScanPct,28.6,aroi_zeroshot.csv,per scan total area
+RecIrfBinARecall,0.318,fig3_recall_bins.csv,0.03-0.0805 patches
+RecIrfBinALo,0.160,fig3_recall_bins.csv,
+RecIrfBinAHi,0.500,fig3_recall_bins.csv,
+RecIrfBinAN,44,fig3_recall_bins.csv,
+RecIrfBinBRecall,0.549,fig3_recall_bins.csv,0.0805-0.216 patches
+RecIrfBinBLo,0.392,fig3_recall_bins.csv,
+RecIrfBinBHi,0.694,fig3_recall_bins.csv,
+RecIrfBinBN,102,fig3_recall_bins.csv,
+RecIrfBinCRecall,0.719,fig3_recall_bins.csv,0.216-0.579 patches
+RecIrfBinCLo,0.568,fig3_recall_bins.csv,
+RecIrfBinCHi,0.842,fig3_recall_bins.csv,
+RecIrfBinCN,160,fig3_recall_bins.csv,
+RecIrfBinDRecall,0.878,fig3_recall_bins.csv,0.579-1.55 patches
+RecIrfBinDLo,0.765,fig3_recall_bins.csv,
+RecIrfBinDHi,0.955,fig3_recall_bins.csv,
+RecIrfBinDN,180,fig3_recall_bins.csv,
+RecIrfBinERecall,0.938,fig3_recall_bins.csv,1.55-4.17 patches
+RecIrfBinELo,0.837,fig3_recall_bins.csv,
+RecIrfBinEHi,1.000,fig3_recall_bins.csv,
+RecIrfBinEN,162,fig3_recall_bins.csv,
+RecIrfBinFRecall,1.000,fig3_recall_bins.csv,4.17-11.2 patches
+RecIrfBinFLo,1.000,fig3_recall_bins.csv,
+RecIrfBinFHi,1.000,fig3_recall_bins.csv,
+RecIrfBinFN,67,fig3_recall_bins.csv,
+RecSrfBinARecall,0.188,fig3_recall_bins.csv,0.03-0.0805 patches
+RecSrfBinALo,0.056,fig3_recall_bins.csv,
+RecSrfBinAHi,0.355,fig3_recall_bins.csv,
+RecSrfBinAN,32,fig3_recall_bins.csv,
+RecSrfBinBRecall,0.333,fig3_recall_bins.csv,0.0805-0.216 patches
+RecSrfBinBLo,0.231,fig3_recall_bins.csv,
+RecSrfBinBHi,0.451,fig3_recall_bins.csv,
+RecSrfBinBN,102,fig3_recall_bins.csv,
+RecSrfBinCRecall,0.655,fig3_recall_bins.csv,0.216-0.579 patches
+RecSrfBinCLo,0.533,fig3_recall_bins.csv,
+RecSrfBinCHi,0.765,fig3_recall_bins.csv,
+RecSrfBinCN,249,fig3_recall_bins.csv,
+RecSrfBinDRecall,0.878,fig3_recall_bins.csv,0.579-1.55 patches
+RecSrfBinDLo,0.806,fig3_recall_bins.csv,
+RecSrfBinDHi,0.940,fig3_recall_bins.csv,
+RecSrfBinDN,434,fig3_recall_bins.csv,
+RecSrfBinERecall,0.971,fig3_recall_bins.csv,1.55-4.17 patches
+RecSrfBinELo,0.937,fig3_recall_bins.csv,
+RecSrfBinEHi,0.994,fig3_recall_bins.csv,
+RecSrfBinEN,544,fig3_recall_bins.csv,
+RecSrfBinFRecall,0.984,fig3_recall_bins.csv,4.17-11.2 patches
+RecSrfBinFLo,0.956,fig3_recall_bins.csv,
+RecSrfBinFHi,1.000,fig3_recall_bins.csv,
+RecSrfBinFN,367,fig3_recall_bins.csv,
+RecSrfBinGRecall,1.000,fig3_recall_bins.csv,11.2-30 patches
+RecSrfBinGLo,1.000,fig3_recall_bins.csv,
+RecSrfBinGHi,1.000,fig3_recall_bins.csv,
+RecSrfBinGN,52,fig3_recall_bins.csv,
+RecPedBinARecall,0.302,fig3_recall_bins.csv,0.03-0.0805 patches
+RecPedBinALo,0.088,fig3_recall_bins.csv,
+RecPedBinAHi,0.492,fig3_recall_bins.csv,
+RecPedBinAN,43,fig3_recall_bins.csv,
+RecPedBinBRecall,0.357,fig3_recall_bins.csv,0.0805-0.216 patches
+RecPedBinBLo,0.250,fig3_recall_bins.csv,
+RecPedBinBHi,0.474,fig3_recall_bins.csv,
+RecPedBinBN,126,fig3_recall_bins.csv,
+RecPedBinCRecall,0.607,fig3_recall_bins.csv,0.216-0.579 patches
+RecPedBinCLo,0.508,fig3_recall_bins.csv,
+RecPedBinCHi,0.692,fig3_recall_bins.csv,
+RecPedBinCN,326,fig3_recall_bins.csv,
+RecPedBinDRecall,0.762,fig3_recall_bins.csv,0.579-1.55 patches
+RecPedBinDLo,0.677,fig3_recall_bins.csv,
+RecPedBinDHi,0.838,fig3_recall_bins.csv,
+RecPedBinDN,551,fig3_recall_bins.csv,
+RecPedBinERecall,0.914,fig3_recall_bins.csv,1.55-4.17 patches
+RecPedBinELo,0.863,fig3_recall_bins.csv,
+RecPedBinEHi,0.957,fig3_recall_bins.csv,
+RecPedBinEN,567,fig3_recall_bins.csv,
+RecPedBinFRecall,0.992,fig3_recall_bins.csv,4.17-11.2 patches
+RecPedBinFLo,0.983,fig3_recall_bins.csv,
+RecPedBinFHi,1.000,fig3_recall_bins.csv,
+RecPedBinFN,372,fig3_recall_bins.csv,
+RecPedBinGRecall,1.000,fig3_recall_bins.csv,11.2-30 patches
+RecPedBinGLo,1.000,fig3_recall_bins.csv,
+RecPedBinGHi,1.000,fig3_recall_bins.csv,
+RecPedBinGN,96,fig3_recall_bins.csv,
+RecAroiIrfBinARecall,0.522,aroi_fig3_recall_bins.csv,0.03-0.0805 patches
+RecAroiIrfBinALo,0.238,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinAHi,0.828,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinAN,23,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinBRecall,0.780,aroi_fig3_recall_bins.csv,0.0805-0.216 patches
+RecAroiIrfBinBLo,0.579,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinBHi,0.962,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinBN,59,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinCRecall,0.884,aroi_fig3_recall_bins.csv,0.216-0.579 patches
+RecAroiIrfBinCLo,0.769,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinCHi,0.977,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinCN,43,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinDRecall,0.973,aroi_fig3_recall_bins.csv,0.579-1.55 patches
+RecAroiIrfBinDLo,0.893,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinDHi,1.000,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinDN,37,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinERecall,1.000,aroi_fig3_recall_bins.csv,1.55-4.17 patches
+RecAroiIrfBinELo,1.000,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinEHi,1.000,aroi_fig3_recall_bins.csv,
+RecAroiIrfBinEN,37,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinARecall,0.095,aroi_fig3_recall_bins.csv,0.03-0.0805 patches
+RecAroiSrfBinALo,0.000,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinAHi,0.235,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinAN,21,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinBRecall,0.340,aroi_fig3_recall_bins.csv,0.0805-0.216 patches
+RecAroiSrfBinBLo,0.160,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinBHi,0.509,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinBN,53,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinCRecall,0.703,aroi_fig3_recall_bins.csv,0.216-0.579 patches
+RecAroiSrfBinCLo,0.506,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinCHi,0.844,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinCN,101,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinDRecall,0.856,aroi_fig3_recall_bins.csv,0.579-1.55 patches
+RecAroiSrfBinDLo,0.662,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinDHi,0.966,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinDN,97,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinERecall,0.978,aroi_fig3_recall_bins.csv,1.55-4.17 patches
+RecAroiSrfBinELo,0.927,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinEHi,1.000,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinEN,178,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinFRecall,0.979,aroi_fig3_recall_bins.csv,4.17-11.2 patches
+RecAroiSrfBinFLo,0.892,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinFHi,1.000,aroi_fig3_recall_bins.csv,
+RecAroiSrfBinFN,144,aroi_fig3_recall_bins.csv,
+RecAroiPedBinARecall,0.077,aroi_fig3_recall_bins.csv,0.03-0.0805 patches
+RecAroiPedBinALo,0.000,aroi_fig3_recall_bins.csv,
+RecAroiPedBinAHi,0.308,aroi_fig3_recall_bins.csv,
+RecAroiPedBinAN,26,aroi_fig3_recall_bins.csv,
+RecAroiPedBinBRecall,0.310,aroi_fig3_recall_bins.csv,0.0805-0.216 patches
+RecAroiPedBinBLo,0.138,aroi_fig3_recall_bins.csv,
+RecAroiPedBinBHi,0.567,aroi_fig3_recall_bins.csv,
+RecAroiPedBinBN,42,aroi_fig3_recall_bins.csv,
+RecAroiPedBinCRecall,0.717,aroi_fig3_recall_bins.csv,0.216-0.579 patches
+RecAroiPedBinCLo,0.560,aroi_fig3_recall_bins.csv,
+RecAroiPedBinCHi,0.861,aroi_fig3_recall_bins.csv,
+RecAroiPedBinCN,113,aroi_fig3_recall_bins.csv,
+RecAroiPedBinDRecall,0.933,aroi_fig3_recall_bins.csv,0.579-1.55 patches
+RecAroiPedBinDLo,0.865,aroi_fig3_recall_bins.csv,
+RecAroiPedBinDHi,0.983,aroi_fig3_recall_bins.csv,
+RecAroiPedBinDN,210,aroi_fig3_recall_bins.csv,
+RecAroiPedBinERecall,0.992,aroi_fig3_recall_bins.csv,1.55-4.17 patches
+RecAroiPedBinELo,0.979,aroi_fig3_recall_bins.csv,
+RecAroiPedBinEHi,1.000,aroi_fig3_recall_bins.csv,
+RecAroiPedBinEN,366,aroi_fig3_recall_bins.csv,
+RecAroiPedBinFRecall,1.000,aroi_fig3_recall_bins.csv,4.17-11.2 patches
+RecAroiPedBinFLo,1.000,aroi_fig3_recall_bins.csv,
+RecAroiPedBinFHi,1.000,aroi_fig3_recall_bins.csv,
+RecAroiPedBinFN,197,aroi_fig3_recall_bins.csv,
+HalfIrf,0.11,recall_half_points.csv,patches
+HalfSrf,0.22,recall_half_points.csv,patches
+HalfPed,0.23,recall_half_points.csv,patches
+HalfAroiSrf,0.20,aroi_recall_half_points.csv,patches
+HalfAroiPed,0.21,aroi_recall_half_points.csv,patches
+ContrastIrfWeber,\ensuremath{-0.456},contrast_regression.csv,per-lesion median
+ContrastIrfCorr,\ensuremath{+0.068},contrast_regression.csv,"per component, signed raw difference"
+ContrastIrfCorrScan,\ensuremath{+0.015},contrast_regression.csv,"per positive scan, the regression predictors"
+ContrastIrfRsqSize,0.230,contrast_regression.csv,McFadden
+ContrastIrfRsqBoth,0.378,contrast_regression.csv,McFadden
+ContrastIrfRsqGain,\ensuremath{+0.147},contrast_regression.csv,
+ContrastSrfWeber,\ensuremath{-0.468},contrast_regression.csv,per-lesion median
+ContrastSrfCorr,\ensuremath{-0.217},contrast_regression.csv,"per component, signed raw difference"
+ContrastSrfCorrScan,\ensuremath{+0.138},contrast_regression.csv,"per positive scan, the regression predictors"
+ContrastSrfRsqSize,0.323,contrast_regression.csv,McFadden
+ContrastSrfRsqBoth,0.417,contrast_regression.csv,McFadden
+ContrastSrfRsqGain,\ensuremath{+0.093},contrast_regression.csv,
+ContrastPedWeber,\ensuremath{-0.072},contrast_regression.csv,per-lesion median
+ContrastPedCorr,\ensuremath{-0.543},contrast_regression.csv,"per component, signed raw difference"
+ContrastPedCorrScan,\ensuremath{+0.347},contrast_regression.csv,"per positive scan, the regression predictors"
+ContrastPedRsqSize,0.222,contrast_regression.csv,McFadden
+ContrastPedRsqBoth,0.227,contrast_regression.csv,McFadden
+ContrastPedRsqGain,\ensuremath{+0.005},contrast_regression.csv,
+CrossIrfDelta,\ensuremath{-0.073},crossers.csv,"recall, 448 - 224"
+CrossIrfLo,\ensuremath{-0.205},crossers.csv,
+CrossIrfHi,\ensuremath{+0.041},crossers.csv,
+CrossIrfN,55,crossers.csv,
+CrossIrfP,0.289,crossers.csv,McNemar
+CrossSrfDelta,\ensuremath{-0.071},crossers.csv,"recall, 448 - 224"
+CrossSrfLo,\ensuremath{-0.244},crossers.csv,
+CrossSrfHi,\ensuremath{+0.067},crossers.csv,
+CrossSrfN,56,crossers.csv,
+CrossSrfP,0.344,crossers.csv,McNemar
+CrossPedDelta,\ensuremath{-0.048},crossers.csv,"recall, 448 - 224"
+CrossPedLo,\ensuremath{-0.185},crossers.csv,
+CrossPedHi,\ensuremath{+0.101},crossers.csv,
+CrossPedN,83,crossers.csv,
+CrossPedP,0.503,crossers.csv,McNemar
+AroiAurocIrf,0.951,aroi_fig7_auroc.csv,
+AroiAurocIrfLo,0.900,aroi_fig7_auroc.csv,
+AroiAurocIrfHi,0.981,aroi_fig7_auroc.csv,
+AroiAurocAmdsdIrf,0.893,aroi_fig7_auroc.csv,
+AroiAurocSrf,0.901,aroi_fig7_auroc.csv,
+AroiAurocSrfLo,0.823,aroi_fig7_auroc.csv,
+AroiAurocSrfHi,0.951,aroi_fig7_auroc.csv,
+AroiAurocAmdsdSrf,0.962,aroi_fig7_auroc.csv,
+AroiAurocPed,0.967,aroi_fig7_auroc.csv,
+AroiAurocPedLo,0.938,aroi_fig7_auroc.csv,
+AroiAurocPedHi,0.989,aroi_fig7_auroc.csv,
+AroiAurocAmdsdPed,0.910,aroi_fig7_auroc.csv,
+XferIrfBinAN,23,aroi_recall_two_thresholds.csv,0.03-0.0805 patches (merged bins)
+XferIrfBinAAmdsdThr,0.217,aroi_recall_two_thresholds.csv,
+XferIrfBinARefit,0.522,aroi_recall_two_thresholds.csv,
+XferIrfBinADelta,\ensuremath{+0.304},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferIrfBinALo,\ensuremath{+0.143},aroi_recall_two_thresholds.csv,
+XferIrfBinAHi,\ensuremath{+0.556},aroi_recall_two_thresholds.csv,
+XferIrfBinAP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferIrfBinBN,59,aroi_recall_two_thresholds.csv,0.0805-0.216 patches (merged bins)
+XferIrfBinBAmdsdThr,0.424,aroi_recall_two_thresholds.csv,
+XferIrfBinBRefit,0.780,aroi_recall_two_thresholds.csv,
+XferIrfBinBDelta,\ensuremath{+0.356},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferIrfBinBLo,\ensuremath{+0.269},aroi_recall_two_thresholds.csv,
+XferIrfBinBHi,\ensuremath{+0.475},aroi_recall_two_thresholds.csv,
+XferIrfBinBP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferIrfBinCN,43,aroi_recall_two_thresholds.csv,0.216-0.579 patches (merged bins)
+XferIrfBinCAmdsdThr,0.767,aroi_recall_two_thresholds.csv,
+XferIrfBinCRefit,0.884,aroi_recall_two_thresholds.csv,
+XferIrfBinCDelta,\ensuremath{+0.116},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferIrfBinCLo,\ensuremath{+0.033},aroi_recall_two_thresholds.csv,
+XferIrfBinCHi,\ensuremath{+0.308},aroi_recall_two_thresholds.csv,
+XferIrfBinCP,0.006,aroi_recall_two_thresholds.csv,
+XferIrfBinDN,37,aroi_recall_two_thresholds.csv,0.579-1.55 patches (merged bins)
+XferIrfBinDAmdsdThr,0.919,aroi_recall_two_thresholds.csv,
+XferIrfBinDRefit,0.973,aroi_recall_two_thresholds.csv,
+XferIrfBinDDelta,\ensuremath{+0.054},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferIrfBinDLo,\ensuremath{+0.000},aroi_recall_two_thresholds.csv,
+XferIrfBinDHi,\ensuremath{+0.250},aroi_recall_two_thresholds.csv,
+XferIrfBinDP,0.677,aroi_recall_two_thresholds.csv,
+XferIrfBinEN,56,aroi_recall_two_thresholds.csv,1.55-30 patches (merged bins)
+XferIrfBinEAmdsdThr,1.000,aroi_recall_two_thresholds.csv,
+XferIrfBinERefit,1.000,aroi_recall_two_thresholds.csv,
+XferIrfBinEDelta,\ensuremath{+0.000},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferIrfBinELo,\ensuremath{+0.000},aroi_recall_two_thresholds.csv,
+XferIrfBinEHi,\ensuremath{+0.000},aroi_recall_two_thresholds.csv,
+XferIrfBinEP,1.000,aroi_recall_two_thresholds.csv,
+XferSrfBinAN,21,aroi_recall_two_thresholds.csv,0.03-0.0805 patches (merged bins)
+XferSrfBinAAmdsdThr,0.000,aroi_recall_two_thresholds.csv,
+XferSrfBinARefit,0.095,aroi_recall_two_thresholds.csv,
+XferSrfBinADelta,\ensuremath{+0.095},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferSrfBinALo,\ensuremath{+0.000},aroi_recall_two_thresholds.csv,
+XferSrfBinAHi,\ensuremath{+0.231},aroi_recall_two_thresholds.csv,
+XferSrfBinAP,0.221,aroi_recall_two_thresholds.csv,
+XferSrfBinBN,53,aroi_recall_two_thresholds.csv,0.0805-0.216 patches (merged bins)
+XferSrfBinBAmdsdThr,0.019,aroi_recall_two_thresholds.csv,
+XferSrfBinBRefit,0.340,aroi_recall_two_thresholds.csv,
+XferSrfBinBDelta,\ensuremath{+0.321},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferSrfBinBLo,\ensuremath{+0.160},aroi_recall_two_thresholds.csv,
+XferSrfBinBHi,\ensuremath{+0.480},aroi_recall_two_thresholds.csv,
+XferSrfBinBP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferSrfBinCN,101,aroi_recall_two_thresholds.csv,0.216-0.579 patches (merged bins)
+XferSrfBinCAmdsdThr,0.010,aroi_recall_two_thresholds.csv,
+XferSrfBinCRefit,0.703,aroi_recall_two_thresholds.csv,
+XferSrfBinCDelta,\ensuremath{+0.693},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferSrfBinCLo,\ensuremath{+0.505},aroi_recall_two_thresholds.csv,
+XferSrfBinCHi,\ensuremath{+0.840},aroi_recall_two_thresholds.csv,
+XferSrfBinCP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferSrfBinDN,97,aroi_recall_two_thresholds.csv,0.579-1.55 patches (merged bins)
+XferSrfBinDAmdsdThr,0.361,aroi_recall_two_thresholds.csv,
+XferSrfBinDRefit,0.856,aroi_recall_two_thresholds.csv,
+XferSrfBinDDelta,\ensuremath{+0.495},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferSrfBinDLo,\ensuremath{+0.306},aroi_recall_two_thresholds.csv,
+XferSrfBinDHi,\ensuremath{+0.701},aroi_recall_two_thresholds.csv,
+XferSrfBinDP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferSrfBinEN,178,aroi_recall_two_thresholds.csv,1.55-4.17 patches (merged bins)
+XferSrfBinEAmdsdThr,0.792,aroi_recall_two_thresholds.csv,
+XferSrfBinERefit,0.978,aroi_recall_two_thresholds.csv,
+XferSrfBinEDelta,\ensuremath{+0.185},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferSrfBinELo,\ensuremath{+0.053},aroi_recall_two_thresholds.csv,
+XferSrfBinEHi,\ensuremath{+0.409},aroi_recall_two_thresholds.csv,
+XferSrfBinEP,0.001,aroi_recall_two_thresholds.csv,
+XferSrfBinFN,188,aroi_recall_two_thresholds.csv,4.17-30 patches (merged bins)
+XferSrfBinFAmdsdThr,0.543,aroi_recall_two_thresholds.csv,
+XferSrfBinFRefit,0.910,aroi_recall_two_thresholds.csv,
+XferSrfBinFDelta,\ensuremath{+0.367},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferSrfBinFLo,\ensuremath{+0.066},aroi_recall_two_thresholds.csv,
+XferSrfBinFHi,\ensuremath{+0.627},aroi_recall_two_thresholds.csv,
+XferSrfBinFP,0.050,aroi_recall_two_thresholds.csv,
+XferPedBinAN,26,aroi_recall_two_thresholds.csv,0.03-0.0805 patches (merged bins)
+XferPedBinAAmdsdThr,0.000,aroi_recall_two_thresholds.csv,
+XferPedBinARefit,0.077,aroi_recall_two_thresholds.csv,
+XferPedBinADelta,\ensuremath{+0.077},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferPedBinALo,\ensuremath{+0.000},aroi_recall_two_thresholds.csv,
+XferPedBinAHi,\ensuremath{+0.308},aroi_recall_two_thresholds.csv,
+XferPedBinAP,0.692,aroi_recall_two_thresholds.csv,
+XferPedBinBN,42,aroi_recall_two_thresholds.csv,0.0805-0.216 patches (merged bins)
+XferPedBinBAmdsdThr,0.095,aroi_recall_two_thresholds.csv,
+XferPedBinBRefit,0.310,aroi_recall_two_thresholds.csv,
+XferPedBinBDelta,\ensuremath{+0.214},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferPedBinBLo,\ensuremath{+0.062},aroi_recall_two_thresholds.csv,
+XferPedBinBHi,\ensuremath{+0.439},aroi_recall_two_thresholds.csv,
+XferPedBinBP,0.004,aroi_recall_two_thresholds.csv,
+XferPedBinCN,113,aroi_recall_two_thresholds.csv,0.216-0.579 patches (merged bins)
+XferPedBinCAmdsdThr,0.159,aroi_recall_two_thresholds.csv,
+XferPedBinCRefit,0.717,aroi_recall_two_thresholds.csv,
+XferPedBinCDelta,\ensuremath{+0.558},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferPedBinCLo,\ensuremath{+0.356},aroi_recall_two_thresholds.csv,
+XferPedBinCHi,\ensuremath{+0.725},aroi_recall_two_thresholds.csv,
+XferPedBinCP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferPedBinDN,210,aroi_recall_two_thresholds.csv,0.579-1.55 patches (merged bins)
+XferPedBinDAmdsdThr,0.662,aroi_recall_two_thresholds.csv,
+XferPedBinDRefit,0.933,aroi_recall_two_thresholds.csv,
+XferPedBinDDelta,\ensuremath{+0.271},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferPedBinDLo,\ensuremath{+0.171},aroi_recall_two_thresholds.csv,
+XferPedBinDHi,\ensuremath{+0.389},aroi_recall_two_thresholds.csv,
+XferPedBinDP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferPedBinEN,366,aroi_recall_two_thresholds.csv,1.55-4.17 patches (merged bins)
+XferPedBinEAmdsdThr,0.801,aroi_recall_two_thresholds.csv,
+XferPedBinERefit,0.992,aroi_recall_two_thresholds.csv,
+XferPedBinEDelta,\ensuremath{+0.191},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferPedBinELo,\ensuremath{+0.062},aroi_recall_two_thresholds.csv,
+XferPedBinEHi,\ensuremath{+0.363},aroi_recall_two_thresholds.csv,
+XferPedBinEP,\ensuremath{<0.001},aroi_recall_two_thresholds.csv,
+XferPedBinFN,251,aroi_recall_two_thresholds.csv,4.17-30 patches (merged bins)
+XferPedBinFAmdsdThr,0.861,aroi_recall_two_thresholds.csv,
+XferPedBinFRefit,1.000,aroi_recall_two_thresholds.csv,
+XferPedBinFDelta,\ensuremath{+0.139},aroi_recall_two_thresholds.csv,refit - AMD-SD threshold
+XferPedBinFLo,\ensuremath{+0.025},aroi_recall_two_thresholds.csv,
+XferPedBinFHi,\ensuremath{+0.323},aroi_recall_two_thresholds.csv,
+XferPedBinFP,0.003,aroi_recall_two_thresholds.csv,
+ShiftIrfSlope,\ensuremath{+1.89},aroi_score_size_model.csv,
+ShiftIrfSlopeLo,\ensuremath{+0.774},aroi_score_size_model.csv,
+ShiftIrfSlopeHi,\ensuremath{+2.313},aroi_score_size_model.csv,
+ShiftIrfSlopeP,0.002,aroi_score_size_model.csv,
+ShiftIrfOffset,\ensuremath{-1.72},aroi_score_size_model.csv,
+ShiftIrfOffsetLo,\ensuremath{-2.841},aroi_score_size_model.csv,
+ShiftIrfOffsetHi,\ensuremath{+0.294},aroi_score_size_model.csv,
+ShiftIrfOffsetP,0.086,aroi_score_size_model.csv,
+ShiftIrfInter,\ensuremath{-1.085},aroi_score_size_model.csv,
+ShiftIrfInterLo,\ensuremath{-1.615},aroi_score_size_model.csv,
+ShiftIrfInterHi,\ensuremath{+0.087},aroi_score_size_model.csv,
+ShiftIrfInterP,0.066,aroi_score_size_model.csv,
+ShiftSrfSlope,\ensuremath{+1.85},aroi_score_size_model.csv,
+ShiftSrfSlopeLo,\ensuremath{+1.412},aroi_score_size_model.csv,
+ShiftSrfSlopeHi,\ensuremath{+2.298},aroi_score_size_model.csv,
+ShiftSrfSlopeP,\ensuremath{<0.001},aroi_score_size_model.csv,
+ShiftSrfOffset,\ensuremath{-3.24},aroi_score_size_model.csv,
+ShiftSrfOffsetLo,\ensuremath{-4.461},aroi_score_size_model.csv,
+ShiftSrfOffsetHi,\ensuremath{-2.033},aroi_score_size_model.csv,
+ShiftSrfOffsetP,\ensuremath{<0.001},aroi_score_size_model.csv,
+ShiftSrfInter,\ensuremath{-0.943},aroi_score_size_model.csv,
+ShiftSrfInterLo,\ensuremath{-1.598},aroi_score_size_model.csv,
+ShiftSrfInterHi,\ensuremath{-0.232},aroi_score_size_model.csv,
+ShiftSrfInterP,0.009,aroi_score_size_model.csv,
+ShiftPedSlope,\ensuremath{+1.39},aroi_score_size_model.csv,
+ShiftPedSlopeLo,\ensuremath{+0.923},aroi_score_size_model.csv,
+ShiftPedSlopeHi,\ensuremath{+1.875},aroi_score_size_model.csv,
+ShiftPedSlopeP,\ensuremath{<0.001},aroi_score_size_model.csv,
+ShiftPedOffset,\ensuremath{-2.23},aroi_score_size_model.csv,
+ShiftPedOffsetLo,\ensuremath{-3.469},aroi_score_size_model.csv,
+ShiftPedOffsetHi,\ensuremath{-0.899},aroi_score_size_model.csv,
+ShiftPedOffsetP,0.002,aroi_score_size_model.csv,
+ShiftPedInter,\ensuremath{-0.377},aroi_score_size_model.csv,
+ShiftPedInterLo,\ensuremath{-1.039},aroi_score_size_model.csv,
+ShiftPedInterHi,\ensuremath{+0.260},aroi_score_size_model.csv,
+ShiftPedInterP,0.232,aroi_score_size_model.csv,
+ShiftIrfMae,0.107,aroi_shift_model_recall.csv,test-fitted shift
+ShiftIrfMaeOof,0.168,aroi_shift_model_recall.csv,out-of-fold-fitted shift
+ShiftSrfMae,0.173,aroi_shift_model_recall.csv,test-fitted shift
+ShiftSrfMaeOof,0.107,aroi_shift_model_recall.csv,out-of-fold-fitted shift
+ShiftPedMae,0.072,aroi_shift_model_recall.csv,test-fitted shift
+ShiftPedMaeOof,0.079,aroi_shift_model_recall.csv,out-of-fold-fitted shift
+ShrmProxyAuroc,0.997,shrm_proxy_separation.csv,
+ShrmProxySens,0.949,shrm_proxy_separation.csv,
+ShrmProxySpec,0.993,shrm_proxy_separation.csv,
+ShrmProxyAcc,0.975,shrm_proxy_separation.csv,
+ShrmProxyYoudenCut,\ensuremath{-0.127},shrm_proxy_separation.csv,
+ShrmProxyWeberSrf,\ensuremath{-0.468},shrm_proxy_separation.csv,
+ShrmProxyWeberShrm,\ensuremath{+0.238},shrm_proxy_separation.csv,
+ShrmProxyBrightPctSrf,0.7,shrm_proxy_separation.csv,
+ShrmProxyBrightPctShrm,94.9,shrm_proxy_separation.csv,
+ShrmScoreAmdsdSrfPresentN,1789,srf_head_score_groups.csv,
+ShrmScoreAmdsdSrfPresentPatients,107,srf_head_score_groups.csv,
+ShrmScoreAmdsdSrfPresentMean,0.888,srf_head_score_groups.csv,
+ShrmScoreAmdsdSrfPresentMedian,0.997,srf_head_score_groups.csv,
+ShrmScoreAmdsdSrfPresentAboveThrPct,85.3,srf_head_score_groups.csv,at the 0.80 threshold
+ShrmScoreAmdsdShrmOnlyN,745,srf_head_score_groups.csv,
+ShrmScoreAmdsdShrmOnlyPatients,75,srf_head_score_groups.csv,
+ShrmScoreAmdsdShrmOnlyMean,0.228,srf_head_score_groups.csv,
+ShrmScoreAmdsdShrmOnlyMedian,0.053,srf_head_score_groups.csv,
+ShrmScoreAmdsdShrmOnlyAboveThrPct,12.3,srf_head_score_groups.csv,at the 0.80 threshold
+ShrmScoreAmdsdNeitherN,515,srf_head_score_groups.csv,
+ShrmScoreAmdsdNeitherPatients,74,srf_head_score_groups.csv,
+ShrmScoreAmdsdNeitherMean,0.075,srf_head_score_groups.csv,
+ShrmScoreAmdsdNeitherMedian,0.013,srf_head_score_groups.csv,
+ShrmScoreAmdsdNeitherAboveThrPct,1.4,srf_head_score_groups.csv,at the 0.80 threshold
+ShrmScoreAroiBrightN,104,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiBrightPatients,6,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiBrightMean,0.141,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiBrightMedian,0.124,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiBrightAboveThrPct,0.0,aroi_srf_head_score_groups.csv,at the 0.80 threshold
+ShrmBrightDetectedEnsThr,19,aroi_srf_head_score_groups.csv,at the ensemble-scale diagnostic threshold
+ShrmScoreAroiDarkN,544,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiDarkPatients,20,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiDarkMean,0.642,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiDarkMedian,0.815,aroi_srf_head_score_groups.csv,
+ShrmScoreAroiDarkAboveThrPct,51.5,aroi_srf_head_score_groups.csv,at the 0.80 threshold
+ShrmAroiIrfBrightPct,0.1,aroi_srf_head_score_groups.csv,
+ShrmAroiIrfWeberMedian,\ensuremath{-0.436},aroi_srf_head_score_groups.csv,
+ShrmAroiSrfBrightPct,12.7,aroi_srf_head_score_groups.csv,
+ShrmAroiSrfWeberMedian,\ensuremath{-0.369},aroi_srf_head_score_groups.csv,
+ShrmAroiPedBrightPct,41.9,aroi_srf_head_score_groups.csv,
+ShrmAroiPedWeberMedian,\ensuremath{-0.024},aroi_srf_head_score_groups.csv,
+WbinAAroi,0.614,aroi_dark_srf_auroc_by_bin.csv,"0.03-0.08 patches, dark SRF"
+WbinAAroiLo,0.406,aroi_dark_srf_auroc_by_bin.csv,
+WbinAAroiHi,0.781,aroi_dark_srf_auroc_by_bin.csv,
+WbinAAmdsd,0.736,aroi_dark_srf_auroc_by_bin.csv,
+WbinADelta,\ensuremath{-0.122},aroi_dark_srf_auroc_by_bin.csv,
+WbinALo,\ensuremath{-0.362},aroi_dark_srf_auroc_by_bin.csv,
+WbinAHi,\ensuremath{+0.085},aroi_dark_srf_auroc_by_bin.csv,
+WbinAPatientsAroi,9,aroi_dark_srf_auroc_by_bin.csv,
+WbinBAroi,0.693,aroi_dark_srf_auroc_by_bin.csv,"0.08-0.216 patches, dark SRF"
+WbinBAroiLo,0.526,aroi_dark_srf_auroc_by_bin.csv,
+WbinBAroiHi,0.814,aroi_dark_srf_auroc_by_bin.csv,
+WbinBAmdsd,0.791,aroi_dark_srf_auroc_by_bin.csv,
+WbinBDelta,\ensuremath{-0.098},aroi_dark_srf_auroc_by_bin.csv,
+WbinBLo,\ensuremath{-0.276},aroi_dark_srf_auroc_by_bin.csv,
+WbinBHi,\ensuremath{+0.033},aroi_dark_srf_auroc_by_bin.csv,
+WbinBPatientsAroi,12,aroi_dark_srf_auroc_by_bin.csv,
+WbinCAroi,0.880,aroi_dark_srf_auroc_by_bin.csv,"0.216-0.579 patches, dark SRF"
+WbinCAroiLo,0.772,aroi_dark_srf_auroc_by_bin.csv,
+WbinCAroiHi,0.948,aroi_dark_srf_auroc_by_bin.csv,
+WbinCAmdsd,0.888,aroi_dark_srf_auroc_by_bin.csv,
+WbinCDelta,\ensuremath{-0.009},aroi_dark_srf_auroc_by_bin.csv,
+WbinCLo,\ensuremath{-0.128},aroi_dark_srf_auroc_by_bin.csv,
+WbinCHi,\ensuremath{+0.075},aroi_dark_srf_auroc_by_bin.csv,
+WbinCPatientsAroi,16,aroi_dark_srf_auroc_by_bin.csv,
+WbinDAroi,0.975,aroi_dark_srf_auroc_by_bin.csv,"0.579-1.55 patches, dark SRF"
+WbinDAroiLo,0.915,aroi_dark_srf_auroc_by_bin.csv,
+WbinDAroiHi,0.999,aroi_dark_srf_auroc_by_bin.csv,
+WbinDAmdsd,0.953,aroi_dark_srf_auroc_by_bin.csv,
+WbinDDelta,\ensuremath{+0.022},aroi_dark_srf_auroc_by_bin.csv,
+WbinDLo,\ensuremath{-0.044},aroi_dark_srf_auroc_by_bin.csv,
+WbinDHi,\ensuremath{+0.063},aroi_dark_srf_auroc_by_bin.csv,
+WbinDPatientsAroi,10,aroi_dark_srf_auroc_by_bin.csv,
+WbinEAroi,0.995,aroi_dark_srf_auroc_by_bin.csv,"1.55-4.17 patches, dark SRF"
+WbinEAroiLo,0.980,aroi_dark_srf_auroc_by_bin.csv,
+WbinEAroiHi,1.000,aroi_dark_srf_auroc_by_bin.csv,
+WbinEAmdsd,0.984,aroi_dark_srf_auroc_by_bin.csv,
+WbinEDelta,\ensuremath{+0.012},aroi_dark_srf_auroc_by_bin.csv,
+WbinELo,\ensuremath{-0.009},aroi_dark_srf_auroc_by_bin.csv,
+WbinEHi,\ensuremath{+0.030},aroi_dark_srf_auroc_by_bin.csv,
+WbinEPatientsAroi,10,aroi_dark_srf_auroc_by_bin.csv,
+WbinFAroi,0.997,aroi_dark_srf_auroc_by_bin.csv,"4.17-30 patches, dark SRF"
+WbinFAroiLo,0.989,aroi_dark_srf_auroc_by_bin.csv,
+WbinFAroiHi,1.000,aroi_dark_srf_auroc_by_bin.csv,
+WbinFAmdsd,0.989,aroi_dark_srf_auroc_by_bin.csv,
+WbinFDelta,\ensuremath{+0.008},aroi_dark_srf_auroc_by_bin.csv,
+WbinFLo,\ensuremath{-0.004},aroi_dark_srf_auroc_by_bin.csv,
+WbinFHi,\ensuremath{+0.024},aroi_dark_srf_auroc_by_bin.csv,
+WbinFPatientsAroi,6,aroi_dark_srf_auroc_by_bin.csv,
+ThrIrfUsed,0.16,threshold_displacement.csv,out-of-fold Youden
+ThrIrfUsedRecall,0.763,threshold_displacement.csv,
+ThrIrfUsedSpec,0.901,threshold_displacement.csv,
+ThrIrfUsedJ,0.663,threshold_displacement.csv,
+ThrIrfDiag,0.16,threshold_displacement.csv,diagnostic: Youden on the test set
+ThrIrfDiagRecall,0.763,threshold_displacement.csv,
+ThrIrfDiagSpec,0.901,threshold_displacement.csv,
+ThrIrfDiagJ,0.663,threshold_displacement.csv,
+ThrSrfUsed,0.80,threshold_displacement.csv,out-of-fold Youden
+ThrSrfUsedRecall,0.825,threshold_displacement.csv,
+ThrSrfUsedSpec,0.986,threshold_displacement.csv,
+ThrSrfUsedJ,0.811,threshold_displacement.csv,
+ThrSrfDiag,0.24,threshold_displacement.csv,diagnostic: Youden on the test set
+ThrSrfDiagRecall,0.923,threshold_displacement.csv,
+ThrSrfDiagSpec,0.958,threshold_displacement.csv,
+ThrSrfDiagJ,0.881,threshold_displacement.csv,
+ThrPedUsed,0.83,threshold_displacement.csv,out-of-fold Youden
+ThrPedUsedRecall,0.803,threshold_displacement.csv,
+ThrPedUsedSpec,0.900,threshold_displacement.csv,
+ThrPedUsedJ,0.703,threshold_displacement.csv,
+ThrPedDiag,0.78,threshold_displacement.csv,diagnostic: Youden on the test set
+ThrPedDiagRecall,0.830,threshold_displacement.csv,
+ThrPedDiagSpec,0.893,threshold_displacement.csv,
+ThrPedDiagJ,0.723,threshold_displacement.csv,
+LeakIrfPatient,0.756,leakage_inflation.csv,
+LeakIrfRandom,0.915,leakage_inflation.csv,
+LeakIrfInflation,\ensuremath{+0.159},leakage_inflation.csv,
+LeakSrfPatient,0.943,leakage_inflation.csv,
+LeakSrfRandom,0.988,leakage_inflation.csv,
+LeakSrfInflation,\ensuremath{+0.045},leakage_inflation.csv,
+LeakPedPatient,0.911,leakage_inflation.csv,
+LeakPedRandom,0.977,leakage_inflation.csv,
+LeakPedInflation,\ensuremath{+0.066},leakage_inflation.csv,
+YoudenIrfThr,0.16,youden_vs_default_and_size_gap.csv,
+YoudenIrfSensHalf,0.644,youden_vs_default_and_size_gap.csv,sensitivity at 0.5
+YoudenIrfSensYouden,0.763,youden_vs_default_and_size_gap.csv,
+YoudenIrfSpecHalf,0.941,youden_vs_default_and_size_gap.csv,
+YoudenIrfSpecYouden,0.901,youden_vs_default_and_size_gap.csv,
+GapIrfSubN,79,youden_vs_default_and_size_gap.csv,
+GapIrfSubRecall,0.671,youden_vs_default_and_size_gap.csv,
+GapIrfSupraN,39,youden_vs_default_and_size_gap.csv,
+GapIrfSupraRecall,0.949,youden_vs_default_and_size_gap.csv,
+GapIrfGap,0.278,youden_vs_default_and_size_gap.csv,
+YoudenSrfThr,0.80,youden_vs_default_and_size_gap.csv,
+YoudenSrfSensHalf,0.879,youden_vs_default_and_size_gap.csv,sensitivity at 0.5
+YoudenSrfSensYouden,0.825,youden_vs_default_and_size_gap.csv,
+YoudenSrfSpecHalf,0.979,youden_vs_default_and_size_gap.csv,
+YoudenSrfSpecYouden,0.986,youden_vs_default_and_size_gap.csv,
+GapSrfSubN,88,youden_vs_default_and_size_gap.csv,
+GapSrfSubRecall,0.500,youden_vs_default_and_size_gap.csv,
+GapSrfSupraN,209,youden_vs_default_and_size_gap.csv,
+GapSrfSupraRecall,0.962,youden_vs_default_and_size_gap.csv,
+GapSrfGap,0.462,youden_vs_default_and_size_gap.csv,
+YoudenPedThr,0.83,youden_vs_default_and_size_gap.csv,
+YoudenPedSensHalf,0.907,youden_vs_default_and_size_gap.csv,sensitivity at 0.5
+YoudenPedSensYouden,0.803,youden_vs_default_and_size_gap.csv,
+YoudenPedSpecHalf,0.593,youden_vs_default_and_size_gap.csv,
+YoudenPedSpecYouden,0.900,youden_vs_default_and_size_gap.csv,
+GapPedSubN,119,youden_vs_default_and_size_gap.csv,
+GapPedSubRecall,0.597,youden_vs_default_and_size_gap.csv,
+GapPedSupraN,181,youden_vs_default_and_size_gap.csv,
+GapPedSupraRecall,0.939,youden_vs_default_and_size_gap.csv,
+GapPedGap,0.343,youden_vs_default_and_size_gap.csv,
+LatGpuBatchOneMsPerScan,8.93,bench_latency.csv,"mean pooling, NVIDIA A100-SXM4-40GB"
+LatGpuBatchOneScansPerSec,112.0,bench_latency.csv,
+LatGpuBatchEightMsPerScan,1.37,bench_latency.csv,"mean pooling, NVIDIA A100-SXM4-40GB"
+LatGpuBatchEightScansPerSec,731.7,bench_latency.csv,
+LatGpuBatchThirtyTwoMsPerScan,0.99,bench_latency.csv,"mean pooling, NVIDIA A100-SXM4-40GB"
+LatGpuBatchThirtyTwoScansPerSec,1010.4,bench_latency.csv,
+LatCpuBatchOneMsPerScan,117.73,bench_latency.csv,"mean pooling, CPU"
+LatCpuBatchOneScansPerSec,8.5,bench_latency.csv,
+LatCpuBatchEightMsPerScan,64.70,bench_latency.csv,"mean pooling, CPU"
+LatCpuBatchEightScansPerSec,15.5,bench_latency.csv,
+LatCpuBatchThirtyTwoMsPerScan,56.76,bench_latency.csv,"mean pooling, CPU"
+LatCpuBatchThirtyTwoScansPerSec,17.6,bench_latency.csv,
+BenchLastFourTrainableM,50.4,bench/cfg_last4_224_f0_s0.json,
+BenchLastFourSecPerEpoch,5.4,bench/cfg_last4_224_f0_s0.json,
+BenchLastFourPeakGiB,2.74,bench/cfg_last4_224_f0_s0.json,
+BenchFullTrainableM,303.3,bench/cfg_full_224_f0_s0.json,
+BenchFullSecPerEpoch,10.2,bench/cfg_full_224_f0_s0.json,
+BenchFullPeakGiB,10.43,bench/cfg_full_224_f0_s0.json,
+BenchFrozenAttnTrainableM,0.069,bench/cfg_lp_224_attn_f0_s0.json,
+BenchFrozenAttnSecPerEpoch,4.4,bench/cfg_lp_224_attn_f0_s0.json,
+BenchFrozenAttnPeakGiB,1.35,bench/cfg_lp_224_attn_f0_s0.json,
+ComputeGpuHours,51.9,sacct_jobs.psv,through 2026-09-04
+ComputeSerialHours,116.0,sacct_jobs.psv,

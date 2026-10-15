@@ -119,9 +119,17 @@ def main():
     ap = argparse.ArgumentParser(
         description='Regenerate results/pvalues.csv and results/encoder_grid_auprc.csv '
                     'from the saved per-fold predictions.')
-    ap.add_argument('--only', nargs='*', choices=['pvalues', 'encoder'])
+    ap.add_argument('--only', nargs='*', choices=['pvalues', 'encoder', 'numbers'])
     a = ap.parse_args()
     want = set(a.only or ['pvalues', 'encoder'])
+    if 'numbers' in want:
+        # numbers.tex reads the CSVs this script writes, so it runs last and only on request
+        import derive_numbers
+        rows = derive_numbers.build(RESULTS / 'numbers.tex', RESULTS / 'numbers_index.csv')
+        print(f'wrote numbers.tex  ({len(rows)} macros)')
+        want.discard('numbers')
+        if not want:
+            return
 
     man = S.manifest()
     _, Y, G, _ = seed_arm('last4_224')

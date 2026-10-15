@@ -118,6 +118,27 @@ def derive_section1():
     return D
 
 
+def derive_amdsd_auroc():
+    """AMD-SD test AUROC for the last-4 ensemble — the reference ticks in figure 7a.
+
+    Seed 0, five folds ensembled: the same model whose checkpoints score AROI, so the
+    two sides of figure 7a are one model on two datasets. Not the 3-seed mean.
+    """
+    from sklearn.metrics import roc_auc_score
+    P, Y, G = S.arm_preds('last4_224', 0)
+    reps = _reps(G)
+    rows = []
+    for i, c in enumerate(T):
+        b = S.boot_stat(lambda ix: roc_auc_score(Y[ix, i], P[ix, i])
+                        if Y[ix, i].min() != Y[ix, i].max() else np.nan, reps)
+        lo, hi = S.ci(b)
+        rows.append(dict(cls=c, auroc=roc_auc_score(Y[:, i], P[:, i]), lo=lo, hi=hi,
+                         n_pos=int(Y[:, i].sum()), n_neg=int((Y[:, i] == 0).sum()), seed=0))
+    D = pd.DataFrame(rows)
+    D.to_csv(RES / 'amdsd_test_auroc.csv', index=False)
+    return D
+
+
 def derive_threshold_displacement():
     """How far each test-set Youden point sits from the one the test scale would pick.
 
@@ -343,7 +364,192 @@ def derive_within_bin_auroc(n_boot=2000):
     pd.DataFrame(rows).to_csv(RES / 'aroi_dark_srf_auroc_by_bin.csv', index=False)
 
 
-DERIVE = {'section1': derive_section1, 'section6': derive_section6, 'threshold': derive_threshold_displacement,
+def derive_operating_points():
+    """§1 operating points: recall and specificity at each seed's own out-of-fold Youden
+    threshold, averaged over the seeds an arm has. Test set, fold-ensembled."""
+    rows = []
+    for arm in ('lp_224', 'last4_224', 'full_224', 'full_384', 'last4_448', 'lp_384'):
+        seeds = [s for s in SEEDS if glob.glob(str(PRED / f'preds_{arm}_f*_s{s}.npz'))]
+        for i, c in enumerate(T):
+            rec, spec, thr = [], [], []
+            for sd in seeds:
+                P, Y, _ = S.arm_preds(arm, sd)
+                vp, vy = S.val_preds(arm, sd)
+                t = S.youden(vy[:, i], vp[:, i])
+                pr = P[:, i] >= t
+                rec.append(pr[Y[:, i] == 1].mean()); spec.append((~pr)[Y[:, i] == 0].mean())
+                thr.append(t)
+            rows.append(dict(arm=arm, cls=c, n_seeds=len(seeds), recall=np.mean(rec),
+                             spec=np.mean(spec), thr_mean=np.mean(thr)))
+    D = pd.DataFrame(rows)
+    D.to_csv(RES / 'operating_points.csv', index=False)
+    return D
+
+
+LR_ARMS = [('full_224', 'full_224_lr1e-05', 1e-5), ('full_224', 'full_224', 2e-5),
+           ('full_224', 'full_224_lr5e-05', 5e-5), ('last4_224', 'last4_224_lr3e-05', 3e-5),
+           ('last4_224', 'last4_224', 1e-4), ('last4_224', 'last4_224_lr0.0003', 3e-4)]
+LR_DEFAULT = {'full_224': 2e-5, 'last4_224': 1e-4}
+
+
+def derive_lr_sweep():
+    """§2 learning-rate sweep, seed 0, and each arm at its own best rate (by IRF)."""
+    rows = []
+    for base, arm, lr in LR_ARMS:
+        P, Y, _ = S.arm_preds(arm, 0)
+        for i, c in enumerate(T):
+            rows.append(dict(arm=base, lr=lr, default=lr == LR_DEFAULT[base], cls=c,
+                             auprc=AP(Y[:, i], P[:, i])))
+    D = pd.DataFrame(rows)
+    D.to_csv(RES / 'lr_sweep.csv', index=False)
+    best = {b: D[(D.arm == b) & (D.cls == 'IRF')].sort_values('auprc').iloc[-1].lr
+            for b in ('full_224', 'last4_224')}
+    pick = lambda b: next(x for bb, x, lr in LR_ARMS if bb == b and lr == best[b])
+    y = S.test_rows()
+    reps = _reps(y.group.values)
+    A, _, _ = S.arm_preds(pick('last4_224'), 0)
+    B, _, _ = S.arm_preds(pick('full_224'), 0)
+    out = []
+    for i, c in enumerate(T):
+        yt = y[f'label_{c}'].values
+        d, lo, hi, pv = _paired(yt, A[:, i], B[:, i], reps)
+        out.append(dict(cls=c, last4_lr=best['last4_224'], full_lr=best['full_224'],
+                        last4=AP(yt, A[:, i]), full=AP(yt, B[:, i]), delta=d, lo=lo, hi=hi,
+                        p=pv))
+    pd.DataFrame(out).to_csv(RES / 'lr_best_contrast.csv', index=False)
+    return D
+
+
+def _aroi_ready():
+    return all((RES / f).exists() for f in ('aroi_zeroshot.csv', 'aroi_score_vs_size.csv'))
+
+
+def derive_interaction_sensitivity():
+    """§5: how the score-size model's shift and interaction depend on the logit clipping,
+    on dropping saturated scores, and on fitting the AMD-SD side out-of-fold."""
+    if not _aroi_ready():
+        return
+    import aroi_transfer as A
+    sc = pd.read_csv(RES / 'aroi_score_vs_size.csv')
+    # The CSV round-trip turns AMD-SD patient ids into strings, which sort '1','10','100'
+    # instead of 1,2,3 and so reorder the patient-bootstrap draws. Restore them, or the
+    # primary row stops reproducing the main-text model (SRF interaction p 0.009 vs 0.010).
+    amd = sc.dataset == 'AMD-SD'
+    sc['patient'] = sc.patient.astype(object)
+    sc.loc[amd, 'patient'] = sc.loc[amd, 'patient'].astype(int)
+    man = S.manifest()
+    Z = pd.read_csv(RES / 'aroi_zeroshot.csv')
+    oof = A.oof_and_test_scores(man)
+    amd_oof = []
+    for c in T:
+        d = man[(man.split == 'pool') & (man[f'label_{c}'] == 1)]
+        amd_oof.append(pd.DataFrame(dict(dataset='AMD-SD', cls=c, patient=d.group.values,
+                                         area_patches=d[f'area_{c}'].values / A.PATCH['AMD-SD'],
+                                         score=d.file.map(oof[c]).values.astype(float))))
+    sc_oof = pd.concat(amd_oof + [A.aroi_positive_scores(Z)], ignore_index=True)
+    rows = []
+    for c in T:
+        for variant, d, eps in (('clip 1e-6 (primary)', sc[sc.cls == c], 1e-6),
+                                ('clip 1e-3', sc[sc.cls == c], 1e-3),
+                                ('saturated scores dropped',
+                                 sc[(sc.cls == c) & (sc.score > 1e-3) & (sc.score < 1 - 1e-3)], 1e-6),
+                                ('AMD-SD side out-of-fold', sc_oof[sc_oof.cls == c], 1e-6)):
+            A.EPS = eps
+            f = A.fit_interaction(d).set_index('term')
+            rows.append(dict(cls=c, variant=variant, n=len(d),
+                             shift=f.loc['dataset_AROI', 'estimate'],
+                             shift_p=f.loc['dataset_AROI', 'p'],
+                             inter=f.loc['log_area_x_AROI', 'estimate'],
+                             inter_lo=f.loc['log_area_x_AROI', 'lo'],
+                             inter_hi=f.loc['log_area_x_AROI', 'hi'],
+                             inter_p=f.loc['log_area_x_AROI', 'p']))
+    A.EPS = 1e-6
+    pd.DataFrame(rows).to_csv(RES / 'aroi_interaction_sensitivity.csv', index=False)
+
+
+def derive_dark_only():
+    """§5: the score-size model and the shift-model counterfactual on dark AROI SRF only."""
+    if not (_aroi_ready() and (RES / 'aroi_lesion_contrast.csv').exists()):
+        return
+    import aroi_transfer as A
+    import aroi_shrm_proxy as M
+    man = S.manifest()
+    Z = pd.read_csv(RES / 'aroi_zeroshot.csv').merge(
+        M.slice_brightness(pd.read_csv(RES / 'aroi_lesion_contrast.csv')),
+        on=['patient', 'slice'], how='left')
+    pos = Z[(Z.label_SRF == 1) & Z.weber_wt.notna()].copy()
+    dark = pos[pos.weber_wt < 0].copy()
+    thr = dict(zip(T, S.thresholds('last4_224')))['SRF']
+    amd = A.amdsd_positive_scores(man)
+    amd = amd[amd.cls == 'SRF']
+    aroi = pd.DataFrame(dict(dataset='AROI', cls='SRF', patient=dark.patient.values,
+                             area_patches=dark.area_SRF.values / A.PATCH['AROI'],
+                             score=dark.p_SRF.values))
+    f = A.fit_interaction(pd.concat([amd, aroi], ignore_index=True)).set_index('term')
+    full = pd.read_csv(RES / 'aroi_score_size_model.csv')
+    full = full[full.cls == 'SRF'].set_index('term')
+    coef = [dict(term=t, all_srf=full.loc[t, 'estimate'], all_srf_p=full.loc[t, 'p'],
+                 dark_only=f.loc[t, 'estimate'], dark_only_p=f.loc[t, 'p'])
+            for t in ('log_area', 'dataset_AROI', 'log_area_x_AROI')]
+    pd.DataFrame(coef).to_csv(RES / 'aroi_dark_only_model.csv', index=False)
+    C = pd.read_csv(RES / 'aroi_shift_model_recall.csv')
+    edges = sorted(set(C[C.cls == 'SRF'].lo_edge) | set(C[C.cls == 'SRF'].hi_edge))
+    shift = float(f.loc['dataset_AROI', 'estimate'])
+    P = A.shift_model_recall(man, A.oof_and_test_scores(man),
+                             {'SRF': thr, 'IRF': .5, 'PED': .5},
+                             {'SRF': shift, 'IRF': 0.0, 'PED': 0.0},
+                             {k: edges for k in T})
+    P = P[P.cls == 'SRF'].set_index('lo_edge')
+    dark['u'] = dark.area_SRF / A.PATCH['AROI']
+    dark['hit'] = (dark.p_SRF >= thr).astype(int)
+    rows = []
+    for k in range(len(edges) - 1):
+        m = (dark.u >= edges[k]) & (dark.u < edges[k + 1])
+        if m.sum():
+            pr = float(P.loc[edges[k], 'predicted'])
+            rows.append(dict(lo_edge=edges[k], hi_edge=edges[k + 1], n=int(m.sum()),
+                             predicted=pr, observed=dark[m].hit.mean(),
+                             residual=dark[m].hit.mean() - pr))
+    pd.DataFrame(rows).to_csv(RES / 'aroi_dark_only_shift.csv', index=False)
+
+
+def derive_weber_cut_sensitivity(cuts=(-0.2, -0.1, -0.05, 0.0, 0.05, 0.1, 0.2)):
+    """How the SHRM-proxy split depends on where the Weber cut sits."""
+    C = pd.read_csv(RES / 'amdsd_shrm_contrast.csv')
+    C = C[C.cls.isin(['SRF', 'SHRM'])]
+    y = (C.cls == 'SHRM').values
+    have_aroi = (RES / 'aroi_lesion_contrast.csv').exists() and (RES / 'aroi_zeroshot.csv').exists()
+    if have_aroi:
+        import aroi_shrm_proxy as M
+        Z = pd.read_csv(RES / 'aroi_zeroshot.csv').merge(
+            M.slice_brightness(pd.read_csv(RES / 'aroi_lesion_contrast.csv')),
+            on=['patient', 'slice'], how='left')
+        pos = Z[(Z.label_SRF == 1) & Z.weber_wt.notna()]
+        thr = dict(zip(T, S.thresholds('last4_224')))['SRF']
+        P4, Y4, _ = S.arm_preds('last4_224', 0)
+        t_ens = S.youden(Y4[:, 1], P4[:, 1])
+    rows = []
+    for cut in cuts:
+        pr = C.weber.values >= cut
+        r = dict(cut=cut, amdsd_sens=pr[y].mean(), amdsd_spec=(~pr)[~y].mean())
+        if have_aroi:
+            br, dk = pos[pos.weber_wt >= cut], pos[pos.weber_wt < cut]
+            r.update(aroi_bright_n=len(br), aroi_bright_patients=br.patient.nunique(),
+                     bright_recall_thr=(br.p_SRF >= thr).mean() if len(br) else np.nan,
+                     dark_recall_thr=(dk.p_SRF >= thr).mean(),
+                     bright_recall_ens=(br.p_SRF >= t_ens).mean() if len(br) else np.nan,
+                     dark_recall_ens=(dk.p_SRF >= t_ens).mean())
+        rows.append(r)
+    D = pd.DataFrame(rows)
+    D.to_csv(RES / ('aroi_weber_cut_sensitivity.csv' if have_aroi
+                    else 'weber_cut_sensitivity.csv'), index=False)
+    return D
+
+
+DERIVE = {'section1': derive_section1, 'section6': derive_section6, 'threshold': derive_threshold_displacement, 'amdsd_auroc': derive_amdsd_auroc,
+          'oppoints': derive_operating_points, 'lr': derive_lr_sweep,
+          'interaction': derive_interaction_sensitivity, 'darkonly': derive_dark_only,
+          'webercut': derive_weber_cut_sensitivity,
           'contrast': derive_contrast_regression, 'half': derive_half_points,
           'shrm': derive_shrm, 'wbin': derive_within_bin_auroc}
 
@@ -625,6 +831,17 @@ def g_wbin(b):
         b.add(f'{s}PatientsAroi', str(int(r.pts_aroi)), f)
 
 
+def g_amdsd_auroc(b):
+    D = read('amdsd_test_auroc.csv')
+    if D is None:
+        return
+    for r in D.itertuples():
+        k = f'AmdsdTestAuroc{CLS[r.cls]}'
+        b.add(k, num(r.auroc), 'amdsd_test_auroc.csv', 'last-4, seed 0, 5-fold ensemble; fig 7a')
+        b.add(f'{k}Lo', num(r.lo), 'amdsd_test_auroc.csv')
+        b.add(f'{k}Hi', num(r.hi), 'amdsd_test_auroc.csv')
+
+
 def g_threshold(b):
     D = read('threshold_displacement.csv')
     for r in D.itertuples():
@@ -701,7 +918,7 @@ def g_compute(b):
 
 
 GROUPS = [g_main, g_pvalues, g_section6, g_capacity, g_subpatch, g_recall_bins, g_half,
-          g_contrast, g_crossers, g_aroi, g_shrm, g_wbin, g_threshold, g_leakage, g_compute]
+          g_contrast, g_crossers, g_aroi, g_shrm, g_wbin, g_amdsd_auroc, g_threshold, g_leakage, g_compute]
 
 
 def build(out_tex, out_index):

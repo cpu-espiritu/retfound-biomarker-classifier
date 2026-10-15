@@ -771,6 +771,15 @@ WbinFDelta,\ensuremath{+0.008},aroi_dark_srf_auroc_by_bin.csv,
 WbinFLo,\ensuremath{-0.004},aroi_dark_srf_auroc_by_bin.csv,
 WbinFHi,\ensuremath{+0.024},aroi_dark_srf_auroc_by_bin.csv,
 WbinFPatientsAroi,6,aroi_dark_srf_auroc_by_bin.csv,
+AmdsdTestAurocIrf,0.893,amdsd_test_auroc.csv,"last-4, seed 0, 5-fold ensemble; fig 7a"
+AmdsdTestAurocIrfLo,0.802,amdsd_test_auroc.csv,
+AmdsdTestAurocIrfHi,0.954,amdsd_test_auroc.csv,
+AmdsdTestAurocSrf,0.962,amdsd_test_auroc.csv,"last-4, seed 0, 5-fold ensemble; fig 7a"
+AmdsdTestAurocSrfLo,0.924,amdsd_test_auroc.csv,
+AmdsdTestAurocSrfHi,0.988,amdsd_test_auroc.csv,
+AmdsdTestAurocPed,0.910,amdsd_test_auroc.csv,"last-4, seed 0, 5-fold ensemble; fig 7a"
+AmdsdTestAurocPedLo,0.841,amdsd_test_auroc.csv,
+AmdsdTestAurocPedHi,0.959,amdsd_test_auroc.csv,
 ThrIrfUsed,0.16,threshold_displacement.csv,out-of-fold Youden
 ThrIrfUsedRecall,0.763,threshold_displacement.csv,
 ThrIrfUsedSpec,0.901,threshold_displacement.csv,

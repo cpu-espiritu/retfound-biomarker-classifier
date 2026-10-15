@@ -516,8 +516,11 @@ correct). The Youden-optimal cut is −0.125 rather than 0, so a zero cut is mar
 conservative — it calls slightly less tissue SHRM than the best separator would.
 
 **And the model behaves on AMD-SD SHRM exactly as it does on AROI's bright slices.** Taking
-out-of-fold SRF-head scores for AMD-SD scans that contain SHRM but no SRF — where the label
-is real, not a proxy:
+SRF-head scores — out-of-fold on pool scans, fold-ensembled on test scans — for AMD-SD scans
+that contain SHRM but no SRF, where the label is real, not a proxy. The AMD-SD groups mix the
+two protocols in proportion to the split (SRF present 1,492 pool + 297 test; SHRM only 662 +
+83; neither 455 + 60); figure 7c uses the same mix. Out-of-fold scores run optimistic, so the
+AMD-SD medians sit slightly high against AROI's, which are ensemble-scored throughout:
 
 | group                          | n     | patients | mean      | median    | p90   | % at or above 0.80 |
 | ------------------------------ | ----- | -------- | --------- | --------- | ----- | ------------------ |

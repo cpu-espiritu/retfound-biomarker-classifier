@@ -692,23 +692,26 @@ This is the only mechanism that survives a proper control, and it implies a conc
 
 |                       | raw Δ recall | % of remaining gap closed |
 | --------------------- | ------------ | ------------------------- |
-| sub-patch (n=992)     | +0.120       | 24%                       |
-| above-patch (n=2,729) | +0.077       | **55%**                   |
+| sub-patch (n=992)     | +0.121       | 25%                       |
+| above-patch (n=2,729) | +0.070       | **57%**                   |
 
 Raw Δ is larger on small lesions only because more headroom exists there. Normalised by
 available headroom, attention closes more than twice as much of the gap on large lesions
 (`corr(size rank, % gap closed)` = +0.86 SRF, +0.93 PED). In the smallest bin it actively
 hurts (IRF −0.046, PED −0.133): too little signal for the weights to concentrate on.
 
-Bins surviving Holm are all PED and SRF, none IRF:
+Three of 20 bins survive Holm, one per class:
 
 | class | bin (patches) | Δ recall | p_holm |
 | ----- | ------------- | -------- | ------ |
-| PED   | 0.08–0.22     | +0.240   | 0.038  |
-| PED   | 0.22–0.58     | +0.189   | 0.008  |
-| PED   | 0.58–1.55     | +0.205   | 0.008  |
-| PED   | 1.55–4.17     | +0.087   | 0.014  |
-| SRF   | 0.22–0.58     | +0.130   | 0.014  |
+| IRF   | 0.58–1.55     | +0.175   | 0.036  |
+| SRF   | 0.22–0.58     | +0.170   | 0.008  |
+| PED   | 0.58–1.55     | +0.138   | 0.008  |
+
+_Δ recall here is the pooled (scan-weighted) difference. The `pooling_size_strat.py` log
+prints an unweighted mean over bins instead (+0.078 sub-patch, +0.055 above), which is a
+different statistic; quote the weighted one. These figures are post-`AttnPool`-fix; before
+it, five bins survived, four of them PED._
 
 Note this reverses the AUPRC ordering, where IRF showed the largest gain. AUPRC measures
 ranking across all scans; this measures recall at a fixed threshold within a size band.
@@ -717,19 +720,25 @@ Both hold; the claim must state which.
 **Attention pooling is therefore a better pooling operator, not a fix for the size
 bottleneck.** It cannot be framed as addressing §4.
 
-**Repeated at the selected hyperparameters, the conclusion is unchanged.** The table above
-used 40 epochs, chosen by hand; nested CV later selected 5 for IRF, 55 for SRF, 30 for PED.
-Rerunning with those, three seeds each and the tuned baseline:
+**Repeated at the selected hyperparameters, the direction holds and strengthens.** The
+table above used 40 epochs, chosen by hand. Nested CV re-run on the corrected code selected
+5 epochs for IRF, 70 for SRF, and L=64 with 5 epochs for PED. Rerunning with those, three
+seeds each and the tuned baseline:
 
 |                      | epochs=40, hand-chosen        | nested-CV selected |
 | -------------------- | ----------------------------- | ------------------ |
-| sub-patch Δ recall   | +0.120 (24% of available gap) | +0.120 (24%)       |
-| above-patch Δ recall | +0.077 (55%)                  | +0.068 (56%)       |
+| sub-patch Δ recall   | +0.121 (25% of available gap) | +0.069 (15%)       |
+| above-patch Δ recall | +0.070 (57%)                  | +0.063 (58%)       |
 
-Five of 20 bins survive Holm under both, though which ones shifts: SRF's 0.08–0.22 bin now
-clears correction (+0.269, p_holm 0.008) where PED's smallest no longer does. The
-size-independence of the gain is therefore a property of attention pooling, not of the
-epoch count.
+Under the selected configuration the sub-patch gain nearly halves while the above-patch
+share is unchanged, so attention closes almost four times as much of the gap on large
+lesions as on small ones. Only two bins survive Holm, both SRF (0.08–0.22, +0.269; 0.22–0.58,
++0.193; p_holm 0.008 each). All three PED bins that cleared correction at 40 epochs drop
+out: PED's selected configuration trains for 5 epochs, and its modal choice is made by one
+fold in five, so PED's small-lesion recall is not well identified by this procedure. The
+conclusion — a better pooling operator, not a size fix — is if anything stronger; the
+specific surviving bins are not stable across configurations and should not be quoted as
+findings in their own right.
 
 ### Confirmed on the held-out test set
 
@@ -769,7 +778,7 @@ mean-pooled features is deterministic and runs once.
 
 |                        | IRF               | SRF           | PED           | trainable  |
 | ---------------------- | ----------------- | ------------- | ------------- | ---------- |
-| **frozen + attention** | **0.807** ± 0.003 | 0.984 ± 0.001 | 0.962 ± 0.003 | **0.07 M** |
+| **frozen + attention** | **0.807** ± 0.003 | 0.984 ± 0.001 | 0.961 ± 0.003 | **0.07 M** |
 | frozen + mean pooling  | 0.707             | 0.971         | 0.919         | 0.003 M    |
 | last-4 + mean pooling  | 0.791             | 0.985         | 0.960         | 50 M       |
 | last-4 + attention     | 0.786             | 0.983         | 0.963         | 50 M       |
@@ -780,36 +789,36 @@ contrasts on the same 5,000 patient resamples, Holm across all six:
 | depth      | class | attention | mean  | Δ AUPRC    | 95% CI           | p     | Holm      |
 | ---------- | ----- | --------- | ----- | ---------- | ---------------- | ----- | --------- |
 | **frozen** | IRF   | 0.807     | 0.707 | **+0.100** | [+0.025, +0.169] | 0.004 | **0.024** |
-| **frozen** | SRF   | 0.984     | 0.971 | **+0.014** | [+0.002, +0.041] | 0.006 | **0.032** |
-| frozen     | PED   | 0.963     | 0.919 | +0.044     | [+0.007, +0.116] | 0.016 | 0.062     |
+| frozen     | SRF   | 0.984     | 0.971 | +0.014     | [+0.002, +0.042] | 0.016 | 0.078     |
+| frozen     | PED   | 0.962     | 0.919 | +0.043     | [+0.006, +0.113] | 0.020 | 0.080     |
 | last-4     | IRF   | 0.786     | 0.791 | −0.005     | [−0.020, +0.023] | 0.619 | 0.619     |
 | last-4     | SRF   | 0.983     | 0.985 | −0.002     | [−0.007, +0.000] | 0.111 | 0.257     |
 | last-4     | PED   | 0.963     | 0.960 | +0.004     | [−0.000, +0.012] | 0.086 | 0.257     |
 
-**Two of the three frozen contrasts survive correction; none of the fine-tuned ones does.**
-PED is nominally significant (p 0.016) but its Holm-adjusted value is 0.062. The frozen
+**One of the three frozen contrasts survives correction — IRF — and none of the
+fine-tuned ones does.** SRF and PED are nominally significant (p 0.016, 0.020) but adjust to
+0.078 and 0.080. The frozen
 attention arm is the mean of 3 seeds against a deterministic baseline; the last-4 rows are
 single-seed on both sides.
 
-_Remeasured after the `AttnPool` bias-gradient fix: every frozen-attention figure in this
-section now comes from the corrected code. **The hyperparameters were not re-selected** —
-the nested-CV rerun failed (job 56554003) and the measurement job used the configuration
-chosen before the fix, so these arms are the corrected head fitted at the pre-fix modal
-settings (IRF L=64, 1e-3, 5 epochs; SRF L=32, 3e-3, 55; PED L=32, 3e-3, 30). Whether the
-corrected code would select the same settings is untested. The estimates barely moved — attention AUPRC
-rose by 0.0012, 0.0003 and 0.0008 on IRF, SRF and PED. **C2 itself is unchanged to three
-decimals**: frozen+attention − last-4+mean is +0.016 (p 0.544), −0.001 (p 0.901) and +0.003
-(p 0.644), exactly as reported below. PED's correction result is the one thing that moved —
-Holm 0.030 to 0.062 — while its point estimate shifted by 0.0005. That is better read as the
-PED contrast never having been robust than as the fix having weakened it._
+_Remeasured after the `AttnPool` bias-gradient fix, at hyperparameters re-selected by nested
+CV on the corrected code (job 57235112). Re-selection changed 13 of 15 per-fold choices and
+two modal configurations — SRF 55 → 70 epochs; PED L 32 → 64 and 30 → 5 epochs; IRF
+unchanged — while mean inner-validation AP moved by under 0.01, which is what a flat
+selection surface looks like. Attention AUPRC moved by at most 0.003 relative to the
+published pre-fix figures. **The C2 comparison is unchanged** (table below). What did move is
+correction: before the fix all three frozen contrasts cleared Holm; after it, with the
+original configuration, two did (PED adjusted 0.062); with the re-selected configuration,
+one does. The SRF and PED contrasts sit at the correction boundary and cross it under
+changes this small, so they should be reported as nominal, not as surviving correction._
 
 **But it matches fine-tuning rather than beating it.** Paired against the last-4 arms,
 nothing survives Holm across six tests:
 
 | comparison                | IRF                             | SRF            | PED            |
 | ------------------------- | ------------------------------- | -------------- | -------------- |
-| frozen+attn − last-4+mean | +0.016 [−0.061, +0.056] p 0.544 | −0.001 p 0.901 | +0.003 p 0.644 |
-| frozen+attn − last-4+attn | +0.021 [−0.050, +0.049] p 0.452 | +0.001 p 0.562 | −0.000 p 0.981 |
+| frozen+attn − last-4+mean | +0.017 [−0.060, +0.056] p 0.528 | −0.000 p 0.985 | +0.003 p 0.708 |
+| frozen+attn − last-4+attn | +0.022 [−0.048, +0.049] p 0.439 | +0.002 p 0.424 | −0.001 p 0.995 |
 
 **Adding attention to a fine-tuned encoder gains nothing**: within last-4, attention − mean
 is −0.005 [−0.020, +0.023] on IRF, −0.002 SRF, +0.004 PED.
@@ -822,13 +831,14 @@ reorganises its features so the mean already carries it. Applying both gains not
 is what a substitution predicts.
 
 Two caveats on the mechanism, as distinct from the equivalence. The frozen attention−mean
-contrast now clears Holm on IRF and SRF but not PED (adjusted 0.062), so "attention helps a
-frozen encoder" is a two-of-three result. And the cached tokens stop before RETFound's
+contrast clears Holm on IRF only (SRF 0.078, PED 0.080 adjusted), so "attention helps a
+frozen encoder" is established for IRF and nominal for the other two. And the cached tokens stop before RETFound's
 trained final norm, which both arms replace with a parameter-free layernorm _after_ pooling;
 since attention computes its weights from the tokens and mean pooling cannot adapt at all,
 some of attention's frozen margin could be compensating for that missing normalisation
 rather than recovering localisation. `scripts/features/norm_sensitivity.py` tests exactly
-this and its result is not yet folded in. The equivalence claim does not depend on the
+this and finds no compensation: restoring the pretrained norm moves neither arm by more than
+0.01 (Supplementary). The equivalence claim does not depend on the
 answer; the mechanism sentence above does.
 
 _An earlier version of this section reported frozen + attention at 0.831 and claimed it beat
@@ -938,9 +948,9 @@ the feature dimension in `probe_pooling.py`, so the bias drifted by −lr x step
 step budget varies the step count up to 8x across sizes.
 
 That bug is now fixed. **§6's frozen-attention arms have been remeasured on the corrected
-code; the size curve in this section has not**, and neither have the other `AttnPool`
-consumers (`attn_final.csv`, `pooling_comparison.csv`, `pooling_control_tunedC.csv`,
-`pooling_size_tuned.csv`, `pooling_size_strat.csv`). An earlier version of this note claimed AUPRC and AUROC were unaffected because a
+code at re-selected hyperparameters, as have `pooling_size_tuned.csv` and
+`pooling_size_strat.csv` (§6d). Still pre-fix: the size curve in this section,
+`attn_final.csv`, `pooling_comparison.csv` and `pooling_control_tunedC.csv`.** An earlier version of this note claimed AUPRC and AUROC were unaffected because a
 constant bias is rank-invariant. That reasoning is wrong: the bias was wrong _during_
 training, so the gradient of every other parameter ran through `sigmoid(z + b)` with b
 drifting, and the attention and head weights partly compensated for it. The corrected code
@@ -1016,9 +1026,9 @@ wrong by more than the F1-versus-Youden distinction it contrasts.
 
 ### The attention fits are not bit-reproducible
 
-Two runs of the identical frozen-attention configuration — `frozen_arms.py` and the
-parameter-free arm of `norm_sensitivity.py`, same code, same seeds, same selected
-hyperparameters — do not agree exactly. The divergence scales with the number of training
+Two runs of the identical frozen-attention configuration — the 7 October `frozen_arms.py`
+run and the parameter-free arm of `norm_sensitivity.py`, same code, same seeds, both at the
+pre-fix-selected hyperparameters — do not agree exactly. The divergence scales with the number of training
 steps:
 
 | class | epochs | per-seed AUPRC, run 1 | run 2 |
@@ -1034,9 +1044,9 @@ floating-point: BLAS reduction order varies with thread count and scheduling bet
 The effect on conclusions is nil — AUPRC moves by at most 0.002 and no contrast changes
 side — but it does bound what can be promised. **Reported frozen-attention figures are
 reproducible to about ±0.002 AUPRC and ±0.006 on a bootstrap p-value, not exactly.** §6
-quotes `results/frozen_arms_tests.csv` throughout (SRF p 0.006, PED p 0.016); the
-supplementary quotes its own run (0.009, 0.021). Both are correct measurements of the same
-quantity.
+now quotes the 15 October `frozen_arms_tests.csv`, at the re-selected hyperparameters (SRF
+p 0.016, PED p 0.020); the supplementary quotes its own run at the earlier configuration
+(0.009, 0.021). They are measurements of different configurations and should not be mixed.
 
 ---
 
@@ -1245,10 +1255,14 @@ read as fragile to this choice; IRF and PED are not.
 
 The parameter-free setting remains primary throughout; this is a sensitivity analysis.
 Its parameter-free column is re-measured inside this run so the pretrained−parameter-free
-contrast is paired; it therefore differs from §6 in the third decimal (SRF p 0.009 against
-0.006, PED 0.021 against 0.016) for the reason set out under "The attention fits are not
-bit-reproducible". **§6's `results/frozen_arms_tests.csv` is the canonical run and is what
-Holm is computed on**; this table is internally consistent and should not be mixed with it.
+contrast is paired. It was run at the hyperparameters selected *before* the `AttnPool`
+fix, so its parameter-free column differs from §6, which uses the re-selected ones (SRF p
+0.009 here against 0.016 in §6; PED 0.021 against 0.020), on top of the run-to-run variation
+set out under "The attention fits are not bit-reproducible". **§6's
+`results/frozen_arms_tests.csv` is the canonical run and is what Holm is computed on**; this
+table is internally consistent and should not be mixed with it. Rerunning this sensitivity
+analysis at the re-selected configuration has not been done; given that neither arm moved by
+more than 0.01, it is not expected to change the conclusion.
 `results/norm_sensitivity.csv`, `scripts/features/norm_sensitivity.py`.
 
 ---

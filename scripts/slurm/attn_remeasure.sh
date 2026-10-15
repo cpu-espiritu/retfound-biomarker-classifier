@@ -28,28 +28,43 @@ R=$REPO/results
 [ -f "$SEL" ] || { echo "missing $SEL — the arms stage needs the retuned selection" >&2; exit 1; }
 
 # These four all fit AttnPool and were last measured before the bias-gradient fix.
-# Each writes its own CSV; the previous file is kept beside it as *_prefix.csv so the
-# old and new numbers can be diffed rather than silently replaced.
-keep () { [ -f "$1" ] && [ ! -f "${1%.csv}_prefix.csv" ] && cp "$1" "${1%.csv}_prefix.csv" && echo "kept $(basename "${1%.csv}_prefix.csv")"; true; }
-keep $R/pooling_comparison.csv
-keep $R/pooling_size_tuned.csv
-keep $R/pooling_size_strat.csv
-keep $R/attn_final.csv
+# probe_pooling resumes from its own output, so the old CSV must be MOVED out of the way,
+# not copied, or it reloads the old rows and trains nothing. The first time, the old file
+# becomes *_prefix.csv; if that already exists it is moved to a timestamped backup, so
+# nothing is ever deleted.
+aside () {
+  [ -f "$1" ] || return 0
+  if [ ! -f "${1%.csv}_prefix.csv" ]; then mv "$1" "${1%.csv}_prefix.csv"
+  else mv "$1" "${1%.csv}.bak_$(date +%s).csv"; fi
+  echo "moved $(basename "$1") aside"
+}
+# STEPS selects which to run, e.g. STEPS="comparison final" to redo only those two
+STEPS=${STEPS:-"comparison tuned strat final"}
+has () { [[ " $STEPS " == *" $1 "* ]]; }
 
-echo "=============== probe_pooling (pooling_comparison)"
-python $REPO/scripts/features/probe_pooling.py \
-  --tokens $TOKENS --manifest $SPLITS/manifest.csv --out $R/pooling_comparison.csv
-
-echo "=============== pooling_size_tuned"
-python $REPO/scripts/features/pooling_size_tuned.py \
-  --tokens $TOKENS --manifest $SPLITS/manifest.csv --selected $SEL \
-  --out $R/pooling_size_tuned.csv
-
-echo "=============== pooling_size_strat"
-python $REPO/scripts/features/pooling_size_strat.py \
-  --tokens $TOKENS --manifest $SPLITS/manifest.csv --out $R/pooling_size_strat.csv
-
-echo "=============== attn_finalise (attn_final)"
-python $REPO/scripts/features/attn_finalise.py \
-  --tokens $TOKENS --manifest $SPLITS/manifest.csv --selected $SEL \
-  --out $R/attn_final.csv
+if has comparison; then
+  echo "=============== probe_pooling (pooling_comparison)"
+  aside $R/pooling_comparison.csv
+  python $REPO/scripts/features/probe_pooling.py \
+    --tokens $TOKENS --manifest $SPLITS/manifest.csv --out $R/pooling_comparison.csv
+fi
+if has tuned; then
+  echo "=============== pooling_size_tuned"
+  aside $R/pooling_size_tuned.csv
+  python $REPO/scripts/features/pooling_size_tuned.py \
+    --tokens $TOKENS --manifest $SPLITS/manifest.csv --selected $SEL \
+    --out $R/pooling_size_tuned.csv
+fi
+if has strat; then
+  echo "=============== pooling_size_strat"
+  aside $R/pooling_size_strat.csv
+  python $REPO/scripts/features/pooling_size_strat.py \
+    --tokens $TOKENS --manifest $SPLITS/manifest.csv --out $R/pooling_size_strat.csv
+fi
+if has final; then
+  echo "=============== attn_finalise (attn_final)"
+  aside $R/attn_final.csv
+  python $REPO/scripts/features/attn_finalise.py \
+    --tokens $TOKENS --manifest $SPLITS/manifest.csv --selected $SEL \
+    --out $R/attn_final.csv
+fi

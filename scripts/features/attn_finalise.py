@@ -84,7 +84,7 @@ def main():
         # any other arm is possible, only a bare AUPRC difference
         np.savez(Path(a.out).with_name(f'attn_final_test_{c}.npz'),
                  p_attn=p_attn, p_attn_ens=p_attn_ens, p_mean=p_mean, y=y[test],
-                 g=df.loc[test, 'group'].values, file=df.loc[test, 'file'].values)
+                 g=df.loc[test, 'group'].values, scan_file=df.loc[test, 'file'].values)
 
         yt = y[test]
         g = df.loc[test, 'group'].values
